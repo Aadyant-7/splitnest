@@ -1,15 +1,17 @@
 # Windows setup and GitHub handoff
 
-These are the grouped setup instructions following the completed planning review.
-No application code, wrapper, Compose file, or cluster exists yet. Commands below
-are labeled by when they become applicable. Do not paste credentials into chat.
+These instructions support a fresh Windows setup. The original host has now
+verified Java 21, Docker Desktop, Git, the generated wrapper and a kind cluster.
+Source and Compose files are implemented. Do not paste credentials into chat;
+see evidence/verification.md for current execution results.
 
-## 1. Required before backend implementation can be fully verified
+## 1. Prerequisites for a fresh checkout
 
 ### JDK 21
 
-Java 23.0.2 is installed. Keep it if other projects need it; select JDK 21 for
-SplitNest, its IDE project SDK, and its Maven runner.
+Temurin Java 21.0.12.1 is now verified for SplitNest. Keep the older Java 23
+installation if other projects need it; use JDK 21 for this project's IDE and
+Maven runner. Installation instructions below apply to a new machine.
 
 Install Temurin 21 using the official
 [Adoptium instructions](https://adoptium.net/installation/), or run:
@@ -87,7 +89,7 @@ git --version
 code --version
 ```
 
-Configure the IDE to use JDK 21 when the project is generated. Confirm an existing
+Configure the IDE to use JDK 21 when opening the project. Confirm an existing
 Git author identity before making commits:
 
 ```powershell
@@ -96,13 +98,13 @@ git config --get user.email
 ```
 
 If these are empty, choose your author name and GitHub-verified email or GitHub
-noreply address. We can set them repository-locally once Git is initialized;
+noreply address. Set them repository-locally if you need to make commits;
 there is no need to overwrite settings used by other projects.
 
 ### Maven
 
-Do not install global Maven just for this project. We will generate and commit
-mvnw, mvnw.cmd, and .mvn/wrapper configuration. After those files exist:
+Do not install global Maven just for this project. The repository already includes
+`mvnw`, `mvnw.cmd`, and the `.mvn/wrapper` configuration, pinned to Maven 3.10.0:
 
 ```powershell
 Set-Location E:\SplitNest
@@ -112,34 +114,44 @@ Set-Location E:\SplitNest
 
 The first invocation downloads the pinned Maven distribution and dependencies.
 Docker must be available for the full verification suite. On Linux/CI the
-equivalent command is ./mvnw verify. The wrapper's executable bit and line endings
-will be configured for that environment.
+equivalent command is `./mvnw verify`. The repository's Git attributes preserve
+Linux wrapper/script line endings and its wrapper is executable in Git.
 
-## 2. Create the empty GitHub repository
+## 2. GitHub repository and authentication
 
-Use [GitHub's new repository page](https://github.com/new).
+The owner has already created
+[Aadyant-7/splitnest](https://github.com/Aadyant-7/splitnest). Do not create another
+empty repository for this checkout. On a new machine, clone the existing one:
+
+```powershell
+git clone https://github.com/Aadyant-7/splitnest.git
+Set-Location splitnest
+git remote -v
+```
+
+The original project configuration recommendations are:
 
 | Setting | Recommendation |
 |---|---|
 | Name | splitnest |
 | Description | Expense-sharing REST API built with Java, Spring Boot, PostgreSQL and Redis, with Docker, Kubernetes, GitOps and observability. |
 | Visibility | Public for portfolio access, if you are comfortable sharing the source |
-| Initialize README | Unchecked; the local README already exists |
-| Add .gitignore | None; we will create the appropriate local file |
+| Initialize README | Existing repository already contains one |
+| Add .gitignore | Existing repository already contains project rules |
 | License | None initially; select a license deliberately later if desired |
 
 Suggested topics: java, spring-boot, postgresql, redis, rest-api, docker,
 kubernetes, github-actions, gitops, argocd, prometheus, grafana.
 
-After creation, provide only the repository URL, such as
-https://github.com/YOUR-USERNAME/splitnest. Authenticate using your normal Git
-Credential Manager browser flow or an existing SSH setup. No token needs to be
-shared in chat or written into a remote URL.
+Authenticate pushes using your normal Git Credential Manager browser flow or an
+existing SSH setup. No token needs to be shared in chat or written into a remote
+URL. Read-only cloning of the public repository needs no publishing credential.
 
-We will initialize local Git, create .gitignore and .gitattributes, attach the
-remote, check the staged diff for secrets, and make meaningful commits. Later,
-we will add CI, branch rules, and a PR template. Set required check names only
-after the workflows exist. The deployment branch decision is documented in
+Git history and the remote are initialized, and the backend milestone is pushed.
+The repository includes `.gitignore`, `.gitattributes`, CI, Dependabot configuration
+and a PR template. Branch protection is a separate GitHub setting; do not assume
+that a workflow file enables it. Set required check names after their first
+successful runs. The deployment branch decision is documented in
 [development-plan.md](development-plan.md).
 
 GHCR image publication uses GitHub Actions' scoped token. Check package public
@@ -147,11 +159,11 @@ visibility after its first publication; repository visibility alone is not
 sufficient. If keeping the package private, create an image pull secret outside
 committed manifests.
 
-## 3. Tools needed later
+## 3. Deployment and performance tools
 
-There is no need to install all of these before backend work begins. We will pin
-compatible versions and provide exact installation commands when reaching the
-corresponding milestone.
+Backend/Compose work needs Java and Docker, while the full deployment lab uses
+the tools below. The deployment guides record pinned versions and commands;
+install only the tools needed for the run you intend to perform.
 
 | Tool | When needed | Verification command |
 |---|---|---|
@@ -168,18 +180,35 @@ available laptop memory, CPU, and disk before running kind plus monitoring; use 
 modest local resource profile and avoid running a duplicate full Compose stack
 at the same time as the cluster unless needed.
 
-## 4. Commands that will be documented after implementation
+## 4. Run and verify the implementation
 
-The verified runbook will include environment-file creation, secret generation,
-Compose startup/shutdown, local IDE startup, tests, Swagger authentication,
-sample-data/API smoke commands, kind setup, manual Kubernetes secret creation,
-Kustomize application, Argo installation/sync, dashboard access, load tests, and
-Git rollback. Exact commands must match actual files and chosen versions.
+From the repository directory:
+
+```powershell
+.\scripts\Initialize-Local.ps1
+.\mvnw.cmd verify
+docker compose up --build -d --wait --wait-timeout 300
+.\scripts\Smoke-Test.ps1
+```
+
+`Initialize-Local.ps1` creates random ignored credentials and preserves an
+existing `.env`. `Smoke-Test.ps1` creates synthetic demonstration users and data;
+it verifies the real API without printing credentials. Open
+[Swagger UI](http://localhost:8080/swagger-ui/index.html) after startup.
+
+For installation, commands and explanations beyond Compose, follow:
+
+- [Docker and host development](docker.md).
+- [Kubernetes, the context-scoped Secret helper and cgroup compatibility](kubernetes.md).
+- [Argo CD and GitOps](gitops.md).
+- [Monitoring, synthetic load-data preparation and controlled experiments](monitoring.md).
+- [Current verification evidence](evidence/verification.md).
 
 All real secrets stay in ignored local environment files, environment variables,
 GitHub secrets where needed, or manually created Kubernetes Secrets. Committed
 examples contain placeholders and require the user to set real values.
 
-Current external handoff: install/select JDK 21, install/start Docker Desktop,
-and create the empty GitHub repository. Share its URL after completing setup;
-no per-feature approvals are required by the execution plan.
+The initial handoff is complete: Java 21 and Docker work, and the GitHub remote
+is https://github.com/Aadyant-7/splitnest.git. The owner explicitly approved the
+local Kubernetes Secret creation from ignored .env values. No per-feature
+approvals are required by the execution plan.

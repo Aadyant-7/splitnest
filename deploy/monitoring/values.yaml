@@ -1,0 +1,78 @@
+# Local demonstration sizing; these limits are not production capacity estimates.
+alertmanager:
+  enabled: false
+defaultRules:
+  create: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+prometheus:
+  prometheusSpec:
+    retention: 1h
+    retentionSize: 512MB
+    scrapeInterval: 15s
+    evaluationInterval: 30s
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: "1"
+        memory: 768Mi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: splitnest-monitoring
+    serviceMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values: [monitoring, splitnest]
+grafana:
+  defaultDashboardsEnabled: false
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+      provider:
+        allowUiUpdates: false
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 96Mi

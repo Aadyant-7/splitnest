@@ -1,9 +1,10 @@
 # SplitNest learning guide
 
-This guide explains the target design. Application code is not implemented yet.
-As milestones land, add links to the actual classes, tests, commands, and measured
-results. Read a milestone's explanation, run its demo, and answer its questions
-before claiming the corresponding skill in an interview.
+This guide explains the implemented backend and its delivery design. Use the
+[file-by-file guide](implementation.md) to connect concepts to actual classes
+and tests, and the [verification record](evidence/verification.md) for results.
+Read the explanation, run its demo, and answer its questions before claiming
+the corresponding skill in an interview.
 
 ## 1. One application with feature boundaries
 

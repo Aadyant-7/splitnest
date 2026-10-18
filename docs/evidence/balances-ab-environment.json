@@ -1,0 +1,55 @@
+{
+  "startedUtc": "2026-10-18T13:15:15.8824770Z",
+  "sourceHeadAtRun": "ed838b9ed0e5e692906ec38e4e11a846fa803069",
+  "dataset": {
+    "splitRows": 3000,
+    "currentMembers": 3,
+    "expenses": 1000,
+    "currency": "INR"
+  },
+  "workload": {
+    "fixedReplicas": 2,
+    "path": "in-cluster Service DNS",
+    "thinkTimeSeconds": 0.05,
+    "vus": 10,
+    "warmupSeconds": 15,
+    "gapSeconds": 5,
+    "measuredDurationSeconds": 60
+  },
+  "docker": {
+    "logicalCpus": 20,
+    "memoryBytes": 8250568704,
+    "architecture": "x86_64"
+  },
+  "node": {
+    "allocatable": {
+      "cpu": "20",
+      "ephemeral-storage": "1081101176832",
+      "hugepages-1Gi": "0",
+      "hugepages-2Mi": "0",
+      "memory": "8057196Ki",
+      "pods": "110"
+    },
+    "kubeletVersion": "v1.37.0",
+    "capacity": {
+      "cpu": "20",
+      "ephemeral-storage": "1081101176832",
+      "hugepages-1Gi": "0",
+      "hugepages-2Mi": "0",
+      "memory": "8057196Ki",
+      "pods": "110"
+    }
+  },
+  "applicationResources": {
+    "limits": {
+      "cpu": "1",
+      "memory": "768Mi"
+    },
+    "requests": {
+      "cpu": "200m",
+      "memory": "256Mi"
+    }
+  },
+  "applicationImage": "ghcr.io/aadyant-7/splitnest:verified-local",
+  "datasetPreparationVerified": true
+}

@@ -27,7 +27,9 @@ repeated permission. Setup and GitHub instructions are collected in
 
 ## 2. Environment and baseline
 
-Observed locally during this review:
+Initial planning observations are retained below as history. They do not describe
+the current installed tools: Java 21, Docker, the wrapper and the local kind
+cluster are now verified. See the [current verification record](evidence/verification.md).
 
 | Item | Observation | Consequence |
 |---|---|---|
@@ -49,23 +51,32 @@ program cannot exist elsewhere. No installers or global settings were changed.
 
 The live [Spring Initializr metadata](https://start.spring.io/metadata/client)
 returned `4.1.1.RELEASE` as its default stable Boot version during this review;
-its Java choices included 21. Use Spring Boot 4.1.1 as the proposed starting
-baseline, not a milestone, release candidate, or snapshot. Confirm artifact
-resolution and a complete application startup when generating the project.
+its Java choices included 21. Spring Boot 4.1.1 is the implemented stable
+baseline. Artifact resolution, tests and application startup have succeeded.
 
 Retain Java 21. The [Boot system requirements](https://docs.spring.io/spring-boot/system-requirements.html)
 support this choice. Prefer Boot's dependency management over manually pinning
 every transitive library.
+
+The initial Trivy image scan found three CRITICAL-rated vulnerabilities in the
+Boot-managed Tomcat 11.0.24. `pom.xml` now deliberately overrides
+`tomcat.version` to 11.0.27, staying on Tomcat 11. All 75 application tests pass
+with the override. The rebuilt local image independently passed Trivy with zero
+CRITICAL findings; remote CI/publication still need their own evidence. Keep the scan
+policy intact. Review the override when a later Boot release manages a patched
+version, then remove it only after verifying the resolved dependency and tests.
+See [Apache's Tomcat 11 security record](https://tomcat.apache.org/security-11.html).
 
 The original JUnit 5 wording needs an update. Use the JUnit Jupiter test support
 managed by Boot 4.1, whose current testing documentation describes JUnit 6.
 This is a version update within the existing test stack, not an additional
 testing framework. See [Boot testing](https://docs.spring.io/spring-boot/reference/testing/index.html).
 
-Use springdoc's Boot 4 generation, with 3.1.1 as the candidate version from its
+The implementation uses springdoc's Boot 4 generation, version 3.1.1, from its
 [current documentation](https://springdoc.org/). Its published matrix explicitly
 lists Boot 4.0 with springdoc 3.0; a Boot 4.1.1 + springdoc 3.1.1 smoke test is
-still required before calling the combination verified.
+now passed: tests exercise the bearer scheme, and the running Compose app returns
+Swagger and its OpenAPI definition successfully.
 
 Use Spring's `ProblemDetail` with the current Problem Details standard,
 [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html), which supersedes the
@@ -74,9 +85,10 @@ plan's RFC 7807 reference. The error-response intent stays the same.
 Resolve and pin remaining container tags, Helm charts, external library
 versions, and CI action revisions when their milestones begin. Record the
 selected versions and verification result; do not silently switch technologies
-to make a build pass. No application dependencies have been added yet.
+to make a build pass. Approved dependencies and container images are now pinned
+in pom.xml, Dockerfile and deployment files.
 
-## 3. Proposed architecture
+## 3. Implemented application architecture
 
 ```mermaid
 flowchart LR
@@ -102,9 +114,10 @@ PostgreSQL owns durable business state. Redis contains replaceable cached
 results and shared rate-limit counters. Background work uses the existing
 database and bounded executor; no message broker is needed for this scope.
 
-The diagram is a target design, not evidence of an implemented deployment.
+The application implements these flows. The diagram alone is not evidence of a
+working deployment or a measured performance result.
 
-## 4. Contracts to settle before feature implementation
+## 4. Implementation contracts and acceptance checks
 
 ### Money and membership
 
@@ -207,18 +220,19 @@ The diagram is a target design, not evidence of an implemented deployment.
 - Expose metrics through an internal management path/port. User and group IDs
   belong in structured logs, never high-cardinality metric labels.
 
-These are implementation decisions to validate, not completed features.
+These contracts guide the implementation and tests. The status table and evidence
+ledger distinguish locally verified behavior from deployment checks still pending.
 
 ## 5. Milestones and acceptance gates
 
 | Milestone | Original task references | Deliverable | Acceptance evidence | Status |
 |---|---|---|---|---|
-| 1. Reproducible foundation | 0.1-0.3, 1.1, 6.1 | Wrapper, Boot project, feature packages, Compose data services, configuration, errors, initial test CI | Java 21 build; PostgreSQL/Redis connectivity; migration startup; Windows verify and Linux CI results | Planned |
-| 2. Complete financial API | 1.2-1.5, 2.1-2.4, 3.1 | Registration/login/refresh/logout, Swagger, membership, expenses, SQL balances, isolation suite | Three-user API demo; uneven splits; rollback; history after removal; 404/403 matrix; refresh replay/concurrency tests | Planned |
-| 3. Reliability and background work | 3.2-3.4, 4.1-4.5, 9.1-9.2 | Limiting/cache, imports/recovery, budgets/alerts, metrics/log context, initial ADRs | Real Redis tests; file fixtures; one claim across workers; recovery of lost events; duplicate-alert prevention; secret-free logs | Planned |
-| 4. Reproducible delivery | 5.1-5.2, 6.2 | Non-root multistage image, full Compose, scan, GHCR image publishing | Clean Compose startup; smoke scenario; measured image size; required test job and critical-vulnerability scan pass | Planned |
-| 5. Kubernetes and GitOps | 7.1-7.6, 8.1-8.4 | kind, handwritten manifests, two replicas, ShedLock, HPA, Argo CD, promotion and rollback | Healthy rollouts; persistence observation; single scheduled execution; commit-to-cluster reconciliation; Git rollback; failure experiments | Planned |
-| 6. Evidence and interview handoff | 9.3-9.4, 10.1-10.3 | Dashboard, controlled k6 runs, complete README/runbooks/ADRs/demo | Actual screenshots and test artifacts; reproducible performance report; clean-checkout walkthrough; explainable decisions and limitations | Planned |
+| 1. Reproducible foundation | 0.1-0.3, 1.1, 6.1 | Wrapper, Boot project, feature packages, Compose data services, configuration, errors, initial test CI | Java 21 build; PostgreSQL/Redis connectivity; migration startup; Windows verify and Linux CI results | Local foundation verified; remote CI pending |
+| 2. Complete financial API | 1.2-1.5, 2.1-2.4, 3.1 | Registration/login/refresh/logout, Swagger, membership, expenses, SQL balances, isolation suite | Three-user API demo; uneven splits; rollback; history after removal; 404/403 matrix; refresh replay/concurrency tests | Verified locally |
+| 3. Reliability and background work | 3.2-3.4, 4.1-4.5, 9.1-9.2 | Limiting/cache, imports/recovery, budgets/alerts, metrics/log context, initial ADRs | Real Redis tests; file fixtures; one claim across workers; recovery of lost events; duplicate-alert prevention; secret-free logs | Verified locally |
+| 4. Reproducible delivery | 5.1-5.2, 6.2 | Non-root multistage image, full Compose, scan, GHCR image publishing | Clean Compose startup; smoke scenario; measured image size; required test job and critical-vulnerability scan pass | Compose and patched local scan verified; remote CI/publication pending |
+| 5. Kubernetes and GitOps | 7.1-7.6, 8.1-8.4 | kind, handwritten manifests, two replicas, ShedLock, HPA, Argo CD, promotion and rollback | Healthy rollouts; persistence observation; single scheduled execution; commit-to-cluster reconciliation; Git rollback; failure experiments | Two app replicas Ready; Argo controller installed; application reconciliation and failure/rollback checks pending |
+| 6. Evidence and interview handoff | 9.3-9.4, 10.1-10.3 | Dashboard, controlled k6 runs, complete README/runbooks/ADRs/demo | Actual screenshots and test artifacts; reproducible performance report; clean-checkout walkthrough; explainable decisions and limitations | Two app scrape targets UP; eight dashboard panels verified through Grafana API; measurements and final evidence in progress |
 
 Every behavior change includes appropriate tests in its milestone. No gate is
 complete merely because the files exist. Docker-dependent tests that cannot run
@@ -239,7 +253,7 @@ conflicting edits. Review and integrate every delegated change before a commit.
 | Delivery validation | Compose configuration, clean startup, smoke script, Kustomize rendering, cluster-side validation and rollout |
 | Controlled performance/failure exercises | Measured cache impact, latency/errors, HPA behavior, pod/data-store failures and Git rollback |
 
-Maven's unit tests and integration tests will both be included in `verify`.
+Maven's unit tests and integration tests are both included in `verify`.
 CI uses Docker-capable Linux runners. A Dockerfile build packages the already
 verified application; it does not pretend to run Testcontainers inside a normal
 Docker build. CI must require the separate verification job before publication.
@@ -272,7 +286,7 @@ SHA, and include source/revision labels. Use read-only permissions by default,
 packages:write only for publishing, and contents:write only for promotion.
 Never expose publishing credentials to untrusted pull-request code.
 
-**Proposed improvement to original Task 8.3:** protect application source on main
+**Implemented design change to original Task 8.3:** protect application source on main
 and have the promotion job update image references on a dedicated `deploy/local`
 branch in the same repository. Argo CD watches that branch's local overlay.
 This preserves automatic deployment without requiring a bot to bypass main's
@@ -318,7 +332,7 @@ Current learning material:
   advanced.
 - [setup.md](setup.md): grouped Windows prerequisites and GitHub setup.
 
-Create these additional artifacts as their subject is implemented:
+Implemented documentation and the remaining operating-guide target:
 
 - docs/architecture.md: actual request, import, deployment, and data flows.
 - docs/decisions/: concise ADRs for monolith, JWT/refresh, Redis limiting,
@@ -373,15 +387,16 @@ Add performance numbers only after repeatable measurements exist.
 
 ## 10. Current verification record
 
-- Completed: read the full original plan, inspected the folder and Git state,
-  checked tool availability, directly verified installed JDK/Git versions,
-  checked live Initializr metadata and primary documentation, and reviewed
-  architecture/delivery risks independently.
-- Created: the revised execution plan, setup guide, learning guide, interview
-  questions, README, and updated working instructions.
-- Documentation checks passed: six Markdown files, eleven resolving local links,
-  balanced code fences, and twenty sequentially numbered interview questions.
-- Not started: application code, Maven build, automated application tests,
-  Docker images, cluster creation, CI runs, Git commits, or remote pushes.
-- External prerequisites: select JDK 21, install/start Docker Desktop, and create
-  the empty GitHub repository. These instructions are collected in setup.md.
+- Complete backend implemented: 75 tests pass, none skipped, against real
+  PostgreSQL and Redis. The API smoke test and healthy Compose startup pass.
+- Core backend commit b044488 is pushed to Aadyant-7/splitnest.
+- The Tomcat 11.0.27 security override passes all 75 tests. The rebuilt local image
+  passes the separate Trivy gate with zero CRITICAL findings. Exact scan/image
+  details belong in the evidence ledger.
+- Local kind node and two app replicas are Ready; server-side manifest dry-run
+  passes. The owner approved creating the local app Secret from ignored `.env`.
+- Argo CD and Prometheus/Grafana are installed. Metrics Server reports resources;
+  eight local GitOps generation/rollback fixture scenarios pass. The Argo
+  Application and remote CI/GHCR reconciliation have not yet been verified.
+- See [evidence/verification.md](evidence/verification.md) for exact completed,
+  pending and externally blocked checks. Do not infer results from file presence.

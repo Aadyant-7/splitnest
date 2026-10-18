@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: splitnest
+  namespace: splitnest
+  labels:
+    release: splitnest-monitoring
+spec:
+  namespaceSelector:
+    matchNames: [splitnest]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: splitnest
+  endpoints:
+    - port: management
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 5s

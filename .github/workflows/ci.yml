@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Never cancel a main build because a later documentation push arrived.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Verify with PostgreSQL and Redis integration tests
+        run: ./mvnw -B -ntp verify
+      - name: Verify synthetic load-data preparation and credential handling
+        shell: pwsh
+        run: ./scripts/Test-PrepareLoadTest.ps1
+      - name: Exercise GitOps generation, stale runs, failures and rollback preservation
+        run: bash scripts/test-promotion.sh
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish-image:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_name: ${{ steps.image.outputs.name }}
+      image_digest: ${{ steps.pushed.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Choose a lowercase GHCR name
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the verified source into a local image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ steps.image.outputs.name }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=SplitNest
+            org.opencontainers.image.description=Expense-sharing REST API
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Verify the configured runtime user
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}:${{ github.sha }}
+        run: test "$(docker image inspect "$IMAGE" --format '{{.Config.User}}')" = '10001:10001'
+      - name: Reject CRITICAL operating-system and Java dependency vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.image.outputs.name }}:${{ github.sha }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: CRITICAL
+          ignore-unfixed: 'false'
+          exit-code: '1'
+          format: table
+          output: trivy-report.txt
+      - name: Upload the vulnerability scan report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: image-vulnerability-report
+          path: trivy-report.txt
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Authenticate to GHCR after verification and scanning
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the exact local image that passed the scan
+        id: pushed
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}:${{ github.sha }}
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+        run: |
+          docker push "$IMAGE"
+          digest=$(docker image inspect "$IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}' |
+            awk -v prefix="$IMAGE_NAME@" 'index($0,prefix)==1 { print substr($0,length(prefix)+1) }')
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+  promote-deployment:
+    needs: [verify, publish-image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install checksum-verified validation CLIs
+        shell: bash
+        run: |
+          echo "KUBECONFIG=$RUNNER_TEMP/promotion-kubeconfig" >> "$GITHUB_ENV"
+          curl --fail --location --silent --show-error \
+            https://github.com/kubernetes-sigs/kind/releases/download/v0.33.0/kind-linux-amd64 \
+            --output "$RUNNER_TEMP/kind"
+          echo "aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d  $RUNNER_TEMP/kind" | sha256sum --check -
+          curl --fail --location --silent --show-error \
+            https://dl.k8s.io/release/v1.36.1/bin/linux/amd64/kubectl \
+            --output "$RUNNER_TEMP/kubectl"
+          echo "629d3f410e09bf49b64ae7079f7f0bda1191efed311f7d37fdbab0ad5b0ec2b7  $RUNNER_TEMP/kubectl" | sha256sum --check -
+          chmod +x "$RUNNER_TEMP/kind" "$RUNNER_TEMP/kubectl"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Start an isolated API server for final client validation
+        run: |
+          kind create cluster --name validate --kubeconfig "$KUBECONFIG" --wait 90s \
+            --image kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+      - name: Generate, validate and fast-forward the deployment branch
+        env:
+          IMAGE_NAME: ${{ needs.publish-image.outputs.image_name }}
+          IMAGE_DIGEST: ${{ needs.publish-image.outputs.image_digest }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          bash scripts/promote-deployment.sh --source-sha "$GITHUB_SHA" \
+            --image-name "$IMAGE_NAME" --image-digest "$IMAGE_DIGEST"
+      - name: Remove only the temporary validation cluster
+        if: always()
+        run: |
+          if [[ -x "$RUNNER_TEMP/kind" ]]; then
+            "$RUNNER_TEMP/kind" delete cluster --name validate --kubeconfig "$KUBECONFIG"
+          fi

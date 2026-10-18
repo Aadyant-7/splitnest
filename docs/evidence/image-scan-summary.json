@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-18",
+  "imageId": "sha256:34f20e4740acf16fda0589e7df334b46b878774899589f14ee26448dce546905",
+  "sizeBytes": 473933312,
+  "runtimeUser": "10001:10001",
+  "scanner": "Trivy 0.70.0",
+  "scope": "OS and Java dependencies",
+  "gate": "CRITICAL",
+  "criticalCount": 0,
+  "tomcat": "11.0.27",
+  "javaTests": 75,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

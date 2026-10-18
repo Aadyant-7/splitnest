@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: splitnest-balances-load
+  namespace: splitnest
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 360
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 12345
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: k6
+          image: ghcr.io/grafana/k6:2.3.0
+          args: [run, /scripts/balances.js]
+          env:
+            - name: BASE_URL
+              value: http://splitnest.splitnest.svc.cluster.local:8080
+            - name: VUS
+              value: "10"
+            - name: DURATION
+              value: 60s
+            - name: RUN_LABEL
+              value: local-baseline
+            - name: CACHE_MODE
+              value: enabled
+          envFrom:
+            - secretRef:
+                name: splitnest-loadtest-credentials
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: scripts
+          configMap:
+            name: splitnest-loadtest
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,12 @@
+# An allowlist keeps local secrets, Git history, test data and previous build outputs out of the context.
+**
+!Dockerfile
+!.dockerignore
+!pom.xml
+!mvnw
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.properties
+!src/
+!src/main/
+!src/main/**

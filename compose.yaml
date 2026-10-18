@@ -1,0 +1,63 @@
+name: splitnest
+
+services:
+  app:
+    image: splitnest:local
+    build:
+      context: .
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/splitnest
+      DB_USER: splitnest
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set a Base64-encoded random JWT_SECRET in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+      - "127.0.0.1:${MANAGEMENT_PORT:-9090}:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=67108864
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: 1g
+    stop_grace_period: 35s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    environment:
+      POSTGRES_DB: splitnest
+      POSTGRES_USER: splitnest
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      # PostgreSQL 18 keeps versioned data directories under /var/lib/postgresql.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U splitnest -d splitnest"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine@sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
