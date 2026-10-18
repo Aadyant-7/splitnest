@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Boot 4.1.1 manages vulnerable 11.0.24; stay on Tomcat 11 with Apache's patched release. -->
+		<tomcat.version>11.0.27</tomcat.version>
 		<commons-csv.version>1.14.1</commons-csv.version>
 		<poi.version>5.5.1</poi.version>
 		<shedlock.version>7.10.1</shedlock.version>
