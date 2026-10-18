@@ -113,7 +113,7 @@ Always restore configuration, including after a failed run:
 ```powershell
 kubectl --context kind-splitnest -n splitnest set env deployment/splitnest SPLITNEST_CACHE_ENABLED-
 kubectl --context kind-splitnest -n splitnest rollout status deployment/splitnest --timeout=180s
-kubectl --context kind-splitnest apply -f deploy/base/hpa.yaml
+kubectl --context kind-splitnest -n splitnest apply -f deploy/base/hpa.yaml
 kubectl --context kind-splitnest -n splitnest get hpa splitnest
 ```
 
@@ -121,22 +121,116 @@ Restore GitOps synchronization if it was suspended. Keep or remove the synthetic
 credential Secret deliberately after the experiment; never copy its contents
 into the evidence report.
 
-## Results and limits
+## Observed local results — 2026-10-18
 
-Numeric results belong in `docs/evidence/` only after completed runs. This guide
-does not assert a latency improvement, request rate, HPA scaling event or passed
-threshold before measurements exist. An inexpensive SQL aggregate or local Redis
-overhead can make a small test show little benefit; report that result directly.
+The completed comparison used the conditions above, on Docker Desktop with 20
+logical CPUs and 8,250,568,704 bytes of available VM memory (about 7.68 GiB).
+Each application Pod requested 200m CPU/256 MiB and was limited to 1 CPU/768 MiB.
+PostgreSQL, Redis, Prometheus, Grafana and the load generator shared this kind
+node. Grafana's 768 MiB limit was configured and its Pod was stable before either
+measured run; browser work and builds were paused during both measurements.
+
+| Measured metric | Cache enabled | Cache disabled |
+|---|---:|---:|
+| Requests in measured scenario | 11,035 | 10,593 |
+| Measured requests/second | 183.92 | 176.55 |
+| Errors | 0 | 0 |
+| Mean latency | 3.596 ms | 5.847 ms |
+| Median latency | 2.879 ms | 5.718 ms |
+| p95 latency | 7.262 ms | 9.938 ms |
+| p99 latency | 8.885 ms | 13.296 ms |
+
+In this single ordered pair, cached p95 was about 26.9% lower. This is a local
+observation, not a repeatability or production-capacity claim. Both modes passed
+the configured error-rate and p95 targets. The fixed 10-VU workload included a
+50 ms think time and did not attempt to find maximum sustainable throughput.
+
+Direct per-Pod management counters confirmed Service traffic reached both
+replicas: 7,504/6,014 balance requests with caching and 7,286/5,645 without it.
+Those counter deltas include setup and warm-up, unlike the measured-only request
+counts in the table. Persistent HTTP connections can produce an uneven split;
+these observations establish that both Pods handled traffic, not equal routing
+on every request.
+
+Both runs used `ghcr.io/aadyant-7/splitnest:verified-local` and the same observed
+container-runtime image digest:
+`sha256:05c75006d736c2ce5f17e6b42bfe959d82ae270f76287549a62c0cd9f8b0b6ae`.
+The source checkout was at `5c302fb7a7f5971eff176a8daed88a6f0abb45eb`
+when the environment record was taken. This was the locally verified image,
+including Tomcat 11.0.27; the experiment is not evidence of a GHCR pull or GitOps
+rollout. The full runtime image identifiers and numeric summaries are retained:
+
+- [Environment and resource limits](evidence/balances-ab-environment.json)
+- [Cache-enabled run](evidence/balances-cache-enabled.json)
+- [Cache-disabled run](evidence/balances-cache-disabled.json)
+- [Separate HPA observation](evidence/balances-hpa-observation.json)
+
+After the comparison, the cache override was removed and the HPA was restored in
+the `splitnest` namespace. A pre-measurement instrumentation attempt encountered
+a terminating old Pod and produced no k6 run; filtering to ready, nonterminating
+Pods corrected it. Those aborted setup steps are excluded from the results.
+
+## Observed autoscaling — separate 50-VU experiment
+
+The autoscaling Job completed successfully with the same three-user,
+1,000-expense fixture and caching enabled. It used 50 constant VUs, the same
+15-second warm-up and five-second gap, then 120 measured seconds. The original
+HPA was active with a two-Pod minimum, five-Pod maximum and CPU target of 70%
+of each Pod's 200m CPU request. This is a different workload from the fixed
+10-VU comparison; its latency is not another cache A/B result.
+
+| Measured metric | Autoscaling run |
+|---|---:|
+| Requests in measured scenario | 91,050 |
+| Measured requests/second | 758.75 |
+| Errors | 0 |
+| Median latency | 2.150 ms |
+| Mean latency | 15.236 ms |
+| p95 latency | 55.069 ms |
+| p99 latency | 147.718 ms |
+| Maximum desired replicas observed | 5 |
+| Maximum ready replicas observed | 5 |
+
+The recorded samples establish an actual transition from two ready replicas to
+five. At the first sample, current/desired/ready replicas were all two and CPU
+was 4% of the request. Desired replicas first reached five at 31.4 seconds;
+current replicas first reached five at 47.2 seconds; all five were first
+observed ready at 57.7 seconds. These elapsed times start at Job creation and
+include load-generator startup/warm-up. They are sampled observations, not an
+isolated measurement of the controller's reaction time.
+
+The highest reported CPU utilization was 454%. Its denominator is the requested
+200m, so 454% corresponds to 908m CPU, or about 0.908 of one core; it does not
+mean a Pod used 454% of the whole machine. The configured per-Pod CPU limit was
+one core. The HPA reached its five-replica ceiling, and the last recorded CPU
+reading was still 156% against the 70% target. Reaching the configured maximum
+therefore does not establish that the workload met the desired CPU target or
+that five replicas are sufficient for every load.
+
+The numeric report's `jobSucceeded` field is true and both configured k6
+thresholds passed. The observation ends with five ready replicas; it does not
+capture post-load scale-down timing. Default cache behavior and the original
+HPA remained enabled after the Job. Subsequent operational checks restored the
+two-replica baseline separately; that later state is not evidence of a timed
+automatic scale-down in this sample log. The [HPA manifest](../deploy/base/hpa.yaml)
+uses a 180-second scale-down stabilization window.
+
+## Limits of the experiment
+
+Repeat alternating enabled/disabled pairs before making a broader performance
+claim. An inexpensive SQL aggregate or local Redis overhead can make a smaller
+test show little benefit. Resource snapshots in the reports are observations,
+not proof that caching reduced CPU or database load by a particular percentage.
 
 The load script's p95-under-one-second threshold is a local demonstration target,
 not a production SLA. This single-node kind environment includes the application,
 PostgreSQL, Redis and the load generator on the same laptop; its results do not
 establish production capacity or high availability.
 
-After the fixed-replica A/B comparison, restore the HPA and test autoscaling
-separately with documented load. Observe desired/current replicas and per-Pod CPU.
-A cached balances workload may not exceed the CPU target. Record the actual
-behavior rather than claiming that scaling from two to five is guaranteed.
+For a repeat experiment, observe desired/current replicas and per-Pod CPU rather
+than assuming this transition will recur on another machine. A cached balances
+workload may not exceed the CPU target with a different dataset, request rate,
+resource request or hardware configuration.
 
 ## Questions to check understanding
 

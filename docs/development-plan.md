@@ -2,6 +2,7 @@
 
 Reviewed: 18 October 2026. This is the current execution plan. The original
 feature specification and numbered learning tasks remain in `agents.md`.
+Verification status updated: 19 October 2026 (India).
 
 ## 1. Review outcome
 
@@ -62,8 +63,9 @@ The initial Trivy image scan found three CRITICAL-rated vulnerabilities in the
 Boot-managed Tomcat 11.0.24. `pom.xml` now deliberately overrides
 `tomcat.version` to 11.0.27, staying on Tomcat 11. All 75 application tests pass
 with the override. The rebuilt local image independently passed Trivy with zero
-CRITICAL findings; remote CI/publication still need their own evidence. Keep the scan
-policy intact. Review the override when a later Boot release manages a patched
+CRITICAL findings. The full GitHub Actions run for `9d095d4` also passed its
+independent scan, publication and promotion gates; the published digest was
+retrieved anonymously. Keep the scan policy intact. Review the override when a later Boot release manages a patched
 version, then remove it only after verifying the resolved dependency and tests.
 See [Apache's Tomcat 11 security record](https://tomcat.apache.org/security-11.html).
 
@@ -227,12 +229,20 @@ ledger distinguish locally verified behavior from deployment checks still pendin
 
 | Milestone | Original task references | Deliverable | Acceptance evidence | Status |
 |---|---|---|---|---|
-| 1. Reproducible foundation | 0.1-0.3, 1.1, 6.1 | Wrapper, Boot project, feature packages, Compose data services, configuration, errors, initial test CI | Java 21 build; PostgreSQL/Redis connectivity; migration startup; Windows verify and Linux CI results | Local foundation verified; remote CI pending |
-| 2. Complete financial API | 1.2-1.5, 2.1-2.4, 3.1 | Registration/login/refresh/logout, Swagger, membership, expenses, SQL balances, isolation suite | Three-user API demo; uneven splits; rollback; history after removal; 404/403 matrix; refresh replay/concurrency tests | Verified locally |
-| 3. Reliability and background work | 3.2-3.4, 4.1-4.5, 9.1-9.2 | Limiting/cache, imports/recovery, budgets/alerts, metrics/log context, initial ADRs | Real Redis tests; file fixtures; one claim across workers; recovery of lost events; duplicate-alert prevention; secret-free logs | Verified locally |
-| 4. Reproducible delivery | 5.1-5.2, 6.2 | Non-root multistage image, full Compose, scan, GHCR image publishing | Clean Compose startup; smoke scenario; measured image size; required test job and critical-vulnerability scan pass | Compose and patched local scan verified; remote CI/publication pending |
-| 5. Kubernetes and GitOps | 7.1-7.6, 8.1-8.4 | kind, handwritten manifests, two replicas, ShedLock, HPA, Argo CD, promotion and rollback | Healthy rollouts; persistence observation; single scheduled execution; commit-to-cluster reconciliation; Git rollback; failure experiments | Two app replicas Ready; Argo controller installed; application reconciliation and failure/rollback checks pending |
-| 6. Evidence and interview handoff | 9.3-9.4, 10.1-10.3 | Dashboard, controlled k6 runs, complete README/runbooks/ADRs/demo | Actual screenshots and test artifacts; reproducible performance report; clean-checkout walkthrough; explainable decisions and limitations | Two app scrape targets UP; eight dashboard panels verified through Grafana API; measurements and final evidence in progress |
+| 1. Reproducible foundation | 0.1-0.3, 1.1, 6.1 | Wrapper, Boot project, feature packages, Compose data services, configuration, errors, initial test CI | Java 21 build; PostgreSQL/Redis connectivity; migration startup; Windows verify and Linux CI results | Verified locally and in a fresh Linux GitHub Actions checkout |
+| 2. Complete financial API | 1.2-1.5, 2.1-2.4, 3.1 | Registration/login/refresh/logout, Swagger, membership, expenses, SQL balances, isolation suite | Three-user API demo; uneven splits; rollback; history after removal; 404/403 matrix; refresh replay/concurrency tests | All 75 Java tests pass locally and in CI; Compose and Kubernetes API smoke tests pass |
+| 3. Reliability and background work | 3.2-3.4, 4.1-4.5, 9.1-9.2 | Limiting/cache, imports/recovery, budgets/alerts, metrics/log context, initial ADRs | Real Redis tests; file fixtures; one claim across workers; recovery of lost events; duplicate-alert prevention; secret-free logs | Automated tests pass locally and in CI; live imports and one persisted budget alert with two replicas and a ShedLock row verified |
+| 4. Reproducible delivery | 5.1-5.2, 6.2 | Non-root multistage image, full Compose, scan, GHCR image publishing | Healthy Compose startup; smoke scenario; measured image size; required test job and critical-vulnerability scan pass | Verified: Compose, local and remote scans, GHCR publication and anonymous digest retrieval |
+| 5. Kubernetes and GitOps | 7.1-7.6, 8.1-8.4 | kind, handwritten manifests, two replicas, ShedLock, HPA, Argo CD, promotion and rollback | Healthy rollouts; retained expenses after database replacement; persisted-alert uniqueness and observed lock; commit-to-cluster reconciliation; Git rollback; failure experiments | Pod/PostgreSQL recovery, scheduler evidence and HPA 2-to-5 verified; Argo Synced/Healthy on published digest with two ready replicas and passing smoke; live Git rollback pending |
+| 6. Evidence and interview handoff | 9.3-9.4, 10.1-10.3 | Dashboard, controlled k6 runs, complete README/runbooks/ADRs/demo | Actual screenshots and test artifacts; controlled performance report; fresh-checkout CI and final walkthrough; explainable decisions and limitations | Dashboard/metrics, cache/HPA reports and registry-to-cluster rollout verified; final evidence/walkthrough awaits live Git rollback |
+
+The successful Linux CI run is evidence of a fresh-checkout build, tests, image
+scan and generated-manifest validation. It does not replace a separately observed
+clean-machine Windows installation or complete local deployment walkthrough.
+The live failure evidence currently covers app-Pod and PostgreSQL replacement;
+broken-image and failed-readiness experiments are not claimed as completed in
+the evidence ledger. A persisted alert and lock row do not measure how many
+scheduler method invocations occurred.
 
 Every behavior change includes appropriate tests in its milestone. No gate is
 complete merely because the files exist. Docker-dependent tests that cannot run
@@ -277,8 +287,12 @@ secrets. Repository-local Git identity must reflect the owner or an explicitly
 configured identity; do not fabricate one.
 
 Keep required verification workflows running for code and manifest changes.
-Use job conditions to avoid unnecessary image builds for documentation/deployment
-changes. Do not ignore all deploy/** changes at workflow level: skipped required
+The implemented workflow builds and scans every main push, using Docker layer
+caches, and does not cancel an active main run for a newer documentation push.
+This avoids stranding an application change behind a later image-skipping run.
+The promotion script separately compares build fingerprints so documentation or
+manifest-only updates preserve the selected image, including an intentional
+rollback. Do not ignore all deploy/** changes at workflow level: skipped required
 checks can remain pending. See [GitHub workflow triggering](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
 
 Publish only tested and scanned images from main, tagged with the source commit
@@ -302,6 +316,14 @@ alone do not validate that final combination. Test manifest-only updates, stale
 runs, and rollback explicitly. Bootstrap this branch only when the Kubernetes
 milestone is ready; it is not another application.
 
+This branch has now been generated by the successful CI run: manifest sync
+`66feb28`, followed by image promotion `fa03f6d`. The real isolated kind validation
+job passed in addition to the eight local Git/mock-kubectl fixture scenarios.
+Argo CD's Application is now Synced and Healthy at `fa03f6d`, with two ready
+replicas using the exact published digest. The registry-image API smoke test and
+readiness check pass; see [first rollout evidence](evidence/argocd-first-rollout.json).
+The live rollback demonstration is still pending.
+
 This replaces the original direct-to-main tag commit for a concrete reason:
 strict protected-main rules and unrestricted bot pushes conflict. It adds no
 service or dependency. A deployment-tag Git revert on deploy/local will be the
@@ -309,9 +331,10 @@ rollback demonstration; a bad source change must also be reverted on main.
 GitHub documents the ordinary GITHUB_TOKEN push recursion behavior in its
 [workflow-trigger guidance](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
 
-After the first image publish, explicitly confirm GHCR package visibility; a
-public repository does not establish that the package is publicly pullable.
-Otherwise configure an image pull secret. No registry token goes into Git.
+GHCR visibility was explicitly checked: anonymous manifest retrieval returned
+HTTP 200 for the exact published digest. A public repository alone would not
+establish this. If package visibility changes, configure an image pull secret;
+no registry token goes into Git.
 
 Argo CD must ignore /spec/replicas for the HPA-managed Deployment and respect that
 ignore rule during sync. Keep storage pruning/deletion effects explicit. Git
@@ -332,7 +355,7 @@ Current learning material:
   advanced.
 - [setup.md](setup.md): grouped Windows prerequisites and GitHub setup.
 
-Implemented documentation and the remaining operating-guide target:
+Implemented documentation:
 
 - docs/architecture.md: actual request, import, deployment, and data flows.
 - docs/decisions/: concise ADRs for monolith, JWT/refresh, Redis limiting,
@@ -351,15 +374,21 @@ development while the owner studies at a separate pace.
 
 ## 9. Demonstration and completion criteria
 
-The final demonstration will register three users, create a group, add members,
-log in through Swagger, add a 100.00 expense, show exact 33.34/33.33/33.33 shares,
-and show balances that sum to zero. It will reject cross-group access, retain
-history after removal, reject reused refresh tokens, process a statement with
-invalid rows, and demonstrate budget/limiter behavior.
+The API smoke scenario has passed against Compose and Kubernetes: synthetic
+users, a three-member group, exact 33.34/33.33/33.33 shares, zero-sum balances,
+outsider 404, refresh-token replay 401, and one valid/one invalid import row.
+Automated tests additionally cover retained history, authorization, transaction
+rollback and limiter behavior. The Swagger-based interview walkthrough remains
+documented in `docs/demo.md`.
 
-Delivery evidence will include a clean-checkout run, real CI results and image
-scan, two local app replicas, recovery after pod deletion, one scheduled budget
-execution, Git-driven rollout and rollback, and a Grafana dashboard.
+Delivery evidence includes fresh-checkout CI, the image scan and anonymous GHCR
+manifest, two local app replicas, app/PostgreSQL replacement preserving all 1,000
+fixture expenses, one persisted budget alert with a lock record under two
+replicas, and the provisioned dashboard. Cached/uncached runs and a separate
+observed HPA transition from two to five ready replicas are complete. The budget
+check is not a count of scheduler method executions. Argo is Synced and Healthy
+on the published digest with a passing API smoke/readiness check; Git-driven
+rollback remains the live acceptance check.
 
 Use port-forward for Swagger. Run replica/load demonstrations through the actual
 Kubernetes Service, preferably with a k6 Job inside the cluster. Port-forwarding
@@ -387,16 +416,33 @@ Add performance numbers only after repeatable measurements exist.
 
 ## 10. Current verification record
 
-- Complete backend implemented: 75 tests pass, none skipped, against real
-  PostgreSQL and Redis. The API smoke test and healthy Compose startup pass.
-- Core backend commit b044488 is pushed to Aadyant-7/splitnest.
-- The Tomcat 11.0.27 security override passes all 75 tests. The rebuilt local image
-  passes the separate Trivy gate with zero CRITICAL findings. Exact scan/image
-  details belong in the evidence ledger.
-- Local kind node and two app replicas are Ready; server-side manifest dry-run
-  passes. The owner approved creating the local app Secret from ignored `.env`.
-- Argo CD and Prometheus/Grafana are installed. Metrics Server reports resources;
-  eight local GitOps generation/rollback fixture scenarios pass. The Argo
-  Application and remote CI/GHCR reconciliation have not yet been verified.
+- Complete backend implemented: 75 tests pass with no failures, errors or skips
+  against actual PostgreSQL and Redis locally and in GitHub Actions. Compose
+  startup and API smoke tests against both Compose and Kubernetes pass.
+- [GitHub Actions run 39131104288](https://github.com/Aadyant-7/splitnest/actions/runs/39131104288)
+  succeeded for `9d095d4984170d9df891e59164794c88eb2c8b65`: 75 Java tests,
+  six load-data scenarios, six manifest-context scenarios and eight GitOps
+  fixtures, plus runtime UID, scan, publication and isolated kind promotion gates.
+- Tomcat 11.0.27 passes the full suite. Local and remote Trivy CRITICAL gates
+  pass without suppressing the initial findings. Published image digest:
+  `sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1`;
+  anonymous manifest retrieval returned HTTP 200 for that digest.
+- The generated deployment branch contains manifest sync `66feb28` and image
+  promotion `fa03f6d`. Argo CD's Application is Synced and Healthy at that revision,
+  with two ready registry-image replicas on the exact published digest; API smoke
+  and readiness checks pass. The live Git rollback is pending. See
+  [argocd-first-rollout.json](evidence/argocd-first-rollout.json).
+- Local kind manifests pass actual API validation. App-Pod and PostgreSQL
+  replacement recover successfully, with all 1,000 fixture expenses preserved.
+  The local app Secret came from ignored `.env` with the owner's explicit approval.
+- Budget checks with two ready replicas produced one persisted alert and a
+  PostgreSQL ShedLock row. No scheduler-invocation count is asserted; the normal
+  daily schedule was restored.
+- Metrics Server, Prometheus and Grafana are verified, including two UP app
+  targets and the eight-panel provisioned dashboard. Controlled two-replica
+  cache runs completed without errors; a separate 50-VU run recorded two to five
+  ready replicas, 91,050 measured requests, zero errors and p95 55.069 ms. See
+  [performance.md](performance.md) for the conditions and limits, including the
+  single-pair cache comparison and unmeasured post-load scale-down timing.
 - See [evidence/verification.md](evidence/verification.md) for exact completed,
   pending and externally blocked checks. Do not infer results from file presence.

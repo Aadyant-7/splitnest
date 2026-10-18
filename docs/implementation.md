@@ -113,6 +113,7 @@ actual execution results are recorded separately by the verification ledger.
 | [.gitignore](../.gitignore), [.gitattributes](../.gitattributes), [.dockerignore](../.dockerignore), [.env.example](../.env.example) | Exclude secrets/build output, preserve executable text line endings and document required local settings. The ignored `.env` contains local values and is not a deliverable. |
 | [compose.yaml](../compose.yaml), [Dockerfile](../Dockerfile) | Health-gated data dependencies, durable PostgreSQL volume and a non-root multi-stage Java image. Read [docker.md](docker.md) for line-level explanation. |
 | [Initialize-Local.ps1](../scripts/Initialize-Local.ps1), [Start-Local.ps1](../scripts/Start-Local.ps1), [Validate-Manifests.ps1](../scripts/Validate-Manifests.ps1), [Smoke-Test.ps1](../scripts/Smoke-Test.ps1) | Generate ignored random secrets, run the local app, render/check Kubernetes sources and demonstrate real HTTP financial/auth/import invariants without printing credentials. |
+| [Test-ValidateManifests.ps1](../scripts/Test-ValidateManifests.ps1) | Mock-based PowerShell checks prove render-only mode avoids cluster calls, server validation explicitly selects its default/override context, and validation/JSON failures stop the script. Server mode defaults to `kind-splitnest`; it uses a dry run. |
 | [Create-LocalClusterSecret.ps1](../scripts/Create-LocalClusterSecret.ps1) | Creates only the two required Secret keys from ignored `.env`, explicitly targets `kind-splitnest`, and preserves an existing Secret. It streams the object to kubectl without a secret manifest file or printed values. |
 | [Prepare-LoadTest.ps1](../scripts/Prepare-LoadTest.ps1), [Test-PrepareLoadTest.ps1](../scripts/Test-PrepareLoadTest.ps1) | Creates three synthetic users, one group and a bounded expense dataset, then stores only the needed credentials in ignored `.work/loadtest.env`. The fixture suite checks setup behavior and sensitive-error handling without a real API. |
 | [promote-deployment.sh](../scripts/promote-deployment.sh), [test-promotion.sh](../scripts/test-promotion.sh) | Generate deployment-branch state with immutable image provenance and stale-run checks; local temporary-Git tests exercise the promotion protocol without claiming a remote rollout. |
@@ -126,6 +127,11 @@ actual execution results are recorded separately by the verification ledger.
 | [balances.js](../loadtest/balances.js), [job.yaml](../loadtest/job.yaml), [loadtest/kustomization.yaml](../loadtest/kustomization.yaml) | k6 workload and in-cluster Job sources; measurement procedure is in [monitoring.md](monitoring.md). |
 
 ## Reading and interview practice
+
+The practical [operations runbook](operations.md) ties startup, health checks,
+secrets, Flyway, job recovery and binary-safe backup procedures together. Backup
+and restore commands are documented procedures; their execution is not implied
+by this file inventory.
 
 Read [demo.md](demo.md) while calling the API. Then explain one expense's journey
 using [architecture.md](architecture.md) without reading the source. Consult the

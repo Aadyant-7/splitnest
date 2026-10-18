@@ -69,8 +69,8 @@ From the repository root:
 ```powershell
 kind create cluster --config deploy/kind/kind-config.yaml --wait 120s
 kubectl config current-context
-kubectl get nodes
-kubectl create namespace splitnest
+kubectl --context kind-splitnest get nodes
+kubectl --context kind-splitnest create namespace splitnest
 ./scripts/Initialize-Local.ps1
 ./scripts/Create-LocalClusterSecret.ps1
 ```
@@ -94,32 +94,39 @@ into kind before applying the overlay:
 docker build -t ghcr.io/aadyant-7/splitnest:bootstrap .
 kind load docker-image ghcr.io/aadyant-7/splitnest:bootstrap --name splitnest
 ./scripts/Validate-Manifests.ps1
-kubectl apply -k deploy/overlays/local
-kubectl -n splitnest rollout status statefulset/postgres --timeout=180s
-kubectl -n splitnest rollout status deployment/redis --timeout=120s
-kubectl -n splitnest rollout status deployment/splitnest --timeout=240s
-kubectl -n splitnest get pods,svc,pvc,hpa
-kubectl -n splitnest port-forward service/splitnest 8080:8080
+kubectl --context kind-splitnest apply -k deploy/overlays/local
+kubectl --context kind-splitnest -n splitnest rollout status statefulset/postgres --timeout=180s
+kubectl --context kind-splitnest -n splitnest rollout status deployment/redis --timeout=120s
+kubectl --context kind-splitnest -n splitnest rollout status deployment/splitnest --timeout=240s
+kubectl --context kind-splitnest -n splitnest get pods,svc,pvc,hpa
+kubectl --context kind-splitnest -n splitnest port-forward service/splitnest 8080:8080
 ```
 
 Open [Swagger UI](http://localhost:8080/swagger-ui/index.html). Initial Pods may
 restart while PostgreSQL initializes; startup probes provide a warm-up allowance.
-For troubleshooting use `kubectl -n splitnest describe pod <name>` and
-`kubectl -n splitnest logs deployment/splitnest --tail=100`.
+For troubleshooting use `kubectl --context kind-splitnest -n splitnest describe pod <name>` and
+`kubectl --context kind-splitnest -n splitnest logs deployment/splitnest --tail=100`.
 
 `kubectl kustomize` combines reusable `deploy/base` manifests with the local
 overlay. The generated deployment branch later replaces the placeholder with a
 verified image digest. An image tag identifies a build for humans; the digest
 identifies the exact immutable image content.
 
+`Validate-Manifests.ps1` renders locally unless `-Server` is supplied. Server
+validation defaults explicitly to `kind-splitnest`, regardless of the terminal's
+current context. Use `./scripts/Validate-Manifests.ps1 -Server -Context <name>`
+to select another cluster deliberately; rendering itself contacts no cluster.
+Run `./scripts/Test-ValidateManifests.ps1` to check context selection and failure
+handling with mocks, without contacting a Kubernetes API.
+
 ## Metrics Server and autoscaling
 
 ```powershell
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
-kubectl -n kube-system patch deployment metrics-server --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
-kubectl -n kube-system rollout status deployment/metrics-server --timeout=120s
-kubectl top pods -n splitnest
-kubectl -n splitnest get hpa -w
+kubectl --context kind-splitnest apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+kubectl --context kind-splitnest -n kube-system patch deployment metrics-server --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+kubectl --context kind-splitnest -n kube-system rollout status deployment/metrics-server --timeout=120s
+kubectl --context kind-splitnest top pods -n splitnest
+kubectl --context kind-splitnest -n splitnest get hpa -w
 ```
 
 [Metrics Server 0.9.x supports Kubernetes 1.34+](https://github.com/kubernetes-sigs/metrics-server#compatibility-matrix).
@@ -141,8 +148,8 @@ otherwise it will intentionally undo live edits.
 
 | Experiment | Command / change | Expected observation and lesson |
 |---|---|---|
-| Delete one app Pod | `kubectl -n splitnest delete pod <app-pod>` | Deployment creates a replacement. Another ready replica can keep serving; a client request already in flight can still fail. Pods are replaceable. |
-| Restart PostgreSQL Pod | `kubectl -n splitnest delete pod postgres-0` | The replacement reuses its PVC. Readiness can become false during the interruption; app liveness stays healthy. Verify previously created data after recovery. |
+| Delete one app Pod | `kubectl --context kind-splitnest -n splitnest delete pod <app-pod>` | Deployment creates a replacement. Another ready replica can keep serving; a client request already in flight can still fail. Pods are replaceable. |
+| Restart PostgreSQL Pod | `kubectl --context kind-splitnest -n splitnest delete pod postgres-0` | The replacement reuses its PVC. Readiness can become false during the interruption; app liveness stays healthy. Verify previously created data after recovery. |
 | Make PostgreSQL unavailable longer | Temporarily scale `statefulset/postgres` to zero, then restore one replica | App readiness fails and DB-backed requests fail. This shows the single database is a deliberate availability limit. |
 | Deploy a nonexistent image | Change the overlay image to a deliberately missing tag in an isolated experiment, then restore it | New Pods show `ImagePullBackOff`. With `maxUnavailable: 0`, old ready replicas remain while the rollout stalls. |
 | Break readiness only | Temporarily change the app readiness path to `/actuator/health/does-not-exist` | Pods run but are removed from Service endpoints. Liveness remains separate. Revert the change and watch readiness recover. |

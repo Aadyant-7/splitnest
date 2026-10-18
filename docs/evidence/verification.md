@@ -1,6 +1,7 @@
 # Verification record
 
-Date: 18 October 2026. Record observed results, not inferred completion.
+Initial verification: 18 October 2026; runtime follow-up: 19 October 2026 (India).
+Record observed results, not inferred completion.
 
 ## Backend
 
@@ -23,6 +24,9 @@ Date: 18 October 2026. Record observed results, not inferred completion.
 - `docker compose config --quiet`: PASS.
 - Image build: PASS; configured runtime user `10001:10001`.
 - Patched local image: **473,933,312 bytes**, approximately 451.98 MiB.
+- The later repository-label build measures **473,933,679 bytes** and retains
+  runtime user `10001:10001`; source-label inspection passed. Its remote scan
+  is a separate CI gate.
 - Full Compose startup with health checks: PASS.
 - Swagger HTTP 200, OpenAPI 17 paths, readiness UP, Prometheus HTTP 200.
 - Initial Trivy scan rejected Tomcat 11.0.24 with three CRITICAL-rated findings:
@@ -54,18 +58,43 @@ is a separate check below.
 - App/datastore rollout: PASS. Two patched app replicas, PostgreSQL and Redis Ready;
   image loaded locally for bootstrap before the first registry publication.
 - metrics-server installed and reporting node CPU/memory.
-- Argo CD 3.5.5 installed; all seven pods Ready. Application reconciliation still
-  awaits the first generated deployment branch.
+- Argo CD 3.5.5 installed; all seven pods Ready. The Application reached both
+  Synced and Healthy on the real generated deployment branch, using the exact
+  published digest. See [first rollout](argocd-first-rollout.json).
 - kube-prometheus-stack 92.10.1 installed with Helm 4.3.1: deployed.
 - Grafana, Prometheus and supporting monitoring pods are running.
 - App ServiceMonitor and eight-panel dashboard ConfigMap applied. Grafana's API
   confirms the provisioned dashboard; Prometheus reports both app targets UP.
-  Controlled performance measurements are running separately.
+  See [performance results](../performance.md) for completed cache and HPA tests.
+  Grafana's original 384 MiB limit caused restarts on dashboard load; the recorded
+  768 MiB limit has remained stable. The error-rate query returns zero when API
+  counters exist without 5xx events, and no data when request metrics are absent;
+  both conditions were checked against Prometheus.
 
-## External delivery still to verify
+- [Pod recovery](pod-recovery.json): app replacement and PostgreSQL replacement
+  passed; all 1,000 expenses survived the latter. This does not prove backups.
+- [Budget scheduler](budget-scheduler.json): two ready replicas, repeated checks,
+  one persisted alert and a PostgreSQL ShedLock row. This counts persisted alerts,
+  not scheduler method invocations. The daily schedule was restored afterward.
+- Kubernetes API smoke test: PASS, including one valid/one invalid import row,
+  exact splits, net zero, outsider 404 and refresh replay 401.
 
-- GitHub Actions run and CRITICAL scan result.
-- GHCR publication, package pull visibility and exact published digest.
-- Generated deployment branch and Argo synchronization of the published image.
-- Actual Git rollback, pod-failure recovery, controlled cache comparison and HPA
-  observations. Do not use numerical resume performance claims before these run.
+## GitHub delivery
+
+- [Run 39131104288](https://github.com/Aadyant-7/splitnest/actions/runs/39131104288):
+  SUCCESS for `9d095d4984170d9df891e59164794c88eb2c8b65`. All 75 Java tests,
+  six load-data, six manifest-context and eight GitOps fixture scenarios passed.
+- Runtime UID check, Trivy CRITICAL gate, GHCR publication and isolated kind
+  manifest-validation/promotion jobs all passed.
+- Published digest: `sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1`.
+  Anonymous manifest retrieval returned HTTP 200 with that exact digest.
+- `deploy/local` image promotion: `fa03f6d`; manifest synchronization: `66feb28`.
+- The first delivery run stopped safely after Java tests because an expected
+  negative Git check left a stale native exit status in a PowerShell fixture.
+  The harness now resets status only after every assertion and cleanup succeeds;
+  the complete rerun passed. The image gate was never bypassed.
+
+## Remaining live checks
+
+Git-driven rollback is being verified with a second scanned release.
+Backup/restore rehearsal and production/cloud deployment are not claimed.

@@ -1,6 +1,6 @@
 {
-  "startedUtc": "2026-10-18T13:15:15.8824770Z",
-  "sourceHeadAtRun": "ed838b9ed0e5e692906ec38e4e11a846fa803069",
+  "startedUtc": "2026-10-18T13:18:21.1680094Z",
+  "sourceHeadAtRun": "5c302fb7a7f5971eff176a8daed88a6f0abb45eb",
   "dataset": {
     "splitRows": 3000,
     "currentMembers": 3,
@@ -8,11 +8,11 @@
     "currency": "INR"
   },
   "workload": {
-    "fixedReplicas": 2,
+    "warmupSeconds": 15,
+    "vus": 10,
     "path": "in-cluster Service DNS",
     "thinkTimeSeconds": 0.05,
-    "vus": 10,
-    "warmupSeconds": 15,
+    "fixedReplicas": 2,
     "gapSeconds": 5,
     "measuredDurationSeconds": 60
   },
@@ -22,7 +22,7 @@
     "architecture": "x86_64"
   },
   "node": {
-    "allocatable": {
+    "capacity": {
       "cpu": "20",
       "ephemeral-storage": "1081101176832",
       "hugepages-1Gi": "0",
@@ -31,7 +31,7 @@
       "pods": "110"
     },
     "kubeletVersion": "v1.37.0",
-    "capacity": {
+    "allocatable": {
       "cpu": "20",
       "ephemeral-storage": "1081101176832",
       "hugepages-1Gi": "0",

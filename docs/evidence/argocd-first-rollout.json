@@ -1,0 +1,19 @@
+{
+  "observedUtc": "2026-10-18T18:57:20.2401653Z",
+  "context": "kind-splitnest",
+  "sync": "Synced",
+  "health": "Healthy",
+  "gitRevision": "fa03f6d862cbdd05840be2efffc316d45560ff76",
+  "image": "ghcr.io/aadyant-7/splitnest@sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1",
+  "readyReplicas": 2,
+  "pods": [
+    {
+      "name": "splitnest-56657d8f6f-clmln",
+      "imageId": "ghcr.io/aadyant-7/splitnest@sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1"
+    },
+    {
+      "name": "splitnest-56657d8f6f-tsjqx",
+      "imageId": "ghcr.io/aadyant-7/splitnest@sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1"
+    }
+  ]
+}

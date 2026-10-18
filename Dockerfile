@@ -13,6 +13,9 @@ COPY src/main src/main
 RUN ./mvnw -B -ntp -Dmaven.test.skip=true package
 
 FROM eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555 AS runtime
+LABEL org.opencontainers.image.title="SplitNest" \
+      org.opencontainers.image.description="Expense-sharing REST API" \
+      org.opencontainers.image.source="https://github.com/Aadyant-7/splitnest"
 RUN addgroup -S -g 10001 splitnest && adduser -S -D -H -u 10001 -G splitnest splitnest
 WORKDIR /app
 COPY --from=build --chown=10001:10001 /workspace/target/splitnest-*.jar /app/splitnest.jar

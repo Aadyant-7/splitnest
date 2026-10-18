@@ -1,0 +1,11 @@
+{
+  "observedUtc": "2026-10-18T18:54:18.1004273Z",
+  "readyReplicas": 2,
+  "temporaryCron": "*/15 * * * * *",
+  "category": "FOOD",
+  "alertCountAfterRepeatedChecks": 1,
+  "spent": 8194.08,
+  "monthlyLimit": 1.0,
+  "shedlockRecord": "budget-check|splitnest-7bbd766bcb-f7k5p",
+  "assertion": "One persisted alert; this does not count scheduled method invocations"
+}

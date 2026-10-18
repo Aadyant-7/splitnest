@@ -5,12 +5,12 @@ with Java 21 and Spring Boot. It combines exact financial arithmetic and group
 access isolation with background processing and a local Kubernetes delivery lab.
 Swagger UI is the interactive API interface; there is no separate frontend.
 
-**Verified locally:** 75 tests with real PostgreSQL/Redis containers, the full
-Docker Compose stack, and an end-to-end API smoke test. The local kind cluster
-has two ready app replicas; Prometheus/Grafana and the Argo CD controller are
-installed. Remote CI, GHCR publication and Argo application reconciliation still
-require verification. See the [verification record](docs/evidence/verification.md)
-for scan, deployment and performance evidence.
+**Verified:** 75 Java tests with real PostgreSQL/Redis containers, 20 script
+scenarios, Compose and Kubernetes API smoke tests, Pod recovery, and separate
+cache/autoscaling experiments. [GitHub CI](https://github.com/Aadyant-7/splitnest/actions/runs/39131104288)
+passed verification, image scanning, public GHCR publication and deployment-branch
+generation. Argo CD reconciled the published image with Healthy/Synced status.
+See the [verification record](docs/evidence/verification.md) for evidence.
 
 ## Features
 
@@ -124,14 +124,22 @@ reconciliation are tracked in the verification record.
 The initial image scan rejected Boot's Tomcat 11.0.24 dependency. The POM now
 uses Tomcat 11.0.27 within the same major version, and all 75 tests pass with that
 override. The rebuilt local image also passed Trivy with zero CRITICAL findings.
-That observed local result is separate from the still-pending remote CI gate;
-neither a passing scan nor tests alone establish a successful deployment.
+The remote CI gate also passed. A passing scan or tests alone do not establish
+a successful deployment; the verification record tracks runtime reconciliation.
 
 - [Dockerfile, layers, Compose and image verification](docs/docker.md)
+- [Operations: health, secrets, migrations, recovery and backup limitations](docs/operations.md)
 - [kind, Kubernetes objects, secrets, probes, HPA and failure exercises](docs/kubernetes.md)
 - [Argo CD setup and GitOps workflow](docs/gitops.md)
 - [Promotion safeguards, tests and rollback](docs/gitops-promotion.md)
 - [Prometheus/Grafana setup and controlled k6 experiments](docs/monitoring.md)
+- [Measured cache comparison and autoscaling results](docs/performance.md)
+
+During the separate 50-user local load test, the HPA moved from two to five ready
+replicas. The fixed-replica cache comparison measured p95 of 7.26 ms cached and
+9.94 ms uncached; these are bounded local observations, not production capacity.
+
+![Grafana during the local load and autoscaling demonstration](docs/evidence/grafana-load.png)
 
 The default kind configuration prefers cgroup v2. Docker engines reporting
 cgroup v1 need the explicitly documented local compatibility configuration.

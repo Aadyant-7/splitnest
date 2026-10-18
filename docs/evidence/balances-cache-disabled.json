@@ -1,0 +1,61 @@
+{
+  "startedUtc": "2026-10-18T13:21:03.4797702Z",
+  "finishedUtc": "2026-10-18T13:22:30.0030788Z",
+  "job": "splitnest-balances-disabled",
+  "cacheMode": "disabled",
+  "replicas": 2,
+  "measuredRequests": 10593,
+  "measuredRequestsPerSecond": 176.55,
+  "measuredErrors": 0,
+  "podTraffic": [
+    {
+      "balancesRequestsDuringJob": 7286.0,
+      "imageId": "docker.io/library/import-2026-10-18@sha256:05c75006d736c2ce5f17e6b42bfe959d82ae270f76287549a62c0cd9f8b0b6ae",
+      "pod": "splitnest-5c47f586d9-r7hrh"
+    },
+    {
+      "balancesRequestsDuringJob": 5645.0,
+      "imageId": "docker.io/library/import-2026-10-18@sha256:05c75006d736c2ce5f17e6b42bfe959d82ae270f76287549a62c0cd9f8b0b6ae",
+      "pod": "splitnest-5c47f586d9-xd82l"
+    }
+  ],
+  "resourceSnapshots": [
+    {
+      "topPods": "NAME                         CPU(cores)   MEMORY(bytes)   \nsplitnest-5c47f586d9-r7hrh   59m          327Mi           ",
+      "elapsedSeconds": 30.7
+    },
+    {
+      "topPods": "NAME                         CPU(cores)   MEMORY(bytes)   \nsplitnest-5c47f586d9-r7hrh   324m         348Mi           \nsplitnest-5c47f586d9-xd82l   326m         372Mi           ",
+      "elapsedSeconds": 61.5
+    }
+  ],
+  "summary": {
+    "run": "fixed-two-replicas-cache-disabled",
+    "vus": 10,
+    "duration": "60s",
+    "cacheMode": "disabled",
+    "latencyMilliseconds": {
+      "p(95)": 9.9382492,
+      "p(99)": 13.296327999999999,
+      "max": 48.251533,
+      "avg": 5.847483810818452,
+      "med": 5.717505,
+      "p(90)": 8.933550600000002
+    },
+    "failureRate": {
+      "rate": 0,
+      "passes": 0,
+      "fails": 10593
+    },
+    "requests": {
+      "count": 12934,
+      "rate": 158.25632200664182
+    },
+    "thresholds": {
+      "p(95)<1000": {
+        "ok": true
+      }
+    }
+  },
+  "jobSucceeded": true
+}

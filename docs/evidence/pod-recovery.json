@@ -1,0 +1,10 @@
+{
+  "observedUtc": "2026-10-18T18:50:52.6782080Z",
+  "appPodDeleted": "splitnest-6656766fd8-78px7",
+  "appRecovery": "PASS",
+  "postgresPodReplacement": "PASS",
+  "expensesBefore": 1000,
+  "expensesAfter": 1000,
+  "pvcPreserved": true,
+  "backupRecoveryClaim": false
+}

@@ -18,16 +18,16 @@ After creating the cluster and `splitnest-secrets` as described in
 [kubernetes.md](kubernetes.md):
 
 ```powershell
-kubectl create namespace argocd
-kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/manifests/install.yaml
-kubectl -n argocd rollout status deployment/argocd-server --timeout=240s
-kubectl -n argocd get pods
+kubectl --context kind-splitnest create namespace argocd
+kubectl --context kind-splitnest apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/manifests/install.yaml
+kubectl --context kind-splitnest -n argocd rollout status deployment/argocd-server --timeout=240s
+kubectl --context kind-splitnest -n argocd get pods
 ```
 
 Argo CD v3.5.5 was verified against the
 [official release](https://github.com/argoproj/argo-cd/releases/tag/v3.5.5).
 This uses the upstream non-HA installation to fit a local learning environment.
-For UI access, run `kubectl -n argocd port-forward service/argocd-server 8081:443`
+For UI access, run `kubectl --context kind-splitnest -n argocd port-forward service/argocd-server 8081:443`
 and visit [the local Argo UI](https://localhost:8081). Its local certificate is
 self-signed. Retrieve the initial admin password privately using the documented
 Argo login procedure; do not paste or store it in the repository.
@@ -36,9 +36,9 @@ Apply the Application only after the generated `deploy/local` branch exists and
 contains a pullable app image:
 
 ```powershell
-kubectl apply -f deploy/argocd/application.yaml
-kubectl -n argocd get application splitnest-local
-kubectl -n splitnest get deployment,pods
+kubectl --context kind-splitnest apply -f deploy/argocd/application.yaml
+kubectl --context kind-splitnest -n argocd get application splitnest-local
+kubectl --context kind-splitnest -n splitnest get deployment,pods
 ```
 
 Check the Application status, the deployed image digest, and the ready Pods.
@@ -56,7 +56,7 @@ For a private package, create an image pull Secret in `splitnest` using a local
 Docker authentication config containing read-only GHCR credentials:
 
 ```powershell
-kubectl -n splitnest create secret generic ghcr-pull --type=kubernetes.io/dockerconfigjson --from-file=.dockerconfigjson=$env:USERPROFILE/.docker/config.json
+kubectl --context kind-splitnest -n splitnest create secret generic ghcr-pull --type=kubernetes.io/dockerconfigjson --from-file=.dockerconfigjson=$env:USERPROFILE/.docker/config.json
 ```
 
 Do this only when that config actually contains registry authentication in a
@@ -122,7 +122,7 @@ git log --oneline -8
 git show <promotion-commit>
 git revert <promotion-commit>
 git push origin HEAD:deploy/local
-kubectl -n splitnest rollout status deployment/splitnest --timeout=240s
+kubectl --context kind-splitnest -n splitnest rollout status deployment/splitnest --timeout=240s
 ```
 
 The revert changes desired state in Git; Argo CD then deploys it. A direct

@@ -176,6 +176,10 @@ an explicit rollback target. Reusing `latest` would obscure which version a
 deployment requested. The eventual deployment should record the exact image
 digest too, since tags can be overwritten by authorized publishers.
 
+The Dockerfile also supplies title, description and source labels for ordinary
+local builds. CI adds the exact revision label at build time. These labels are
+inspectable metadata; they do not contain credentials or change API behavior.
+
 GHCR packages can initially be private even when the repository is public.
 After the first successful publish, inspect the package's visibility settings.
 Use public visibility for anonymous portfolio/kind pulls, or provide an image

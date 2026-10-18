@@ -14,19 +14,19 @@ kind setup, use modest resources and keep only one hour of local metrics. Grafan
 and Prometheus storage are ephemeral in this demonstration.
 
 ```powershell
-helm upgrade --install splitnest-monitoring oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack --version 92.10.1 --namespace monitoring --create-namespace --values deploy/monitoring/values.yaml --wait --timeout 5m
-kubectl apply -k deploy/monitoring
-./scripts/Validate-Manifests.ps1 -Server
-kubectl -n monitoring get pods
-kubectl -n splitnest get servicemonitor splitnest
-kubectl -n monitoring port-forward service/splitnest-monitoring-grafana 3000:80
+helm upgrade --install splitnest-monitoring oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack --version 92.10.1 --namespace monitoring --kube-context kind-splitnest --create-namespace --values deploy/monitoring/values.yaml --wait --timeout 5m
+kubectl --context kind-splitnest apply -k deploy/monitoring
+./scripts/Validate-Manifests.ps1 -Server -Context kind-splitnest
+kubectl --context kind-splitnest -n monitoring get pods
+kubectl --context kind-splitnest -n splitnest get servicemonitor splitnest
+kubectl --context kind-splitnest -n monitoring port-forward service/splitnest-monitoring-grafana 3000:80
 ```
 
 Visit [Grafana](http://localhost:3000). Retrieve the chart-generated admin password
 privately from its Kubernetes Secret; do not commit or paste it into reports.
 Open **SplitNest - API and background work**, provisioned from
 `deploy/monitoring/dashboards/splitnest.json`. For Prometheus troubleshooting,
-find its Service with `kubectl -n monitoring get svc`, port-forward it to 9091,
+find its Service with `kubectl --context kind-splitnest -n monitoring get svc`, port-forward it to 9091,
 then inspect Targets. Both app replicas should appear as healthy targets.
 
 The ServiceMonitor selects the `splitnest` Service and its named `management`
@@ -51,7 +51,7 @@ unbounded number of time series.
 | Imports processed | Terminal outcomes, tagged only by COMPLETED or FAILED. Counters reset when a process restarts. |
 | Mean import duration | Total observed import time divided by completed observations; unlike p95, a mean can hide outliers. |
 | Budget alerts | Number of alerts successfully created by running processes. PostgreSQL remains the durable history. |
-| Desired replicas | Deployment size, useful alongside `kubectl get hpa -w`. |
+| Desired replicas | Deployment size, useful alongside `kubectl --context kind-splitnest get hpa -w`. |
 
 Custom metrics are `splitnest.imports.processed`, `splitnest.imports.duration`
 and `splitnest.budget.alerts`. Prometheus normalizes dots to underscores
@@ -96,9 +96,9 @@ kubectl --context kind-splitnest -n splitnest port-forward service/splitnest 180
 # In a second terminal:
 ./scripts/Prepare-LoadTest.ps1 -BaseUrl http://127.0.0.1:18080 -SeedExpenseCount 1000
 kubectl --context kind-splitnest -n splitnest create secret generic splitnest-loadtest-credentials --from-env-file=.work/loadtest.env
-kubectl apply -k loadtest
-kubectl -n splitnest logs -f job/splitnest-balances-load
-kubectl -n splitnest get job splitnest-balances-load
+kubectl --context kind-splitnest apply -k loadtest
+kubectl --context kind-splitnest -n splitnest logs -f job/splitnest-balances-load
+kubectl --context kind-splitnest -n splitnest get job splitnest-balances-load
 ```
 
 The preparation script checks `.work/loadtest.env` is Git-ignored before API
@@ -114,7 +114,7 @@ Service routing distributes connections among ready replicas. Verify request
 activity per Pod rather than assuming an even split. Port-forwarding a Service
 selects one backing Pod and cannot establish that traffic reached both replicas.
 After recording logs, delete only the completed Job before rerunning it:
-`kubectl -n splitnest delete job splitnest-balances-load`. The workload's script
+`kubectl --context kind-splitnest -n splitnest delete job splitnest-balances-load`. The workload's script
 ConfigMap and credential Secret can be reused. Remove the credential Secret when
 the experiment is finished.
 
@@ -133,13 +133,14 @@ the experiment is finished.
 5. Restore the cache configuration, HPA and GitOps self-heal after the comparison.
 
 An example live-only change while self-heal is deliberately suspended is
-`kubectl -n splitnest set env deployment/splitnest SPLITNEST_CACHE_ENABLED=false`.
-Restore the default with `kubectl -n splitnest set env deployment/splitnest SPLITNEST_CACHE_ENABLED-`.
-Apply `deploy/base/hpa.yaml` again to restore autoscaling. Use a throwaway
+`kubectl --context kind-splitnest -n splitnest set env deployment/splitnest SPLITNEST_CACHE_ENABLED=false`.
+Restore the default with `kubectl --context kind-splitnest -n splitnest set env deployment/splitnest SPLITNEST_CACHE_ENABLED-`.
+Run `kubectl --context kind-splitnest -n splitnest apply -f deploy/base/hpa.yaml`
+to restore autoscaling in the correct namespace. Use a throwaway
 experiment branch when demonstrating this under continuous GitOps control.
 
 Run a separate HPA experiment with autoscaling restored and progressively higher
-load. Watch `kubectl -n splitnest get hpa -w`, `kubectl top pods -n splitnest` and
+load. Watch `kubectl --context kind-splitnest -n splitnest get hpa -w`, `kubectl --context kind-splitnest top pods -n splitnest` and
 Grafana. A cached balance endpoint may use too little CPU to trigger scaling.
 Report what actually happens. Do not disable the cache secretly or claim a
 scaling result that was not observed.

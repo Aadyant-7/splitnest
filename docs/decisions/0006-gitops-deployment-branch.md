@@ -1,6 +1,7 @@
 # ADR 0006: Separate reviewed source from generated deployment state
 
-Status: accepted design; remote promotion/rollout requires recorded execution evidence.
+Status: implemented; remote CI publication and promotion verified. Live Argo
+reconciliation and rollback are recorded separately in the verification ledger.
 
 ## Context
 

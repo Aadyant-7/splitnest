@@ -1,0 +1,65 @@
+{
+  "startedUtc": "2026-10-18T13:18:53.0328675Z",
+  "finishedUtc": "2026-10-18T13:20:31.9836680Z",
+  "job": "splitnest-balances-enabled",
+  "cacheMode": "enabled",
+  "replicas": 2,
+  "measuredRequests": 11035,
+  "measuredRequestsPerSecond": 183.91666666666666,
+  "measuredErrors": 0,
+  "podTraffic": [
+    {
+      "balancesRequestsDuringJob": 7504.0,
+      "imageId": "docker.io/library/import-2026-10-18@sha256:05c75006d736c2ce5f17e6b42bfe959d82ae270f76287549a62c0cd9f8b0b6ae",
+      "pod": "splitnest-6955fb5848-4zv9x"
+    },
+    {
+      "balancesRequestsDuringJob": 6014.0,
+      "imageId": "docker.io/library/import-2026-10-18@sha256:05c75006d736c2ce5f17e6b42bfe959d82ae270f76287549a62c0cd9f8b0b6ae",
+      "pod": "splitnest-6955fb5848-j5h87"
+    }
+  ],
+  "resourceSnapshots": [
+    {
+      "topPods": "NAME                         CPU(cores)   MEMORY(bytes)   \nsplitnest-6955fb5848-4zv9x   704m         389Mi           ",
+      "elapsedSeconds": 30.7
+    },
+    {
+      "topPods": "NAME                         CPU(cores)   MEMORY(bytes)   \nsplitnest-6955fb5848-4zv9x   273m         388Mi           \nsplitnest-6955fb5848-j5h87   349m         370Mi           ",
+      "elapsedSeconds": 61.6
+    },
+    {
+      "topPods": "NAME                         CPU(cores)   MEMORY(bytes)   \nsplitnest-6955fb5848-4zv9x   488m         396Mi           \nsplitnest-6955fb5848-j5h87   185m         373Mi           ",
+      "elapsedSeconds": 92.4
+    }
+  ],
+  "summary": {
+    "run": "fixed-two-replicas-cache-enabled",
+    "vus": 10,
+    "duration": "60s",
+    "cacheMode": "enabled",
+    "latencyMilliseconds": {
+      "avg": 3.5963610356139633,
+      "med": 2.879144,
+      "p(90)": 6.521503,
+      "p(95)": 7.262353399999998,
+      "p(99)": 8.884860459999995,
+      "max": 56.340176
+    },
+    "failureRate": {
+      "rate": 0,
+      "passes": 0,
+      "fails": 11035
+    },
+    "requests": {
+      "count": 13521,
+      "rate": 165.14561008993894
+    },
+    "thresholds": {
+      "p(95)<1000": {
+        "ok": true
+      }
+    }
+  },
+  "jobSucceeded": true
+}
