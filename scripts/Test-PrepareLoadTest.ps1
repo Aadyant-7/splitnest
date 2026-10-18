@@ -158,3 +158,6 @@ try {
         throw 'Temporary test directory failed the cleanup boundary check.'
     }
 }
+
+# Expected negative Git checks leave a nonzero native status; report success only after cleanup succeeds.
+$global:LASTEXITCODE = 0

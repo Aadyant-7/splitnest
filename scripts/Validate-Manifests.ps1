@@ -1,5 +1,9 @@
 [CmdletBinding()]
-param([switch]$Server)
+param(
+    [switch]$Server,
+    [ValidateNotNullOrEmpty()]
+    [string]$Context = 'kind-splitnest'
+)
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 Push-Location $repoRoot
@@ -10,7 +14,7 @@ try {
         if (-not $rendered) { throw "Kustomize produced no objects: $overlay" }
         Write-Host "Rendered $overlay"
         if ($Server) {
-            $rendered | & kubectl apply --dry-run=server -f -
+            $rendered | & kubectl --context $Context apply --dry-run=server -f -
             if ($LASTEXITCODE -ne 0) { throw "Server validation failed: $overlay" }
         }
     }

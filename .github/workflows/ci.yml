@@ -32,6 +32,9 @@ jobs:
       - name: Verify synthetic load-data preparation and credential handling
         shell: pwsh
         run: ./scripts/Test-PrepareLoadTest.ps1
+      - name: Verify manifest validation contexts and failure handling
+        shell: pwsh
+        run: ./scripts/Test-ValidateManifests.ps1
       - name: Exercise GitOps generation, stale runs, failures and rollback preservation
         run: bash scripts/test-promotion.sh
       - name: Upload test reports
