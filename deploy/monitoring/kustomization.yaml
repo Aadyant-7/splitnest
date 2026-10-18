@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - servicemonitor.yaml
+configMapGenerator:
+  - name: splitnest-dashboard
+    namespace: monitoring
+    files:
+      - splitnest.json=dashboards/splitnest.json
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"

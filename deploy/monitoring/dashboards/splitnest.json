@@ -1,0 +1,340 @@
+{
+  "uid": "splitnest-overview",
+  "title": "SplitNest - API and background work",
+  "tags": [
+    "splitnest",
+    "portfolio"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "editable": false,
+  "time": {
+    "to": "now",
+    "from": "now-30m"
+  },
+  "templating": {
+    "list": [
+      {
+        "query": "prometheus",
+        "type": "datasource",
+        "current": {
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "label": "Prometheus",
+        "name": "datasource"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "API requests per second",
+      "gridPos": {
+        "y": 0.0,
+        "h": 8,
+        "w": 12,
+        "x": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "requests/s",
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{namespace=\"splitnest\",uri=~\"/api/.*\"}[1m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "API 5xx error rate",
+      "gridPos": {
+        "y": 0.0,
+        "h": 8,
+        "w": 12,
+        "x": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "5xx fraction",
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{namespace=\"splitnest\",uri=~\"/api/.*\",status=~\"5..\"}[1m])) / clamp_min(sum(rate(http_server_requests_seconds_count{namespace=\"splitnest\",uri=~\"/api/.*\"}[1m])), 0.000001)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "API p95 latency",
+      "gridPos": {
+        "y": 8.0,
+        "h": 8,
+        "w": 12,
+        "x": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "p95",
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{namespace=\"splitnest\",uri=~\"/api/.*\"}[1m])))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "JVM heap used per replica",
+      "gridPos": {
+        "y": 8.0,
+        "h": 8,
+        "w": 12,
+        "x": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "{{pod}}",
+          "refId": "A",
+          "expr": "sum by (pod) (jvm_memory_used_bytes{namespace=\"splitnest\",area=\"heap\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Imports processed",
+      "gridPos": {
+        "y": 16.0,
+        "h": 8,
+        "w": 12,
+        "x": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "{{status}}",
+          "refId": "A",
+          "expr": "sum by (status) (splitnest_imports_processed_total{namespace=\"splitnest\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Mean import duration",
+      "gridPos": {
+        "y": 16.0,
+        "h": 8,
+        "w": 12,
+        "x": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "{{status}}",
+          "refId": "A",
+          "expr": "sum by (status) (rate(splitnest_imports_duration_seconds_sum{namespace=\"splitnest\"}[5m])) / clamp_min(sum by (status) (rate(splitnest_imports_duration_seconds_count{namespace=\"splitnest\"}[5m])), 0.000001)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Budget alerts created",
+      "gridPos": {
+        "y": 24.0,
+        "h": 8,
+        "w": 12,
+        "x": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "alerts since process start",
+          "refId": "A",
+          "expr": "sum(splitnest_budget_alerts_total{namespace=\"splitnest\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Desired application replicas",
+      "gridPos": {
+        "y": 24.0,
+        "h": 8,
+        "w": 12,
+        "x": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "range": true,
+          "legendFormat": "desired replicas",
+          "refId": "A",
+          "expr": "kube_deployment_spec_replicas{namespace=\"splitnest\",deployment=\"splitnest\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    }
+  ]
+}
