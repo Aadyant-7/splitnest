@@ -1,0 +1,7 @@
+date,description,amount
+2026-10-01,SWIGGY dinner,100.00
+2026-10-02,BLINKIT groceries,45.50
+2026-10-03,UBER airport,12.34
+2026-02-30,Invalid date,5.00
+2026-10-04,Too precise,1.001
+2026-10-05,Negative,-2.00

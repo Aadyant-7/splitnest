@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: splitnest
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/splitnest}
+    username: ${DB_USER:splitnest}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+      # JDBC jobs and ShedLock must use UTC even when the developer's JVM uses a local timezone.
+      connection-init-sql: SET TIME ZONE 'UTC'
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 2s
+      timeout: 2s
+      repositories:
+        enabled: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9090}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        splitnest.imports.duration: true
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+
+splitnest:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: splitnest
+    audience: splitnest-api
+  imports:
+    keywords:
+      FOOD: [SWIGGY, ZOMATO, RESTAURANT]
+      GROCERIES: [BLINKIT, BIGBASKET, GROCERY]
+      TRAVEL: [UBER, OLA, FLIGHT]
+      RENT: [RENT]
+      UTILITIES: [ELECTRICITY, INTERNET, WATER]
+      ENTERTAINMENT: [NETFLIX, CINEMA]
+      SHOPPING: [AMAZON, MYNTRA]
+
+springdoc:
+  swagger-ui:
+    persist-authorization: false
+  show-actuator: false
+
+logging:
+  structured:
+    format:
+      console: ecs
