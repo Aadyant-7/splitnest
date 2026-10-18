@@ -227,7 +227,7 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "Mean import duration",
+    "title": "Mean import duration since process start",
       "gridPos": {
         "y": 16.0,
         "h": 8,
@@ -243,7 +243,7 @@
           "range": true,
           "legendFormat": "{{status}}",
           "refId": "A",
-          "expr": "sum by (status) (rate(splitnest_imports_duration_seconds_sum{namespace=\"splitnest\"}[5m])) / clamp_min(sum by (status) (rate(splitnest_imports_duration_seconds_count{namespace=\"splitnest\"}[5m])), 0.000001)"
+          "expr": "sum by (status) (splitnest_imports_duration_seconds_sum{namespace=\"splitnest\"}) / clamp_min(sum by (status) (splitnest_imports_duration_seconds_count{namespace=\"splitnest\"}), 1)"
         }
       ],
       "fieldConfig": {
