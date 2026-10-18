@@ -147,6 +147,18 @@ scaling result that was not observed.
 
 ## Evidence to retain
 
+The import mean panel divides cumulative duration by completed observations for
+the currently scraped processes, grouped by status. Its title says "since process
+start"; it is not a rolling-window latency or p95. This also displays the first
+completed job, whose counter may already equal one on its first scrape. Counters
+reset with a Pod, and the budget panel aggregates all groups/categories; consult
+the database for durable alert history.
+
+The API error fraction uses a 0–1 scale displayed as 0–100%. With request metrics
+present and no recorded 5xx series, it displays zero. Missing request metrics stay
+"no data" so a missing scrape does not masquerade as a healthy API. Both query
+conditions and a positive import mean were checked against actual Prometheus.
+
 Save a short report under `docs/evidence/` containing hardware/Docker resources,
 tested commit/digest, dataset size, replica count, cache setting, VUs, duration,
 numeric k6 output and screenshots of both traffic and resource panels. Summaries

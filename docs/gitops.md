@@ -121,8 +121,12 @@ git log --oneline -8
 # Select the image-only promotion commit after checking its diff:
 git show <promotion-commit>
 git revert <promotion-commit>
+$rollbackRevision = git rev-parse HEAD
 git push origin HEAD:deploy/local
+kubectl --context kind-splitnest -n argocd wait application/splitnest-local "--for=jsonpath={.status.sync.revision}=$rollbackRevision" --timeout=300s
 kubectl --context kind-splitnest -n splitnest rollout status deployment/splitnest --timeout=240s
+kubectl --context kind-splitnest -n argocd get application splitnest-local
+kubectl --context kind-splitnest -n splitnest get deployment splitnest -o jsonpath='{.spec.template.spec.containers[0].image}'
 ```
 
 The revert changes desired state in Git; Argo CD then deploys it. A direct
@@ -135,6 +139,20 @@ When branch protection requires a PR for `deploy/local`, open the rollback branc
 as a PR and merge through that rule instead of pushing directly. Do not force-push
 or rewrite deployment history. Verify the digest and API behavior after rollback;
 a Git commit alone is not deployment evidence.
+
+Wait for Argo to observe the new Git revision before checking the rollout; an
+immediate rollout check can otherwise report success for the previous version.
+Stop and investigate a timed-out wait. Compare the final image with
+`deploy/provenance/image.env`, confirm Healthy/Synced, and run the API smoke test.
+[Normal Git polling](https://argo-cd.readthedocs.io/en/stable/faq/)
+can take a few minutes; the runner does not contact the laptop.
+
+The [recorded live exercise](evidence/gitops-rollback.json) observed image-only
+promotion `b458b37`, Git revert `ce8556f`, and revert-of-revert `3fbf070`. Both
+directions reached Healthy/Synced with two ready replicas through normal polling;
+no manual Argo refresh or rollout undo was used. The two scanned images differ
+in OCI repository metadata, with the same API implementation. This verifies the
+deployment mechanism, not reversal of a business-data or schema change.
 
 ## Questions to check understanding
 

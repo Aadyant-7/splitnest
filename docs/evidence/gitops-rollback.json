@@ -1,0 +1,39 @@
+{
+  "observedUtc": "2026-10-18T19:11:58.1325275Z",
+  "promotionCommit": "b458b37ce3b8010d48cdcc2af8431a3f775d4e29",
+  "initial": {
+    "observedUtc": "2026-10-18T19:03:56.5671073Z",
+    "revision": "b458b37ce3b8010d48cdcc2af8431a3f775d4e29",
+    "health": "Healthy",
+    "phase": "new release",
+    "elapsedSeconds": 61.0,
+    "image": "ghcr.io/aadyant-7/splitnest@sha256:e554a02e01429c47356c67714ce75b2ae4306c256ffc69d18e80605323e24972",
+    "readyReplicas": 2,
+    "sync": "Synced"
+  },
+  "rollback": {
+    "observedUtc": "2026-10-18T19:07:11.7213898Z",
+    "revision": "ce8556fb9b0ea0daeee756e2aa32ea201c21bb1c",
+    "health": "Healthy",
+    "phase": "rollback",
+    "elapsedSeconds": 192.9,
+    "image": "ghcr.io/aadyant-7/splitnest@sha256:76091d746a6438430600af27a6b533455822f45d8d16148b4f5e7dd339bfbcf1",
+    "readyReplicas": 2,
+    "sync": "Synced"
+  },
+  "restored": {
+    "observedUtc": "2026-10-18T19:11:58.1324241Z",
+    "revision": "3fbf070cd28836376fcc8cdcc398ca794789855b",
+    "health": "Healthy",
+    "phase": "restore latest",
+    "elapsedSeconds": 284.1,
+    "image": "ghcr.io/aadyant-7/splitnest@sha256:e554a02e01429c47356c67714ce75b2ae4306c256ffc69d18e80605323e24972",
+    "readyReplicas": 2,
+    "sync": "Synced"
+  },
+  "automaticPolling": true,
+  "manualArgoRefresh": false,
+  "schemaRollback": false,
+  "releaseDifference": "OCI repository metadata; API implementation unchanged",
+  "error": null
+}

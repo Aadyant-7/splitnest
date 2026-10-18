@@ -6,8 +6,8 @@ access isolation with background processing and a local Kubernetes delivery lab.
 Swagger UI is the interactive API interface; there is no separate frontend.
 
 **Verified:** 75 Java tests with real PostgreSQL/Redis containers, 20 script
-scenarios, Compose and Kubernetes API smoke tests, Pod recovery, and separate
-cache/autoscaling experiments. [GitHub CI](https://github.com/Aadyant-7/splitnest/actions/runs/39131104288)
+scenarios, Compose and Kubernetes API smoke tests, Pod recovery, Git rollback and
+restoration, and separate cache/autoscaling experiments. [GitHub CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
 passed verification, image scanning, public GHCR publication and deployment-branch
 generation. Argo CD reconciled the published image with Healthy/Synced status.
 See the [verification record](docs/evidence/verification.md) for evidence.
@@ -160,3 +160,10 @@ bounded eventual consistency; logout does not immediately invalidate access JWTs
 The local cluster uses a single PostgreSQL instance and is not a highly available
 production environment. Current limits and measured evidence are documented
 alongside the implementation.
+
+## Resume summary
+
+Built a Java 21/Spring Boot expense-sharing API with PostgreSQL transactions,
+JWT security, Redis caching/rate limiting and asynchronous statement imports;
+automated testing, image scanning and local Kubernetes delivery using GitHub
+Actions, Argo CD and Prometheus/Grafana.

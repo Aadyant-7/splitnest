@@ -70,6 +70,14 @@ is a separate check below.
   768 MiB limit has remained stable. The error-rate query returns zero when API
   counters exist without 5xx events, and no data when request metrics are absent;
   both conditions were checked against Prometheus.
+- The import-duration panel now uses cumulative duration divided by cumulative
+  count and is titled **Mean import duration since process start**. This keeps
+  completed work visible after the rate window becomes idle. The observed mean
+  was **0.087213369 seconds**, not zero; this is a mean, not a p95 estimate.
+- Actual Grafana captures: [load and autoscaling](grafana-load.png),
+  [API operations](grafana-operations.png), and
+  [background imports and alerts](grafana-background.png). These are runtime
+  captures rather than dashboard mockups. Process counters can reset on rollout.
 
 - [Pod recovery](pod-recovery.json): app replacement and PostgreSQL replacement
   passed; all 1,000 expenses survived the latter. This does not prove backups.
@@ -80,6 +88,11 @@ is a separate check below.
   exact splits, net zero, outsider 404 and refresh replay 401.
 
 ## GitHub delivery
+
+The [final restored-image check](final-runtime.json) passes the real API smoke
+scenario, readiness UP, Swagger HTTP 200 and OpenAPI's 17 paths; both current
+Prometheus app targets are UP. The Compose app and both data stores also remain
+healthy. The running Kubernetes image is the newer `e554a02e...` digest.
 
 - [Run 39131104288](https://github.com/Aadyant-7/splitnest/actions/runs/39131104288):
   SUCCESS for `9d095d4984170d9df891e59164794c88eb2c8b65`. All 75 Java tests,
@@ -94,7 +107,45 @@ is a separate check below.
   The harness now resets status only after every assertion and cleanup succeeds;
   the complete rerun passed. The image gate was never bypassed.
 
-## Remaining live checks
+### Second verified release
 
-Git-driven rollback is being verified with a second scanned release.
-Backup/restore rehearsal and production/cloud deployment are not claimed.
+- [Run 39156608544](https://github.com/Aadyant-7/splitnest/actions/runs/39156608544):
+  all three jobs succeeded for `3d92be1f319e3ea9bb2837d10b5cdfa383ec946f`.
+  Verification, non-root image inspection, the Trivy CRITICAL gate, GHCR push,
+  generated-manifest validation and deployment-branch promotion all passed.
+- Published digest:
+  `sha256:e554a02e01429c47356c67714ce75b2ae4306c256ffc69d18e80605323e24972`.
+- Manifest synchronization commit: `a192fb6`. Image-only promotion: `b458b37`.
+  Separating those commits allows an image rollback to retain updated manifests.
+- The temporary CI validation cluster was deleted successfully. This CI cluster
+  is separate from the persistent local `kind-splitnest` application cluster.
+
+## Live GitOps rollback and restoration
+
+[The recorded observation](gitops-rollback.json) verifies both directions against
+the actual `kind-splitnest` application. Every stage reached **Synced**, **Healthy**
+and **two ready replicas**:
+
+| Stage | Deployment Git revision | Observed image digest prefix | Recorded elapsed time |
+|---|---|---|---:|
+| Second release | `b458b37` | `e554a02e…` | 61.0 seconds |
+| Revert image promotion | `ce8556f` | `76091d74…` | 192.9 seconds |
+| Revert the rollback | `3fbf070` | `e554a02e…` | 284.1 seconds |
+
+The full revisions and exact image digests are retained in the JSON record.
+Automatic Argo polling performed reconciliation; no manual Argo refresh was used.
+The recorded elapsed values include polling, rollout and observation delays;
+they are not isolated controller-response benchmarks.
+
+The two scanned images differ in OCI repository metadata; the API implementation
+is unchanged. This verifies the backward/forward image deployment mechanism,
+not rollback of a business change or database schema. The image-only revert
+preserved the separate manifest synchronization commit. Flyway migrations were
+not reversed.
+
+## Scope and recovery limits
+
+Backup/restore rehearsal, off-machine backup retention, a highly available
+PostgreSQL service and production/cloud deployment are not claimed. The runbooks
+document additional failure and recovery procedures; a documented command alone
+does not establish that every optional experiment was executed.

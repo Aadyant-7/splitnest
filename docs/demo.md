@@ -243,11 +243,12 @@ and cannot prove that load was distributed.
 > and Redis supplies shared limiting and bounded-staleness caching. Background
 > imports use persisted jobs, atomic claims and recovery rather than depending on
 > an in-memory event alone. The repository includes container, Kubernetes,
-> GitOps and monitoring definitions with tests and operating documentation.
+> GitOps delivery and monitoring, verified against a local Kubernetes cluster,
+> with tests and operating documentation.
 
-Replace “includes definitions” with claims about running delivery/monitoring only
-after the evidence shows those steps completed. Add performance numbers only after
-a repeatable controlled measurement. The local single PostgreSQL instance and PVC
+The verification ledger links the successful CI run and exact registry image
+reconciled by Argo CD. Describe the controlled performance results with their
+dataset and limits; do not treat one local run as a capacity guarantee. The local single PostgreSQL instance and PVC
 are a deployment learning setup, not a highly available database or a backup plan.
 
 After demonstrating, explain without reading:

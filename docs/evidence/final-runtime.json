@@ -1,0 +1,20 @@
+{
+  "observedUtc": "2026-10-18T19:12:58.1917876Z",
+  "restoredImage": "ghcr.io/aadyant-7/splitnest@sha256:e554a02e01429c47356c67714ce75b2ae4306c256ffc69d18e80605323e24972",
+  "apiSmoke": {
+    "Result": "PASS",
+    "GroupId": "acde1209-d1a1-483e-937f-9c5ec28b1bf2",
+    "Users": 4,
+    "Shares": "33.33, 33.33, 33.34",
+    "NetSum": 0.00,
+    "ImportedRows": 1,
+    "InvalidRows": 1,
+    "OutsiderStatus": 404,
+    "RefreshReplayStatus": 401
+  },
+  "readiness": "UP",
+  "swaggerHttp": 200,
+  "openApiPaths": 17,
+  "prometheusTargetsUp": 2,
+  "forwardBaseUrl": "http://127.0.0.1:18083"
+}

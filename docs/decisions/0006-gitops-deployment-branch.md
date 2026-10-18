@@ -1,7 +1,8 @@
 # ADR 0006: Separate reviewed source from generated deployment state
 
-Status: implemented; remote CI publication and promotion verified. Live Argo
-reconciliation and rollback are recorded separately in the verification ledger.
+Status: implemented and verified through remote CI publication/promotion, live
+Argo reconciliation and automatic Git-driven rollback/restoration. See the
+[verification ledger](../evidence/verification.md).
 
 ## Context
 
@@ -37,7 +38,15 @@ There is an extra generated branch and promotion protocol to maintain. Git rollb
 does not undo database migrations, so schema changes must remain compatible with
 the previous image. This ADR describes the required protocol; files or a successful
 local render do not establish publication, branch creation, reconciliation or
-rollback. See [gitops.md](../gitops.md) and actual verification records for status.
+rollback. The two successful CI releases demonstrate the remote publication and
+promotion protocol. The [live rollback record](../evidence/gitops-rollback.json)
+separately shows Synced/Healthy with two ready replicas for the second image,
+its predecessor after a promotion revert, and the second image after reverting
+that rollback. Automatic Argo polling reconciled each stage without a manual
+refresh. Those images differ in OCI repository labels with the same API code;
+the observation proves image deployment reversal rather than business/schema
+rollback. See [gitops.md](../gitops.md) and the verification ledger for release
+identities and explicitly excluded recovery/deployment claims.
 
 Understanding check: why would ignoring every `deploy/**` change at workflow
 trigger level interfere with required checks or manifest-only delivery?

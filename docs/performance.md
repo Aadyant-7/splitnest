@@ -227,6 +227,12 @@ not a production SLA. This single-node kind environment includes the application
 PostgreSQL, Redis and the load generator on the same laptop; its results do not
 establish production capacity or high availability.
 
+The overview dashboard's API p95 covers every `/api/` endpoint, including BCrypt
+registration/login, over a rolling histogram window. The k6 table measures only
+balance requests in its stated scenario and excludes setup/warm-up. Different
+request populations, windows and histogram buckets mean those p95 values need
+not match; do not substitute one for the other in an interview.
+
 For a repeat experiment, observe desired/current replicas and per-Pod CPU rather
 than assuming this transition will recur on another machine. A cached balances
 workload may not exceed the CPU target with a different dataset, request rate,
