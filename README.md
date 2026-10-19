@@ -12,7 +12,7 @@ for learning and placement interviews. Public hosting and commercial operation
 are outside this project's scope. See the [project status](docs/project-status.md),
 [documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).
 
-**Locally tested:** 92 Java tests with real PostgreSQL/Redis containers,
+**Locally tested:** 93 Java tests with real PostgreSQL/Redis containers,
 82 frontend unit/component tests, 8 real Chromium workflows and 23 script scenarios.
 The original backend evidence also includes Compose/kind API smoke tests, Pod
 recovery, Git rollback/restoration and separate cache/autoscaling experiments.

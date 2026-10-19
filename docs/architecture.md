@@ -109,7 +109,7 @@ The backend still checks membership on every status request. Panel lifecycles
 abort old requests when the account/group changes.
 
 Source verification currently includes a strict frontend build, 82 unit/component
-tests, seven real-backend Vite/Chromium scenarios and 92 passing Java tests. The
+tests, eight real-backend Vite/Chromium scenarios and 93 passing Java tests. The
 latest Maven attempt completed all Java tests but packaging encountered a running
 JAR's Windows file lock. Consult [project status](project-status.md) for the later
 package/image/deployment results; original backend evidence does not establish a
@@ -123,6 +123,13 @@ Understanding checks:
 3. How does the generation check prevent a delayed response reviving the wrong account?
 
 ## Follow one request
+
+Browser CSRF protection uses Spring Security's `PathPatternRequestMatcher`, which
+matches decoded paths consistently with MVC. A raw `getRequestURI().startsWith`
+check was found to miss encoded characters such as `%2d` in `browser-auth` even
+though MVC still selected the controller. The regression test covers normal and
+encoded login/refresh/logout paths; raw HTTP probes must return 403 without CSRF.
+See [Spring Security's MVC matching guidance](https://docs.spring.io/spring-security/reference/servlet/integrations/mvc.html).
 
 A controller translates HTTP into a service call. Request records carry validation
 rules; response records expose only the fields clients need. Services enforce

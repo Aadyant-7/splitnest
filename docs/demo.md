@@ -5,7 +5,7 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 
 This guide demonstrates the implemented React interface and the preserved Swagger
 and HTTP workflows. The strict frontend build, 82 unit/component tests, seven
-real-backend Vite/Chromium scenarios and 92 Java tests have passed. Combined-image
+real-backend Vite/Chromium scenarios and 93 Java tests have passed. Combined-image
 delivery verification is a separate gate; check [project status](project-status.md)
 for its latest result. This project runs locally for academic and placement use;
 public hosting and paid services are outside scope.

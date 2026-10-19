@@ -10,7 +10,7 @@ and tested. New full-stack checks are recorded separately below and in
 
 ## Backend
 
-This section records the original 75-test backend release; the expanded 92-test
+This section records the original 75-test backend release; the expanded 93-test
 full-stack verification is recorded in the final section below.
 
 - Java: Temurin 21.0.12.1; Maven wrapper: 3.10.0; Spring Boot: 4.1.1.
@@ -163,7 +163,7 @@ does not establish that every optional experiment was executed.
 [Full-stack verification](frontend-verification.json) records the new checks
 separately from the original release:
 
-- Complete Maven verification: **92 tests, no failures/errors/skips; BUILD SUCCESS**.
+- Complete Maven verification: **93 tests, no failures/errors/skips; BUILD SUCCESS**.
   The temporary host test server was stopped before packaging to release its
   Windows JAR lock. No test or packaging failure was ignored.
 - **82 frontend unit/component tests**, strict TypeScript build and Vite build

@@ -525,7 +525,7 @@ component and browser tests. The original JSON-token API remains compatible.
 | 6. Package, deliver and document | Combined Compose/kind app, scan/CI gates and automatic GitOps delivery | In progress |
 
 Frontend acceptance is **5 of 6 milestones complete (83%)**. Local checks pass
-92 Java tests, 82 frontend tests and eight real Chromium workflows. Image/CI/
+93 Java tests, 82 frontend tests and eight real Chromium workflows. Image/CI/
 deployment evidence is recorded separately; the original backend measurements
 remain dated baseline observations.
 

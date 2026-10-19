@@ -18,7 +18,7 @@ milestone gates are maintained in [project-status.md](project-status.md).
 Preparation was pushed as `90d459e`. The React app, typed API/error handling,
 cookie/CSRF adapter, cross-tab session coordination and feature screens now exist.
 Local checks pass: 82 frontend tests and 8 real Chromium workflows. The expanded
-Java tests pass (92 cases); final packaging/CI/kind verification is tracked in
+Java tests pass (93 cases); final packaging/CI/kind verification is tracked in
 [project status](project-status.md). Begin the detailed
 [understanding phase](learning-roadmap.md) after the complete app is verified.
 

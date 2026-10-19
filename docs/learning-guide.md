@@ -331,8 +331,8 @@ responsible for access and processing even if the browser stops checking.
 limits and first-detection alert snapshots from live spending. Saving a limit
 does not run the daily job.
 
-The current source checks include 82 unit/component tests, 92 Java tests and the
-first seven real-backend Chromium workflows through Vite. Component tests isolate
+The current source checks include 82 unit/component tests, 93 Java tests and the
+first eight real-backend Chromium workflows through Vite. Component tests isolate
 loading, validation, error, permission and timing states; Chromium checks browser
 navigation, real cookies, actual financial writes and two-tab sessions. Java
 tests establish CSRF, cookie scope, permissions and transactions independently.

@@ -23,6 +23,10 @@ test('registration, HttpOnly-cookie session restoration, logout and sign-in use 
 
   const missingCsrf = await page.request.post('/api/v1/browser-auth/refresh');
   expect(missingCsrf.status(), 'An automatic cookie alone cannot authorize refresh').toBe(403);
+  for (const prefix of ['/api/v1/browser%2dauth', '/api/v1/%62rowser-auth']) {
+    const encoded = await page.request.post(`${prefix}/refresh`);
+    expect(encoded.status(), 'Encoded route segments must retain CSRF protection').toBe(403);
+  }
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();

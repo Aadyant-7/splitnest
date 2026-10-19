@@ -37,6 +37,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -103,8 +104,11 @@ public class SecurityConfiguration {
         csrfCookies.setCookieCustomizer(cookie -> cookie.httpOnly(true).secure(browserCookies.secure())
                 .sameSite("Strict").path(BrowserSessionCookies.AUTH_PATH));
         var browserCsrf = new CsrfFilter(csrfCookies);
+        var browserAuthPaths = PathPatternRequestMatcher.withDefaults()
+                .matcher(BrowserSessionCookies.AUTH_PATH + "/**");
+        // Use MVC-compatible decoded path matching: raw URI prefixes miss encoded route segments.
         browserCsrf.setRequireCsrfProtectionMatcher(request ->
-                request.getRequestURI().startsWith(BrowserSessionCookies.AUTH_PATH + "/")
+                browserAuthPaths.matches(request)
                         && CsrfFilter.DEFAULT_CSRF_MATCHER.matches(request));
         browserCsrf.setAccessDeniedHandler(denied);
         // Resource-server DSL exempts bearer requests from its CSRF config. A dedicated standard

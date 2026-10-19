@@ -107,8 +107,8 @@ assertion before running it; explain a rollback, access-isolation and race case.
 With Docker available, run `./mvnw.cmd verify` from the root; use the current
 README for scripts. From `frontend/`, use the pinned Node/npm versions and run
 `npm ci --ignore-scripts`, `npm test`, `npm run build` and `npm run test:e2e`
-with the API running. Current source evidence includes 92 Java tests, 82 frontend
-tests and seven real-backend Vite/Chromium scenarios; the status/evidence pages
+with the API running. Current source evidence includes 93 Java tests, 82 frontend
+tests and eight real-backend Vite/Chromium scenarios; the status/evidence pages
 record later runs. Original 75-test backend evidence belongs to its dated release.
 Understanding check: what can a real-browser test catch that a controller test cannot?
 

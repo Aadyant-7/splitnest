@@ -2,6 +2,7 @@ package com.splitnest.auth;
 
 import com.splitnest.IntegrationTestSupport;
 import jakarta.servlet.http.Cookie;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -17,6 +18,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class BrowserAuthIntegrationTest extends IntegrationTestSupport {
     private static final String BASE = BrowserSessionCookies.AUTH_PATH;
+
+    @Test
+    void encodedBrowserAuthPathsCannotBypassCsrfProtection() throws Exception {
+        for (String prefix : new String[] {BASE, "/api/v1/browser%2dauth", "/api/v1/%62rowser-auth"}) {
+            for (String action : new String[] {"login", "refresh", "logout"}) {
+                mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post(URI.create(prefix + "/" + action))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(credentials("encoded-csrf@example.test"))))
+                        .andExpect(status().isForbidden());
+            }
+        }
+    }
 
     @Test
     void csrfBootstrapUsesHttpOnlyCookieMaskedJsonTokenAndNoHttpSession() throws Exception {

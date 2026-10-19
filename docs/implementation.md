@@ -5,7 +5,7 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 
 This inventory maps the implemented Java backend, React frontend, tests and
 delivery sources. The frontend strict build, 82 unit/component tests, seven
-real-backend Vite/Chromium scenarios and 92 Java tests have passed. Combined-image
+real-backend Vite/Chromium scenarios and 93 Java tests have passed. Combined-image
 delivery has a separate evidence gate in [project status](project-status.md).
 The project remains a free local academic and placement app; public/cloud hosting
 and paid services are excluded.

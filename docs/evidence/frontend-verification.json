@@ -4,8 +4,8 @@
   "java": {
     "failures": 0,
     "errors": 0,
-    "elapsedSeconds": 52.302,
-    "tests": 92,
+    "elapsedSeconds": 76,
+    "tests": 93,
     "skipped": 0,
     "command": "mvnw.cmd -B -ntp verify",
     "build": "SUCCESS"
@@ -35,7 +35,7 @@
     "scenarios": 8,
     "note": "Only access expiry is simulated by a one-time 401 interception in the multi-tab test. Refresh rotation and business requests are real.",
     "packagedComposeRun": {
-      "elapsedSeconds": 19.6,
+      "elapsedSeconds": 16.2,
       "url": "http://127.0.0.1:8080",
       "result": "PASS"
     }
@@ -62,5 +62,17 @@
     "kubernetes": "Pending combined-image rollout",
     "ci": "Pending first full-stack source push",
     "frontendOnlyPromotion": "11 local GitOps fixtures include frontend source and lockfile promotion plus README rollback preservation"
+  },
+  "securityRegression": {
+    "issue": "Raw browser-auth URI prefix did not cover encoded characters",
+    "fix": "Spring Security PathPatternRequestMatcher aligned with MVC",
+    "encodedLoginProbes": {
+      "encodedFirstLetter": 403,
+      "normal": 403,
+      "encodedHyphen": 403
+    },
+    "javaRegression": "normal and encoded login/refresh/logout all require CSRF",
+    "packagedBrowserRerun": "8 PASS including encoded refresh probes",
+    "imageScanNote": "Existing local scan records its immutable image ID; updated remote scan is required for this fix."
   }
 }
