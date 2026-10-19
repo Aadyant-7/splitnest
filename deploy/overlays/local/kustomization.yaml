@@ -5,4 +5,4 @@ resources:
   - ../../base
 images:
   - name: ghcr.io/aadyant-7/splitnest
-    digest: sha256:e0ded53a706b7182268e34185fa1814b9e57f94c5d87073e9f37c7b88e964649
+    digest: sha256:064ed0824c703b8e482cd945ed0c55dcc564f414eebbf64a9f74538eccccdfa1
