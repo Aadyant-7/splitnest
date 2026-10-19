@@ -22,7 +22,8 @@ results in `docs/evidence/` when running the commands below.
 The app's readiness includes PostgreSQL. Its liveness checks the process, so a
 database outage does not create endless app restarts. Redis is excluded from
 readiness: balance reads can fall back to PostgreSQL while rate-limited operations
-return 503. Actuator uses a separate management port, 9090. Swagger/API uses 8080.
+return 503. Actuator uses management port 9090. The browser app, Swagger and API
+share application port 8080.
 
 The app runs as UID 10001, drops Linux capabilities, cannot elevate privileges,
 and has a read-only root filesystem with a bounded writable temporary directory.
@@ -102,7 +103,10 @@ kubectl --context kind-splitnest -n splitnest get pods,svc,pvc,hpa
 kubectl --context kind-splitnest -n splitnest port-forward service/splitnest 8080:8080
 ```
 
-Open [Swagger UI](http://localhost:8080/swagger-ui/index.html). Initial Pods may
+Open the [browser app](http://127.0.0.1:8080/) or
+[Swagger UI](http://127.0.0.1:8080/swagger-ui/index.html). If Compose already uses
+8080, choose a different local forward such as `18085:8080` and open port 18085.
+Use separate browser profiles when comparing the two environments. Initial Pods may
 restart while PostgreSQL initializes; startup probes provide a warm-up allowance.
 For troubleshooting use `kubectl --context kind-splitnest -n splitnest describe pod <name>` and
 `kubectl --context kind-splitnest -n splitnest logs deployment/splitnest --tail=100`.

@@ -316,7 +316,7 @@ The initial handoff is complete: Java 21 and Docker work, and the GitHub remote
 is https://github.com/Aadyant-7/splitnest.git. The owner explicitly approved the
 local Kubernetes Secret creation from ignored .env values. No per-feature
 approvals are required by the execution plan. Frontend source, security and
-browser workflows are implemented; follow current status for remaining delivery
-verification. Complete the full local app before beginning the owner's detailed
-learning walkthrough when they are ready; the
+browser workflows and packaged delivery are verified; follow current status for
+dated results. The next phase is the owner's detailed learning walkthrough when
+they are ready; the
 [documentation index](README.md) separates runbooks from that later reading path.

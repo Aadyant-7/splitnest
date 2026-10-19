@@ -322,6 +322,16 @@ cookie. The four focused controller failure tests distinguish these outcomes.
 
 ### Interface state and test layers
 
+The server's `BigDecimal` values remain JSON numbers for API compatibility. A
+browser must also preserve their decimal text: converting a large aggregate such
+as `99999999999999.99` directly to JavaScript `Number` can display `.98`.
+The API client uses the JSON reviver's original source token for money fields
+and passes that exact string to native `Intl.NumberFormat`. Counts remain
+numbers; financial arithmetic stays on the server. Current browsers support this
+path, and compatibility guards reject unsafe values when exact parsing/formatting
+is unavailable. See [source-preserving JSON parsing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
+and [decimal-string formatting](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/format).
+
 [ImportsPanel](../frontend/src/features/imports/ImportsPanel.tsx) remembers only a
 validated job UUID under a user/group key in per-tab sessionStorage. It polls
 every two seconds, bounds automatic checks to two minutes and offers a manual
@@ -331,13 +341,14 @@ responsible for access and processing even if the browser stops checking.
 limits and first-detection alert snapshots from live spending. Saving a limit
 does not run the daily job.
 
-The current source checks include 82 unit/component tests, 93 Java tests and the
-first eight real-backend Chromium workflows through Vite. Component tests isolate
+Current source and delivery checks are indexed in the verification record.
+Component tests isolate
 loading, validation, error, permission and timing states; Chromium checks browser
 navigation, real cookies, actual financial writes and two-tab sessions. Java
 tests establish CSRF, cookie scope, permissions and transactions independently.
-Consult current status for later keyboard/packaged runs. Image scanning and a
-local deployment require separate evidence; build/promotion source now includes
+The browser suite also has a deterministic large-decimal display fixture;
+it does not insert a huge ledger or establish database capacity. Image scanning
+and local deployment have separate evidence; build/promotion source includes
 the frontend, and eleven GitOps fixtures cover its change profile.
 
 Understanding checks:

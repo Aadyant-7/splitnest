@@ -5,20 +5,24 @@ Its Java 21/Spring Boot backend combines exact financial arithmetic and group
 access isolation with background processing and a local Kubernetes delivery lab.
 A React/TypeScript interface provides real registration, sign-in and shared-expense workflows.
 
-**Status:** backend baseline verified; frontend **5/6 milestones complete (83%)**.
-The browser app is implemented and tested; final packaged delivery checks are underway.
+**Status: 6/6 full-stack milestones complete (100%).** The browser app, backend,
+Compose image and automatic local Kubernetes delivery are implemented and verified.
 The target is a polished, free local demo
 for learning and placement interviews. Public hosting and commercial operation
 are outside this project's scope. See the [project status](docs/project-status.md),
 [documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).
 
 **Locally tested:** 93 Java tests with real PostgreSQL/Redis containers,
-82 frontend unit/component tests, 8 real Chromium workflows and 23 script scenarios.
+90 frontend unit/component tests, 9 Chromium scenarios (8 real API journeys and
+1 large-decimal display fixture), and 23 script scenarios.
 The original backend evidence also includes Compose/kind API smoke tests, Pod
 recovery, Git rollback/restoration and separate cache/autoscaling experiments.
 [GitHub CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
-now includes browser checks; the combined-image rollout is being verified separately.
+includes packaged browser checks. A frontend-only release automatically reached
+Healthy/Synced in kind with two ready replicas and all nine browser scenarios passing.
 See the [verification record](docs/evidence/verification.md) for evidence.
+
+![SplitNest expense workspace with exact stored shares](docs/evidence/frontend-expenses.png)
 
 ## Features
 
@@ -225,5 +229,5 @@ Boot, secure browser authentication, transactional equal splits, PostgreSQL,
 Redis caching/rate limiting and asynchronous imports; automated testing and
 container delivery with Docker, GitHub Actions, Kubernetes, Argo CD and Grafana.
 
-Use the final full-stack delivery claim after the remaining verification gate
-passes; the evidence record distinguishes it from the completed backend baseline.
+The [delivery evidence](docs/evidence/frontend-gitops.json) supports this local
+full-stack claim. The next phase follows the [learning roadmap](docs/learning-roadmap.md).

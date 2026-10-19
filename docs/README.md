@@ -1,8 +1,8 @@
 # SplitNest documentation
 
-Start with [project status](project-status.md). The backend/local delivery
-baseline is verified; the browser app is implemented and browser-tested, with
-combined-image delivery verification underway.
+Start with [project status](project-status.md). All six full-stack milestones
+are verified, including the browser app, backend, combined image, CI and automatic
+local Kubernetes delivery.
 The project is a free local academic and placement demo. The detailed learning
 phase follows completion and verification of the full app.
 
@@ -41,7 +41,7 @@ it was executed.
 | Document | Read it for |
 |---|---|
 | [Learning roadmap](learning-roadmap.md) | The later guided sequence from requirements through code and deployment |
-| [Architecture](architecture.md) | Current request, background and delivery flows; target frontend boundary |
+| [Architecture](architecture.md) | Implemented request, background, browser and delivery flows |
 | [Implementation map](implementation.md) | Feature-by-feature code and test reading order |
 | [Learning guide](learning-guide.md) | Beginner-to-advanced explanations of the implemented concepts |
 | [Interview preparation](interview-prep.md) | Unanswered questions and evidence-based resume/demo framing |
@@ -55,7 +55,7 @@ Architecture decision records capture context, alternatives and consequences:
 5. [ShedLock coordination](decisions/0005-shedlock.md)
 6. [Generated GitOps deployment branch](decisions/0006-gitops-deployment-branch.md)
 7. [Browser frontend in the Spring Boot application](decisions/0007-browser-frontend.md)
-   — browser integration implemented; delivery evidence tracked separately.
+   — browser integration and combined delivery verified with dated evidence.
 
 ## Inspect evidence
 

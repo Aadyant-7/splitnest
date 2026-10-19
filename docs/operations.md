@@ -18,7 +18,8 @@ docker compose logs --tail=100 app
 ./scripts/Smoke-Test.ps1
 ```
 
-Open [Swagger UI](http://127.0.0.1:8080/swagger-ui/index.html). The smoke script
+Open the [browser app](http://127.0.0.1:8080/) for normal use or
+[Swagger UI](http://127.0.0.1:8080/swagger-ui/index.html) for API exploration. The smoke script
 creates synthetic users and expenses. Stop services with `docker compose stop`
 and resume them with `docker compose start`. `docker compose down` also removes
 the containers/network while preserving the named database volume. Deleting the

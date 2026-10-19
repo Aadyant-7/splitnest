@@ -48,6 +48,8 @@ Keep them unanswered here. They do not alter the original 20-question list.
 - **F4.** How do component tests and end-to-end browser tests catch different failures, including 403/404 boundaries and expired sessions?
 - **F5.** How can one Spring Boot image serve both API routes and browser navigation without turning API errors into HTML responses?
 - **F6.** What must change in the build and promotion source profile so a frontend-only commit reaches the local Kubernetes app?
+- **F7.** Why can a correct Java BigDecimal response still lose a paisa in JavaScript, and how is the original decimal preserved?
+- **F8.** Why must CSRF/security path matching use the same decoded routing semantics as MVC?
 
 The full-stack resume explanation must identify actual verified journeys and the
 release behind any deployment claim. Browser and API commands are in

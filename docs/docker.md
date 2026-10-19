@@ -217,8 +217,8 @@ so security fixes are adopted deliberately.
 Images use `ghcr.io/aadyant-7/splitnest:<source-commit-sha>`, plus OCI source and
 revision labels. A source SHA identifies the code behind an image and provides
 an explicit rollback target. Reusing `latest` would obscure which version a
-deployment requested. The eventual deployment should record the exact image
-digest too, since tags can be overwritten by authorized publishers.
+deployment requested. The generated deployment records the exact image digest
+and source provenance, since tags can be overwritten by authorized publishers.
 
 The Dockerfile also supplies title, description and source labels for ordinary
 local builds. CI adds the exact revision label at build time. These labels are

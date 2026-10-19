@@ -12,8 +12,8 @@ Rules for every task:
 1. Current workflow (updated 2026-10-19): the backend/local deployment baseline
    is complete. The owner approved the frontend extension described in
    `docs/frontend-extension-plan.md` for a free academic and placement project.
-   Repository preparation is complete. Implement and verify the browser app,
-   then begin the detailed understanding phase from scratch.
+   The full browser app and local delivery are implemented and verified.
+   Begin the detailed understanding phase from scratch when the owner is ready.
    Work autonomously across coherent milestones without stopping after every
    numbered task. Keep the existing business features; do not expand the scope.
 2. Before writing code, explain in a few sentences what you will build and why,
@@ -61,7 +61,7 @@ syllabus and task references; it no longer requires a stop after every task.
 
 SplitNest is an academic expense-sharing application for flatmates, families,
 or trip groups. Its Java backend and local delivery lab are verified. The React
-frontend is implemented and browser-tested; current delivery verification is
+frontend and combined Compose/kind delivery are verified; dated results are
 tracked in `docs/project-status.md`.
 
 - Users register and log in.
@@ -160,7 +160,7 @@ Code organization: package by feature (as above). Inside each feature use
 `Controller -> Service -> Repository`. Controllers never touch repositories
 directly. Entities are never returned from controllers; map to DTO records.
 Keep the Maven root and `src/` in place. Organize frontend code by feature
-inside `frontend/`; its planned structure is documented in `frontend/README.md`.
+inside `frontend/`; its structure is documented in `frontend/README.md`.
 Generated dependencies, assets, test reports and local credentials are ignored.
 
 ## 5. Data model

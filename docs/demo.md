@@ -4,9 +4,8 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 [approved frontend plan](frontend-extension-plan.md).
 
 This guide demonstrates the implemented React interface and the preserved Swagger
-and HTTP workflows. The strict frontend build, 82 unit/component tests, seven
-real-backend Vite/Chromium scenarios and 93 Java tests have passed. Combined-image
-delivery verification is a separate gate; check [project status](project-status.md)
+and HTTP workflows. Strict frontend builds, Java tests and browser journeys have
+passed. Check the dated [verification record](evidence/verification.md) and [project status](project-status.md)
 for its latest result. This project runs locally for academic and placement use;
 public hosting and paid services are outside scope.
 
@@ -42,11 +41,12 @@ below adds manual membership, role and operational observations.
 
 ## Browser demonstration
 
-For the verified development flow, start the API with `scripts/Start-Local.ps1`,
+For development, start the API with `scripts/Start-Local.ps1`,
 then run `npm ci --ignore-scripts` and `npm run dev` from `frontend/` using the
 versions in [setup.md](setup.md). Open `http://127.0.0.1:5173`. The packaged
-application uses the same screens on `http://localhost:8080/`; its runtime
-verification is recorded separately. Never run two app processes on 8080.
+application serves the same screens on `http://127.0.0.1:8080/`; its runtime
+verification is recorded separately. Use separate browser profiles for Compose
+and kind demonstrations. Never run two app processes on 8080.
 
 1. Choose **Create an account**. Register three disposable users with names,
    distinct example emails and locally chosen passwords. Use separate browser

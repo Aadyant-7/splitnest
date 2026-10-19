@@ -32,6 +32,8 @@ public abstract class IntegrationTestSupport {
         registry.add("splitnest.jwt.secret", () -> TEST_SECRET);
         registry.add("spring.datasource.password", () -> "unused-by-service-connection");
         registry.add("splitnest.scheduling.enabled", () -> "false");
+        // Cookie-contract tests choose Secure mode even after a developer used the local HTTP launcher.
+        registry.add("splitnest.browser.cookie-secure", () -> "true");
     }
 
     @Autowired protected MockMvc mvc;

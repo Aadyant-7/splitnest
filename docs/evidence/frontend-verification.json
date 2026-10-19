@@ -1,18 +1,19 @@
 {
-  "observedAt": "2026-10-19T14:07:32.0611062Z",
+  "observedAt": "2026-10-19T14:43:05.0570758Z",
   "scope": "Free local full-stack application; original backend evidence retained separately",
   "java": {
     "failures": 0,
     "errors": 0,
-    "elapsedSeconds": 76,
+    "elapsedSeconds": 71,
     "tests": 93,
     "skipped": 0,
     "command": "mvnw.cmd -B -ntp verify",
-    "build": "SUCCESS"
+    "build": "SUCCESS",
+    "environmentRegression": "Full verify also passes with inherited BROWSER_COOKIE_SECURE=false; integration cookie-contract tests explicitly select Secure=true"
   },
   "frontend": {
     "npmAuditVulnerabilities": 0,
-    "unitAndComponentTests": 82,
+    "unitAndComponentTests": 90,
     "npm": "11.19.1",
     "build": "TypeScript strict + Vite PASS",
     "node": "24.22.0"
@@ -30,14 +31,26 @@
     ],
     "viteRun": {
       "result": "PASS",
-      "elapsedSeconds": 20.3
+      "elapsedSeconds": 15.8
     },
-    "scenarios": 8,
-    "note": "Only access expiry is simulated by a one-time 401 interception in the multi-tab test. Refresh rotation and business requests are real.",
+    "scenarios": 9,
+    "note": "Eight real API/database journeys plus one deterministic large-decimal numeric JSON display fixture. Only access expiry is simulated in the multi-tab journey; refresh rotation and business requests are real.",
     "packagedComposeRun": {
-      "elapsedSeconds": 16.2,
+      "result": "PASS",
+      "scenarios": 9,
       "url": "http://127.0.0.1:8080",
-      "result": "PASS"
+      "image": "ghcr.io/aadyant-7/splitnest@sha256:7920278f61224392c61aa6985a6e4c40bf46a594d0c48dd8ddccadfca726e091",
+      "sourceCommit": "6b67a0173a0c0b6a348ce8d14e037c0ff2842767",
+      "observedAt": "2026-10-19T14:38:32Z"
+    },
+    "packagedKindRun": {
+      "result": "PASS",
+      "scenarios": 9,
+      "testElapsedSeconds": 18.1,
+      "commandElapsedSeconds": 18.8,
+      "url": "http://127.0.0.1:18085",
+      "image": "ghcr.io/aadyant-7/splitnest@sha256:7920278f61224392c61aa6985a6e4c40bf46a594d0c48dd8ddccadfca726e091",
+      "observedAt": "2026-10-19T14:43:05.0570758Z"
     }
   },
   "compose": {
@@ -56,12 +69,16 @@
       "frontend-groups.png",
       "frontend-expenses.png",
       "frontend-mobile.png"
-    ]
+    ],
+    "capturedAt": "2026-10-19T14:38:34.778Z"
   },
   "delivery": {
-    "kubernetes": "Pending combined-image rollout",
-    "ci": "Pending first full-stack source push",
-    "frontendOnlyPromotion": "11 local GitOps fixtures include frontend source and lockfile promotion plus README rollback preservation"
+    "ci": "PASS: verify, publish-image and promote-deployment",
+    "ciUrl": "https://github.com/Aadyant-7/splitnest/actions/runs/39269576460",
+    "sourceCommit": "6b67a0173a0c0b6a348ce8d14e037c0ff2842767",
+    "kubernetes": "Healthy/Synced; two updated and ready replicas; readiness UP",
+    "frontendOnlyPromotion": "PASS: actual source-only frontend release automatically changed registry digest and served JavaScript bundle",
+    "evidence": "frontend-gitops.json"
   },
   "securityRegression": {
     "issue": "Raw browser-auth URI prefix did not cover encoded characters",
@@ -72,7 +89,14 @@
       "encodedHyphen": 403
     },
     "javaRegression": "normal and encoded login/refresh/logout all require CSRF",
-    "packagedBrowserRerun": "8 PASS including encoded refresh probes",
-    "imageScanNote": "Existing local scan records its immutable image ID; updated remote scan is required for this fix."
+    "packagedBrowserRerun": "PASS in all nine packaged Compose and kind scenarios, including encoded refresh probes",
+    "imageScanNote": "Corrected encoded-path CSRF matching is included in the final CI-scanned registry image."
+  },
+  "scriptFixtures": {
+    "loadData": 6,
+    "manifestContext": 6,
+    "gitopsPromotion": 11,
+    "total": 23,
+    "result": "PASS"
   }
 }

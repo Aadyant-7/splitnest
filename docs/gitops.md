@@ -165,6 +165,11 @@ no manual Argo refresh or rollout undo was used. The two scanned images differ
 in OCI repository metadata, with the same API implementation. This verifies the
 deployment mechanism, not reversal of a business-data or schema change.
 
+The later [frontend-only release](evidence/frontend-gitops.json) changed actual
+React source with an unchanged backend tree. CI promoted a different image and
+normal Argo polling served a different JavaScript bundle; all nine browser
+scenarios passed against the local Kubernetes Service.
+
 ## Questions to check understanding
 
 1. Why can Argo CD deploy to a laptop when a GitHub-hosted runner cannot reach its API server?

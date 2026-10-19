@@ -1,7 +1,6 @@
 # Approved extension: the SplitNest browser app
 
-Status: **implementation and browser checks complete for milestones 1–5;
-packaged delivery verification in progress**.
+Status: **all six implementation and delivery milestones verified (100%)**.
 Scope updated: 19 October 2026 (India).
 
 The original backend, automated checks, documentation and local deployment are
@@ -11,16 +10,18 @@ This supersedes the original frontend exclusion. Public hosting, paid services
 and commercial operation remain outside the scope.
 
 Progress reporting: original backend/local scope **100%**; frontend
-extension **5 of 6 milestones complete (83%)**. A combined completion percentage should be based on agreed
-acceptance milestones, not an invented estimate. The current status and
+extension **6 of 6 milestones complete (100%)**. Completion follows the agreed
+acceptance milestones. The current status and
 milestone gates are maintained in [project-status.md](project-status.md).
 
 Preparation was pushed as `90d459e`. The React app, typed API/error handling,
 cookie/CSRF adapter, cross-tab session coordination and feature screens now exist.
-Local checks pass: 82 frontend tests and 8 real Chromium workflows. The expanded
-Java tests pass (93 cases); final packaging/CI/kind verification is tracked in
-[project status](project-status.md). Begin the detailed
-[understanding phase](learning-roadmap.md) after the complete app is verified.
+Checks pass: 90 frontend tests, 93 Java tests and 9 Chromium scenarios against
+the packaged Compose and kind application. Eight scenarios use the real API;
+one deterministic large-decimal response checks display precision. CI, scanning
+and automatic frontend-only GitOps delivery are recorded in
+[project status](project-status.md). The detailed
+[understanding phase](learning-roadmap.md) is next when the owner is ready.
 
 ## 1. Intended experience
 
@@ -234,9 +235,8 @@ real workflow easy to demonstrate. The technical explanation remains how identit
 permissions, transactions, exact arithmetic, background processing, tests and
 delivery work together. A login screen by itself is only one visible part.
 
-After the extension is implemented and verified, resume wording can describe a
-full-stack expense-sharing web application. Until then, describe the completed
-backend and local deployment accurately.
+The verified extension supports describing a full-stack expense-sharing web
+application, with the local deployment and testing evidence linked from the README.
 
 Understanding questions for the extension (leave unanswered):
 

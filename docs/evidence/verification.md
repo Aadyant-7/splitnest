@@ -158,10 +158,11 @@ PostgreSQL service and production/cloud deployment are not claimed. The runbooks
 document additional failure and recovery procedures; a documented command alone
 does not establish that every optional experiment was executed.
 
-## Browser application — 19 October 2026
+## Initial browser implementation — 19 October 2026
 
-[Full-stack verification](frontend-verification.json) records the new checks
-separately from the original release:
+These initial observations preceded the frontend-only decimal correction.
+[Full-stack verification](frontend-verification.json) records the final expanded
+checks separately from the original release:
 
 - Complete Maven verification: **93 tests, no failures/errors/skips; BUILD SUCCESS**.
   The temporary host test server was stopped before packaging to release its
@@ -187,5 +188,51 @@ separately from the original release:
 - The delivery source now includes frontend verification, a Node build stage and
   frontend-aware GitOps fingerprints. **11 local promotion fixtures** pass,
   including frontend-only source/lockfile promotion and README-only preservation
-  after an intentional rollback. First full-stack remote CI and kind reconciliation
-  are still pending at this milestone; they will be recorded after observation.
+  after an intentional rollback. Remote CI and reconciliation were verified in
+  the later full-stack delivery below.
+
+## Final full-stack delivery — 19 October 2026
+
+All six browser-extension acceptance milestones are complete. The application
+remains a free local academic/placement demonstration.
+
+- **93 Java tests** pass with zero failures/errors/skips and `BUILD SUCCESS`.
+  A final full verification also passes with inherited local
+  `BROWSER_COOKIE_SECURE=false`: integration cookie-contract tests explicitly
+  select Secure mode, while browser tests verify the deliberate local HTTP mode.
+- **90 frontend unit/component tests** and strict TypeScript/Vite builds pass.
+  npm audit reports zero vulnerabilities at this observation.
+- **9 Chromium scenarios** pass against the published image in Compose and kind.
+  Eight use real API/database journeys. One supplies a deterministic large
+  numeric JSON balance response to check that the last paisa is displayed
+  exactly; it does not claim a huge stored ledger. The kind test run reports
+  **18.1 seconds**. Multi-tab access expiry alone is simulated with one401 per tab;
+  cookie rotation, logout and subsequent requests are real.
+- **23 script scenarios** pass: six load-data, six manifest-context and eleven
+  GitOps promotion fixtures. The original twenty interview questions remain
+  unchanged and unanswered.
+- Full-stack source `2cb1796`, encoded-path CSRF correction `51129c8`, and actual
+  frontend-only source `6b67a01` each passed remote CI. Final release:
+  [CI run39269576460](https://github.com/Aadyant-7/splitnest/actions/runs/39269576460).
+  Verify, image publication and deployment promotion all succeeded.
+- Final published image:
+  `ghcr.io/aadyant-7/splitnest@sha256:7920278f61224392c61aa6985a6e4c40bf46a594d0c48dd8ddccadfca726e091`.
+  Pulled image size: **474,147,445 bytes**; runtime UID **10001:10001**.
+  CI passed its operating-system/library Trivy gate with **0 CRITICAL** findings,
+  including unfixed vulnerabilities. This is a dated policy result, not a claim
+  that every severity is zero. [Scan record](frontend-image-scan.json).
+- [Actual frontend-only GitOps evidence](frontend-gitops.json): all eleven
+  changed paths are under `frontend/`, and the backend `src/main` tree is
+  unchanged. Normal Argo CD polling changed the registry digest and served JS
+  asset from `index-s6tVud0X.js` to `index-ClbWYNDy.js`. No manual refresh, apply
+  or rollout restart was used. Revision `de82fc6` reached Healthy/Synced with
+  two updated, ready replicas and readiness UP before the browser run.
+  HPA may subsequently change the replica count within its configured range.
+- Prometheus app targets were UP after the release. Existing cache/load/HPA and
+  rollback evidence above remains a separate, dated backend experiment.
+- Final screenshots were captured from the published Compose image at port8080
+  using synthetic accounts and actual API expenses. The existing database volume
+  was preserved. [Machine-readable checks](frontend-verification.json).
+
+No cloud deployment, commercial-capacity claim or paid service was introduced.
+The detailed explanation phase follows the [learning roadmap](../learning-roadmap.md).

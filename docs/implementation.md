@@ -4,9 +4,9 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 [approved frontend plan](frontend-extension-plan.md).
 
 This inventory maps the implemented Java backend, React frontend, tests and
-delivery sources. The frontend strict build, 82 unit/component tests, seven
-real-backend Vite/Chromium scenarios and 93 Java tests have passed. Combined-image
-delivery has a separate evidence gate in [project status](project-status.md).
+delivery sources. Strict builds, unit/integration tests and browser workflows
+are verified; current counts and combined-image delivery results live in
+[project status](project-status.md) and the [verification record](evidence/verification.md).
 The project remains a free local academic and placement app; public/cloud hosting
 and paid services are excluded.
 
@@ -104,7 +104,7 @@ actual execution results are recorded separately by the verification ledger.
 
 | Files | Evidence provided when the test passes |
 |---|---|
-| [IntegrationTestSupport.java](../src/test/java/com/splitnest/IntegrationTestSupport.java), [TestcontainersConfiguration.java](../src/test/java/com/splitnest/TestcontainersConfiguration.java) | Shared full application/MockMvc helpers, random test signing key and real PostgreSQL/Redis containers. |
+| [IntegrationTestSupport.java](../src/test/java/com/splitnest/IntegrationTestSupport.java), [TestcontainersConfiguration.java](../src/test/java/com/splitnest/TestcontainersConfiguration.java) | Shared full application/MockMvc helpers, random test signing key and real PostgreSQL/Redis containers. Cookie-contract tests explicitly select Secure mode independently of inherited local HTTP settings. |
 | [SplitNestApplicationTests.java](../src/test/java/com/splitnest/SplitNestApplicationTests.java), [TestSplitNestApplication.java](../src/test/java/com/splitnest/TestSplitNestApplication.java) | Database/Redis connectivity assertion and optional test-container-backed app launcher. |
 | [AuthenticationIntegrationTest.java](../src/test/java/com/splitnest/auth/AuthenticationIntegrationTest.java), [PasswordValidatorTest.java](../src/test/java/com/splitnest/auth/PasswordValidatorTest.java) | Real bearer validation, registration/hash protection, replay revocation, concurrent refresh/logout ownership and password boundaries. |
 | [BrowserAuthIntegrationTest.java](../src/test/java/com/splitnest/auth/BrowserAuthIntegrationTest.java), [BrowserSessionCookiesTest.java](../src/test/java/com/splitnest/auth/BrowserSessionCookiesTest.java), [BrowserAuthControllerTest.java](../src/test/java/com/splitnest/auth/BrowserAuthControllerTest.java) | Cookie scope/security, masked CSRF and statelessness, bearer logout still requiring CSRF, rotation/replay, shared login limit, local HTTP override and preservation on500/owner403. |
@@ -158,6 +158,7 @@ the actual DTOs; runtime HTTP validation and backend permissions remain decisive
 | [App.tsx](../frontend/src/app/App.tsx), [SessionContext.tsx](../frontend/src/app/SessionContext.tsx) | Browser routes, protected shell/account-keyed workspace, and React subscription to the session store. |
 | [session.ts](../frontend/src/app/session.ts) | Memory-only access token, single-flight refresh, shared Web Lock, non-secret BroadcastChannel events, generation guards and raw logout refresh inside one lock. |
 | [client.ts](../frontend/src/shared/api/client.ts), [types.ts](../frontend/src/shared/api/types.ts) | Typed DTOs, same-origin/no-store requests, ProblemDetail/Retry-After parsing, one401 retry and cancellation of responses from an older account. FormData retains its browser-generated boundary. |
+| [json.ts](../frontend/src/shared/api/json.ts) | Preserves original monetary JSON tokens as decimal strings, including large aggregates; numeric counts retain their normal types. Older parsers reject unsafe large values. |
 | [AuthPage.tsx](../frontend/src/features/auth/AuthPage.tsx) | Registration/login forms, password visibility, pending/failure states and safe local post-login navigation. |
 | [GroupsPage.tsx](../frontend/src/features/groups/GroupsPage.tsx), [GroupPage.tsx](../frontend/src/features/groups/GroupPage.tsx) | Group list/create, concurrent workspace reads, request cleanup and paginated expense refresh after mutations. |
 | [MembersPanel.tsx](../frontend/src/features/groups/MembersPanel.tsx) | Registered-user membership forms, admin controls and explicit removal confirmation; the server enforces permissions. |
@@ -172,6 +173,7 @@ the actual DTOs; runtime HTTP validation and backend permissions remain decisive
 | Files | Evidence provided when the test passes |
 |---|---|
 | [setup.ts](../frontend/src/test/setup.ts) | DOM matchers and cleanup between React tests. |
+| [json.test.ts](../frontend/src/shared/api/json.test.ts), [format.test.ts](../frontend/src/shared/ui/format.test.ts) | Eight cases for exact positive/negative large decimals, exponent notation, nested shares, unchanged non-monetary data, older-browser safety and exact budget-edit text. |
 | [session.test.ts](../frontend/src/app/session.test.ts), [client.test.ts](../frontend/src/shared/api/client.test.ts) |31 focused cases for refresh single flight/cross-tab locking, CSRF under lock, no persistent credentials, failure cleanup, profile races, logout lock safety, JSON/multipart retry and stale-account responses. |
 | [AuthPage.test.tsx](../frontend/src/features/auth/AuthPage.test.tsx) | Registration/login interactions, validation, pending/error states and navigation. |
 | [GroupsPage.test.tsx](../frontend/src/features/groups/GroupsPage.test.tsx), [GroupPage.test.tsx](../frontend/src/features/groups/GroupPage.test.tsx), [MembersPanel.test.tsx](../frontend/src/features/groups/MembersPanel.test.tsx) | Group list/create/retry, workspace refresh/pagination, member roles and rejected actions. |
@@ -179,8 +181,9 @@ the actual DTOs; runtime HTTP validation and backend permissions remain decisive
 | [ImportsPanel.test.tsx](../frontend/src/features/imports/ImportsPanel.test.tsx), [BudgetsPanel.test.tsx](../frontend/src/features/budgets/BudgetsPanel.test.tsx) | Poll/deadline/cleanup/storage guards, real-job response states, rate-limit waiting, budget permissions and snapshot semantics. |
 | [helpers.ts](../frontend/e2e/helpers.ts), [workflows.spec.ts](../frontend/e2e/workflows.spec.ts) | Synthetic users and real backend Chromium journeys: registration/restoration, three-user exact splits, permissions, imports/budgets, two-tab rotation/logout, mobile validation and accessible rate-limit messages. Current execution totals belong in project status. |
 
-Unit/component tests use controlled responses to isolate interface states. Chromium
-tests use a real API/database; Java tests separately verify transactions and
+Unit/component tests use controlled responses to isolate interface states. Eight
+Chromium journeys use the real API/database; a ninth supplies one deterministic
+large balance payload to verify display without inserting a huge ledger. Java tests separately verify transactions and
 security. No one layer substitutes for image, Compose/kind or remote CI evidence.
 
 ## Reading and interview practice
@@ -194,8 +197,8 @@ Read [demo.md](demo.md) while calling the API. Then explain one expense's journe
 using [architecture.md](architecture.md) without reading the source. Consult the
 six backend [ADRs](decisions/0001-modular-monolith.md) to discuss consequences
 rather than listing technologies. The seventh
-[frontend ADR](decisions/0007-browser-frontend.md) records the implemented source
-and remaining delivery evidence. The original twenty interview questions remain
+[frontend ADR](decisions/0007-browser-frontend.md) records the implementation and
+verified delivery evidence. The original twenty interview questions remain
 unanswered in [interview-prep.md](interview-prep.md).
 
 1. Which repository APIs use JPA, and why do the JDBC writes still share one service transaction?

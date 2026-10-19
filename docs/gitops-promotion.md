@@ -188,6 +188,12 @@ An image rollback does not undo Flyway migrations or data changes. Keep database
 migrations backward compatible and forward-only, and verify that the older
 application can run against the current schema.
 
+The [frontend-only rollout record](evidence/frontend-gitops.json) verifies this
+path with an actual React source change, two different registry digests and
+JavaScript assets, automatic Argo reconciliation and packaged browser checks.
+The shell fixtures separately cover frontend lockfile promotion and README-only
+preservation after rollback.
+
 ## Questions to explain before an interview
 
 1. Why can Argo CD deploy to a laptop cluster that GitHub Actions cannot reach,

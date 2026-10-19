@@ -1,17 +1,38 @@
 {
-  "observedAt": "2026-10-19T14:04:16.7731994Z",
-  "imageTag": "splitnest:fullstack-local",
-  "imageId": "sha256:1f71b0d5ba53bbc1a5d0f9ef125ee7835f2af900c7e965133875d47826f975fc",
+  "observedAt": "2026-10-19T14:43:05.0570758Z",
+  "sourceCommit": "6b67a0173a0c0b6a348ce8d14e037c0ff2842767",
+  "imageTag": "ghcr.io/aadyant-7/splitnest:6b67a0173a0c0b6a348ce8d14e037c0ff2842767",
+  "image": "ghcr.io/aadyant-7/splitnest@sha256:7920278f61224392c61aa6985a6e4c40bf46a594d0c48dd8ddccadfca726e091",
+  "imageId": "sha256:7920278f61224392c61aa6985a6e4c40bf46a594d0c48dd8ddccadfca726e091",
   "runtimeUser": "10001:10001",
-  "imageSizeBytes": 474146183,
-  "scanner": "Trivy 0.70.0",
+  "imageSizeBytes": 474147445,
+  "scanner": "Trivy via pinned trivy-action v0.36.0",
   "policy": "Operating-system and library vulnerabilities; fail on CRITICAL including unfixed",
   "criticalVulnerabilities": 0,
-  "rawReport": "Ignored .work/scan/frontend-trivy.json",
+  "evidence": "Successful Reject CRITICAL operating-system and application dependency vulnerabilities step followed by publication of the exact scanned image",
+  "ciUrl": "https://github.com/Aadyant-7/splitnest/actions/runs/39269576460",
+  "reportArtifact": "image-vulnerability-report (14-day CI retention)",
   "dockerContextChecks": [
     "root .env excluded",
     "nested .env and .env.local excluded",
     "public source control included"
   ],
-  "note": "Local combined-image build and dated policy result. Other severities and future vulnerabilities are not excluded by this result."
+  "initialLocalScan": {
+    "observedAt": "2026-10-19T14:04:16.7731994Z",
+    "imageTag": "splitnest:fullstack-local",
+    "imageId": "sha256:1f71b0d5ba53bbc1a5d0f9ef125ee7835f2af900c7e965133875d47826f975fc",
+    "runtimeUser": "10001:10001",
+    "imageSizeBytes": 474146183,
+    "scanner": "Trivy 0.70.0",
+    "policy": "Operating-system and library vulnerabilities; fail on CRITICAL including unfixed",
+    "criticalVulnerabilities": 0,
+    "rawReport": "Ignored .work/scan/frontend-trivy.json",
+    "dockerContextChecks": [
+      "root .env excluded",
+      "nested .env and .env.local excluded",
+      "public source control included"
+    ],
+    "note": "Local combined-image build and dated policy result. Other severities and future vulnerabilities are not excluded by this result."
+  },
+  "note": "Dated scan policy result. Other severities and future vulnerability status are not implied."
 }

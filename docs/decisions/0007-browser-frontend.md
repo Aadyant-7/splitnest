@@ -1,8 +1,9 @@
 # ADR 0007: Browser frontend in the Spring Boot application
 
-Status: **implemented and browser-tested; final delivery verification in progress**.
+Status: **implemented and verified, including packaged delivery**.
 The owner approved this extension on 19 October 2026. Frontend acceptance is
-**5 of 6 milestones complete (83%)**; actual UI, security and browser tests exist.
+**6 of 6 milestones complete (100%)**; UI, security, CI and automatic local
+GitOps delivery have dated verification evidence.
 See [project status](../project-status.md) and the
 [frontend execution plan](../frontend-extension-plan.md).
 
@@ -24,13 +25,13 @@ verified delivery evidence while extending the interface.
 Use the approved React, TypeScript, Vite and React Router stack with plain CSS.
 Use Vitest/React Testing Library for component interactions and Playwright for
 real-browser workflows, including multi-tab session behavior. Supported Node.js
-LTS and npm are build/test tooling; verify compatibility and pin exact versions
-and dependencies when implementation begins.
+LTS and npm are build/test tooling; compatible exact versions are pinned in
+the frontend package/lock files and documented in its README.
 
-Keep one deployable Spring Boot application. A frontend image-build stage will
-produce static assets for the Java application to package and serve alongside
+Keep one deployable Spring Boot application. A frontend image-build stage
+produces static assets for the Java application to package and serve alongside
 the API. The final runtime remains the existing non-root Java application image.
-For local development Vite will proxy API requests so the browser uses one
+For local development Vite proxies API requests so the browser uses one
 origin. No extra Nginx service, ingress, hosted frontend or server framework is
 needed for this scope. Browser-route fallback must not swallow API errors.
 
@@ -75,19 +76,19 @@ image easy to explain. A UI change requires the combined image pipeline. Node
 adds a build/test dependency and dependency maintenance, even though no Node
 server is added to the final runtime.
 
-Cookie-based browser authentication adds security obligations beyond the current
-bearer API. Existing Java tests do not prove CSRF, cookie scope, browser refresh
-coordination or safe SPA fallback. Those behaviors require new implementation
-and security/browser tests while retaining the backend baseline.
+Cookie-based browser authentication adds security obligations beyond the original
+bearer API. Dedicated Java tests now cover CSRF, encoded-path matching, cookie
+scope and SPA fallback; component and real-browser tests cover refresh
+coordination, logout and stale-account responses. Original API tests remain.
 
-The decision is implemented only after all six
+All six
 [frontend milestones](../frontend-extension-plan.md#5-focused-execution-milestones)
 pass: actual DTOs/routes, browser auth, core expense workflows, imports/budgets,
-accessible interaction/error states and packaged local delivery. Verify real
-three-user journeys, server permission boundaries, session expiry/multi-tab
-behavior, Java/component/end-to-end tests, image scan and Compose/kind operation.
-Demonstrate a frontend-only GitOps deployment and record new evidence. Planning,
-a Vite shell or a screenshot alone does not complete these gates.
+accessible interaction/error states and packaged local delivery. Tests verify
+real three-user journeys, server permission boundaries, session expiry/multi-tab
+behavior and image/Compose/kind operation. The
+[frontend-only GitOps exercise](../evidence/frontend-gitops.json) records automatic
+reconciliation of an actual frontend source change and nine passing browser scenarios.
 
 After the full app is verified, follow the
 [learning roadmap](../learning-roadmap.md) for the requested from-scratch

@@ -13,18 +13,18 @@ commercial operation are outside the scope.
 |---|---|---|
 | Original backend and local delivery | **100% of the original acceptance scope** | [Verification record](evidence/verification.md): 75 Java tests, 20 script scenarios, actual Compose/kind smoke tests, CI, GitOps rollback/restoration and monitoring/load observations |
 | Full-stack preparation | **Complete** | Approved scope/stack, [execution plan](frontend-extension-plan.md), [repository map](../README.md#repository-map), documentation index, frontend directory notes and learning sequence |
-| Frontend implementation | **5 of 6 milestones complete (83%)** | Actual UI, 82 frontend tests, 8 Chromium workflows; packaged delivery verification underway |
-| Detailed understanding phase | **Scheduled after full-app verification** | [Learning roadmap](learning-roadmap.md), code walkthrough, exercises and unanswered interview questions |
+| Full-stack application | **6 of 6 milestones complete (100%)** | 93 Java tests, 90 frontend tests, 9 Chromium scenarios, 23 script scenarios; [automatic frontend-only rollout](evidence/frontend-gitops.json), image scan and Compose/kind verified |
+| Detailed understanding phase | **Next, when the owner is ready** | [Learning roadmap](learning-roadmap.md), code walkthrough, exercises and unanswered interview questions |
 
-The backend percentage describes the original scope. It does not imply the
-expanded full-stack application is complete. Do not calculate an overall number
-by averaging unrelated tasks. Report backend completion and frontend acceptance
-milestones separately; preparation does not count as implemented UI behavior.
+The full-stack percentage follows the six acceptance milestones below. It
+includes implementation and verification; the later guided learning phase is
+tracked separately. Eight browser journeys use the real API/database; the ninth
+uses a deterministic large-decimal response to verify exact display.
 
 Existing observations are dated evidence, not continuous monitoring of the
 owner's machine. Test counts must be updated when new tests are actually run.
 
-## Next implementation milestones
+## Completed implementation milestones
 
 | # | Milestone | State |
 |---|---|---|
@@ -33,7 +33,7 @@ owner's machine. Test counts must be updated when new tests are actually run.
 | 3 | Groups, membership, expenses and balances | Verified: actual three-user browser scenario, historical balances and permissions |
 | 4 | Statement uploads, real job polling, budgets and alerts | Verified: actual mixed CSV processing and budget changes; snapshot rendering/component tests |
 | 5 | Responsive/accessibility polish, error states, component and browser reliability tests | Verified: desktop/mobile capture, keyboard navigation and multi-tab regressions |
-| 6 | Packaged frontend build, CI/GitOps promotion, Compose/kind verification and complete demo documentation | In progress |
+| 6 | Packaged frontend build, CI/GitOps promotion, Compose/kind verification and complete demo documentation | Verified: published image, automatic frontend-only rollout, two ready replicas, all 9 browser scenarios passing |
 
 Acceptance evidence for every milestone is in the
 [frontend execution plan](frontend-extension-plan.md#5-focused-execution-milestones).
@@ -47,7 +47,7 @@ happen; ask the owner only for an indispensable decision, access or constraint.
 - One modular Java application. The compiled React interface joins the same
   Spring Boot image; PostgreSQL and Redis remain its data services.
 - Current Swagger and API-client contracts remain available. Browser session
-  integration needs additional implementation and security tests.
+  integration has dedicated Java, component and real-browser tests.
 - Use the existing free local environments and authorized GitHub setup. No paid
   account upgrade, cloud runtime, hosted database, external authentication
   provider, payment integration or invitation-email service is planned.
@@ -59,8 +59,8 @@ happen; ask the owner only for an indispensable decision, access or constraint.
 1. **Preparation:** organize instructions, scope, repository map and docs. Complete.
 2. **Build:** frontend features and browser integration are implemented; preserve
    tests, decisions and meaningful verified Git commits throughout.
-3. **Verify:** run the full browser journeys against the real backend and the
-   packaged app; record the actual deployment and test results.
+3. **Verify:** complete: full browser journeys, the published image in Compose
+   and kind, remote CI and automatic frontend-only GitOps rollout are recorded.
 4. **Understand:** explain the completed system from requirements and data design
    onward, with code references and small exercises. Keep interview questions
    unanswered in the question list.

@@ -46,8 +46,10 @@ flowchart LR
 shell, group list and group workspace. Feature panels display expenses, stored
 balances, members, statement-job results, category limits and alert snapshots.
 Java remains responsible for authorization, exact amounts, transactions and jobs.
-Form amounts travel as decimal text; `Intl.NumberFormat` formats returned values
-for display. The browser never calculates authoritative expense splits.
+Form amounts travel as decimal text. The API keeps its numeric JSON contract;
+the browser parser preserves original monetary tokens as decimal strings before
+JavaScript Number rounding, and modern `Intl.NumberFormat` formats them exactly.
+The browser never calculates authoritative expense splits.
 
 During development Vite serves port 5173 and proxies `/api` to the JVM on 8080.
 The Dockerfile builds static assets with Node 24.22.0/npm 11.19.1, copies them into
@@ -56,7 +58,8 @@ the final runtime is the existing non-root JRE container. CI source includes the
 frontend build, component tests and packaged-app Chromium workflows. The GitOps
 source profile includes frontend source/configuration/lockfiles, so a UI-only
 change counts as an application release. These files and eleven local promotion
-fixtures are verified; a combined-image rollout must have its own runtime record.
+fixtures are verified; the [runtime record](evidence/frontend-gitops.json) also
+proves an automatic combined-image rollout after an actual frontend-only change.
 
 `SpaRoutes` and `SpaController` allow `/`, `/login`, `/register`, `/app`,
 `/app/groups` and `/app/groups/{UUID}`. Spring serves `/index.html`, `/assets/**`
@@ -108,13 +111,12 @@ a validated, non-secret job UUID in per-tab sessionStorage, keyed by user/group.
 The backend still checks membership on every status request. Panel lifecycles
 abort old requests when the account/group changes.
 
-Source verification currently includes a strict frontend build, 82 unit/component
-tests, eight real-backend Vite/Chromium scenarios and 93 passing Java tests. The
-latest Maven attempt completed all Java tests but packaging encountered a running
-JAR's Windows file lock. Consult [project status](project-status.md) for the later
-package/image/deployment results; original backend evidence does not establish a
-new combined-image release. The guided learning phase begins after full-app
-verification, when the owner is ready.
+Strict frontend builds, Java verification and browser workflows have passed.
+The temporary host test server was stopped to release its Windows JAR lock;
+complete Maven verification and packaging now succeed. Consult
+[project status](project-status.md) and the [verification ledger](evidence/verification.md)
+for current counts and image/deployment evidence. The guided learning phase
+begins after full-app verification, when the owner is ready.
 
 Understanding checks:
 

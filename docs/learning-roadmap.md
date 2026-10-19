@@ -2,8 +2,8 @@
 
 The detailed guided phase starts **after the full browser app is implemented
 and verified, when the owner is ready**. The backend/local delivery baseline is
-complete. React screens and browser auth are implemented with passing source and
-real-browser checks; combined-image delivery has its own verification gate. Check
+complete. React screens, browser auth, CI and combined-image Compose/kind delivery
+have passed their verification gates. Check
 [project status](project-status.md) and the [documentation index](README.md)
 for current scope, commands and evidence.
 
@@ -107,9 +107,9 @@ assertion before running it; explain a rollback, access-isolation and race case.
 With Docker available, run `./mvnw.cmd verify` from the root; use the current
 README for scripts. From `frontend/`, use the pinned Node/npm versions and run
 `npm ci --ignore-scripts`, `npm test`, `npm run build` and `npm run test:e2e`
-with the API running. Current source evidence includes 93 Java tests, 82 frontend
-tests and eight real-backend Vite/Chromium scenarios; the status/evidence pages
-record later runs. Original 75-test backend evidence belongs to its dated release.
+with the API running. The status/evidence pages record current Java/frontend/
+browser totals and distinguish real API journeys from the large-decimal display
+fixture. Original 75-test backend evidence belongs to its dated release.
 Understanding check: what can a real-browser test catch that a controller test cannot?
 
 ## 8. Docker and Compose

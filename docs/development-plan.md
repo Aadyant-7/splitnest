@@ -6,10 +6,10 @@ Verification status updated: 19 October 2026 (India).
 
 Current scope: the backend and local delivery baseline below are verified. The
 owner has approved the React browser extension for a free local academic and
-placement demonstration. Frontend milestones 1–5 are implemented and verified
-(**83%**); combined-image CI/GitOps delivery verification is in progress.
+placement demonstration. All six frontend milestones are implemented and verified
+(**100%**), including combined-image CI and automatic local GitOps delivery.
 Use the [documentation index](README.md) and [project status](project-status.md)
-to distinguish the completed baseline from the approved work still ahead.
+for current evidence and the later learning phase.
 
 ## 1. Review outcome
 
@@ -487,7 +487,7 @@ Add performance numbers only after repeatable measurements exist.
 - See [evidence/verification.md](evidence/verification.md) for exact completed,
   pending and externally blocked checks. Do not infer results from file presence.
 
-## 11. Browser extension — implementation verified, final delivery in progress
+## 11. Browser extension — implementation and delivery verified
 
 The objective is a complete local application that can be demonstrated in an
 academic review or placement interview using ordinary browser screens. The UI
@@ -522,18 +522,21 @@ component and browser tests. The original JSON-token API remains compatible.
 | 3. Core expense-sharing experience | Groups, membership, expenses, exact shares and historical balances | Verified |
 | 4. Imports and budgets | Actual upload counts, failures, budget changes and alert snapshots | Verified |
 | 5. Usability and browser reliability | Responsive layout, keyboard access, errors and multi-tab tests | Verified |
-| 6. Package, deliver and document | Combined Compose/kind app, scan/CI gates and automatic GitOps delivery | In progress |
+| 6. Package, deliver and document | Combined Compose/kind app, scan/CI gates and automatic GitOps delivery | Verified |
 
-Frontend acceptance is **5 of 6 milestones complete (83%)**. Local checks pass
-93 Java tests, 82 frontend tests and eight real Chromium workflows. Image/CI/
-deployment evidence is recorded separately; the original backend measurements
+Frontend acceptance is **6 of 6 milestones complete (100%)**. Checks pass
+93 Java tests, 90 frontend tests, 9 Chromium scenarios and 23 script scenarios.
+Eight browser journeys use the real API/database; the ninth checks exact large
+decimal display with a controlled response. The published image passes the scan
+gate and all browser scenarios in Compose/kind. A frontend-only source commit
+automatically reached Healthy/Synced with two ready replicas; see the
+[rollout evidence](evidence/frontend-gitops.json). Original backend measurements
 remain dated baseline observations.
 
-The full application is complete only after these browser gates pass against
-the real backend and packaged local deployment. The previous 75 Java tests,
-20 script scenarios and deployment evidence remain the baseline to preserve;
-they are not frontend test results. Add browser security/component/end-to-end
-coverage and new dated delivery evidence when that behavior exists.
+These gates have passed against the real backend and packaged local deployment.
+The previous 75 Java tests, 20 script scenarios and deployment evidence remain
+historical baseline observations; expanded browser and delivery evidence is
+recorded separately.
 
 After that verification, use [learning-roadmap.md](learning-roadmap.md) for the
 owner's requested deep explanation from requirements through monitoring. The
