@@ -40,9 +40,14 @@ watermark: a later documentation-only push sees that the same build inputs were
 already evaluated and keeps the intentionally rolled-back image.
 
 The build fingerprint covers `Dockerfile`, `.dockerignore`, `pom.xml`, `mvnw`,
-`.mvn/`, `src/main/`, the CI workflow and the promotion script. Source-code,
-dependency, runtime-image and pipeline changes can therefore select a new image.
-Tests, documentation and deployment templates alone do not. A manifest-only
+`.mvn/`, `src/main/`, every tracked `frontend/` file except Markdown, the CI
+workflow and the promotion script. A frontend-only screen change, dependency
+lockfile, engine setting or build configuration therefore selects its verified
+combined image instead of silently preserving an older interface. Frontend tests
+are included because Docker's TypeScript build checks those files too.
+Java tests, Markdown documentation and deployment templates alone do not select
+a new image. In particular, editing `frontend/README.md` preserves an intentional
+rollback. A manifest-only
 change still synchronizes the manifests and updates source provenance, while
 retaining the exact existing digest and its image provenance.
 
@@ -53,7 +58,8 @@ intermediate bootstrap-only commit as the desired branch tip.
 
 ## Ordering, verification and concurrent runs
 
-Every push to `main` receives full Maven and promotion-script verification, an
+Every push to `main` receives Java, frontend component/build, real-browser and
+promotion-script verification, an
 image build using Docker layer caches, a CRITICAL vulnerability scan and image
 publication. Publishing a documentation-only image is a deliberate reliability
 tradeoff: an earlier code build cannot be stranded because a later documentation
@@ -105,10 +111,12 @@ On Windows PowerShell with Git installed in its default location:
 & 'C:\Program Files\Git\bin\bash.exe' scripts/test-promotion.sh
 ```
 
-The eight scenarios use temporary local bare repositories and a mock `kubectl`:
+The eleven scenarios use temporary local bare repositories and a mock `kubectl`:
 bootstrap, repeated no-op, separate manifest/image updates, manifest-only image
 preservation, stale-run rejection, render failure, client-validation failure,
-and a real Git revert followed by a documentation-only push. These tests verify
+and a real Git revert followed by a documentation-only push. Three frontend
+regressions additionally prove source-only promotion, frontend README-only
+preservation after rollback, and dependency-lockfile-only promotion. These tests verify
 generation and Git behavior; mock validation is not evidence of Kubernetes
 schema correctness. CI performs actual final validation using its API server.
 

@@ -1,6 +1,7 @@
 # Docker and continuous integration
 
-Docker packages the application with its Java runtime. Compose starts the app,
+Docker builds the React interface and packages it inside the Java application.
+The runtime serves browser assets and the API from one origin. Compose starts the app,
 PostgreSQL and Redis on one private network. PostgreSQL is the durable source of
 truth; Redis counters and cached balances are disposable.
 
@@ -35,6 +36,12 @@ DNS uses the service name. The same distinction applies to Redis. All published
 ports bind to `127.0.0.1`, so this learning deployment is accessible from the local
 computer rather than every network interface.
 
+Browser refresh cookies are HttpOnly. Java defaults their `Secure` flag to true;
+the local Compose service, kind ConfigMap and `Start-Local.ps1` deliberately set
+`BROWSER_COOKIE_SECURE=false` because their browser access uses loopback HTTP.
+This explicit local exception is not an HTTPS deployment default. CSRF protection
+still applies to browser-authentication actions.
+
 ## Build and run
 
 Run these commands from the repository root:
@@ -50,6 +57,9 @@ Start-Process http://localhost:8080/swagger-ui/index.html
 
 The Maven command runs unit and Testcontainers integration tests on the host,
 where Docker is available. The image build packages the application separately.
+Open [the browser app](http://localhost:8080/) for normal use; Swagger remains the
+developer API client. Node/npm are build-stage tools, so running Compose does not
+require a separate Node installation on the host.
 `--wait` waits for the data-store checks and the image's readiness health check;
 it does not merely wait for the processes to exist. Readiness checks PostgreSQL.
 Redis failure is handled by the application's explicit cache/limiter policies.
@@ -60,6 +70,7 @@ same secrets to the Java process through its environment:
 ```powershell
 docker compose up -d --wait postgres redis
 # Set DB_PASSWORD and JWT_SECRET in the IDE's run configuration, then run the app.
+# For local HTTP browser sessions only, also set BROWSER_COOKIE_SECURE=false.
 ```
 
 Compose reads `.env` for container configuration; it does not export those values
@@ -69,6 +80,20 @@ the IDE app on the same ports:
 ```powershell
 docker compose stop app
 ```
+
+For frontend development, use the pinned Node 24.22.0/npm 11.19.1 tools in a
+separate terminal. Vite proxies `/api` to the Java application on port 8080:
+
+```powershell
+Set-Location frontend
+npm ci --ignore-scripts
+npm test
+npm run dev
+```
+
+Use [the Vite development URL](http://127.0.0.1:5173/) in this mode. Host Maven
+startup does not itself build the frontend. The packaged Docker app includes the
+compiled interface and needs no Vite process.
 
 Inspect operation and stop the stack with:
 
@@ -87,11 +112,16 @@ update the application configuration together.
 
 | Instruction | Purpose |
 |---|---|
+| `FROM node:24.22.0-alpine@sha256:… AS frontend` | Use the official Node image pinned to its registry manifest digest. This stage exists only to build browser assets. |
+| `COPY frontend/package… .npmrc .nvmrc …` | Copy the lockfile and engine settings first so source edits reuse installed dependencies. |
+| `RUN test … && npm ci --ignore-scripts --no-audit` | Verify Node/npm versions, install the exact lockfile without dependency lifecycle scripts, and leave the audit to the separate CI gate. |
+| `COPY frontend/ …` and `RUN npm run build` | Add allowed interface/config/test inputs, typecheck them and produce fingerprinted static assets. No browser is installed in this stage. |
 | `FROM …21-jdk-alpine… AS build` | Start an isolated Java 21 build stage, pinned to an official image digest. The JDK includes the compiler. |
 | `WORKDIR /workspace` | Give build commands a predictable current directory. |
 | `COPY pom.xml mvnw …` and wrapper properties | Copy dependency definitions before source files so ordinary Java edits can reuse downloaded dependencies. |
 | `RUN chmod … dependency:go-offline` | Make the Windows-created wrapper executable on Linux and populate the Maven dependency cache. |
 | `COPY src/main …` | Add application source and resources, including Flyway migrations. |
+| `COPY --from=frontend …dist/ …static/` | Put the compiled interface in Spring Boot's static-resource directory before packaging the JAR. |
 | `RUN … -Dmaven.test.skip=true package` | Produce the runnable JAR. Host/CI `verify` is the mandatory test gate; ordinary Docker builds have no Testcontainers Docker daemon. |
 | `FROM …21-jre-alpine… AS runtime` | Start a smaller final stage containing the Java runtime without the Java compiler. |
 | `RUN addgroup … adduser …` | Create an unprivileged account with stable UID/GID 10001. |
@@ -105,14 +135,19 @@ update the application configuration together.
 
 Each `RUN` or `COPY` creates a reusable filesystem layer. Docker can reuse earlier
 layers when later inputs change. The final stage starts from the JRE image and
-copies only the JAR: the build stage's Maven cache, wrapper and source tree do not
-become part of the runtime filesystem. Spring dependencies are packaged inside
-the executable JAR because the application needs them at runtime.
+copies only the JAR: Node, npm, frontend dependencies, the Maven cache, wrapper
+and source trees do not become part of the runtime filesystem. The compiled
+browser assets and Spring dependencies remain inside the executable JAR because
+the application needs them at runtime. The browser downloads only public assets,
+never backend environment secrets.
 
 `.dockerignore` is an allowlist. The Docker client sends only the POM, Linux
-wrapper, wrapper properties, application source/resources and Docker build files.
-It excludes `.env`, Git history, tests, generated output, IDE settings and local
-work directories before sending the build context to the engine.
+wrapper, wrapper properties, Java application source/resources, required frontend
+source/public/configuration/lockfiles, and Docker build files. Frontend tests and
+Playwright configuration are typechecked by the build, so those source files are
+included. Java integration tests, `.env` files (including nested ones), Git
+history, `node_modules`, `dist`, browser reports, IDE settings and local work
+directories stay outside the context. Markdown is not a frontend build input.
 
 Compose adds a read-only root filesystem, a bounded writable `/tmp`, no Linux
 capabilities and `no-new-privileges`. Its 35-second stop grace period exceeds
@@ -141,14 +176,23 @@ build. No size or successful Docker run is asserted by this guide itself.
 ## GitHub Actions and GHCR
 
 The `verify` job runs for every pull request, every push to `main` and manual
-workflow dispatch. It uses Java 21, Maven caching and Docker-capable Ubuntu
-runners, then uploads test reports. Documentation and deployment-only changes
+workflow dispatch. It uses pinned Java 21 and Node 24.22.0 on Docker-capable Ubuntu
+runners. It installs the locked frontend without lifecycle scripts, rejects HIGH
+and CRITICAL npm audit findings, runs component tests, builds the UI and runs
+Maven verification. It then packages those assets into the JAR and runs real
+Chromium workflows against that application with Compose PostgreSQL/Redis.
+Readiness and process-exit checks gate browser startup; the Java process and
+runner-owned data containers are cleaned up afterward. Browser traces/video are
+disabled to avoid capturing authentication requests; reports and failure
+screenshots are the browser artifacts. Raw application logs and local credentials
+are not uploaded. Actual execution results belong in the verification ledger.
+Documentation and deployment-only changes
 still receive the verification check, so branch protection never waits for a
 workflow skipped by a path filter.
 
 For every push to `main`, `publish-image`:
 
-1. Waits for complete Maven verification to succeed.
+1. Waits for Java, frontend, browser and script verification to succeed.
 2. Builds an image locally and checks its configured non-root user.
 3. Runs Trivy against operating-system packages and Java dependencies; any
    CRITICAL vulnerability fails the job, including an unfixed one.
@@ -166,7 +210,7 @@ any intentional rollback. See [GitOps promotion](gitops-promotion.md).
 The only publishing credential is the existing Actions token. Default workflow
 permissions are `contents: read`; only the publication job receives
 `packages: write`. Pull requests do not receive image-publication authority.
-Actions are pinned to verified release commits; Java base images are pinned to
+Actions are pinned to verified release commits; Node and Java base images are pinned to
 official registry manifest digests. Update pins through reviewed, tested changes
 so security fixes are adopted deliberately.
 

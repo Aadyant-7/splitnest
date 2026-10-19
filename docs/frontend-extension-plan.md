@@ -1,6 +1,7 @@
 # Approved extension: the SplitNest browser app
 
-Status: **approved design; preparation complete; implementation not started**.
+Status: **implementation and browser checks complete for milestones 1–5;
+packaged delivery verification in progress**.
 Scope updated: 19 October 2026 (India).
 
 The original backend, automated checks, documentation and local deployment are
@@ -9,15 +10,16 @@ to demonstrate the existing real workflows in academic and placement interviews.
 This supersedes the original frontend exclusion. Public hosting, paid services
 and commercial operation remain outside the scope.
 
-Progress reporting: original backend/local scope **100%**; approved frontend
-extension **0%**. A combined completion percentage should be based on agreed
+Progress reporting: original backend/local scope **100%**; frontend
+extension **5 of 6 milestones complete (83%)**. A combined completion percentage should be based on agreed
 acceptance milestones, not an invented estimate. The current status and
 milestone gates are maintained in [project-status.md](project-status.md).
 
-Preparation updates the repository guidance, documentation navigation, frontend
-directory notes and generated-file exclusions. It does not change application
-code, install dependencies or alter the working infrastructure. Preserve the
-verified backend baseline. Implement the app next; begin the detailed
+Preparation was pushed as `90d459e`. The React app, typed API/error handling,
+cookie/CSRF adapter, cross-tab session coordination and feature screens now exist.
+Local checks pass: 82 frontend tests and 8 real Chromium workflows. The expanded
+Java tests pass (92 cases); final packaging/CI/kind verification is tracked in
+[project status](project-status.md). Begin the detailed
 [understanding phase](learning-roadmap.md) after the complete app is verified.
 
 ## 1. Intended experience
@@ -52,7 +54,7 @@ The owner approved these tools as part of the full-stack extension:
 | Plain CSS | Responsive styling without another UI framework |
 | Vitest + React Testing Library | Component and API-interaction tests |
 | Playwright | Real-browser end-to-end and multi-tab session tests |
-| Supported Node.js LTS + npm | Build/test tools; versions pinned when implementation starts |
+| Node.js 24.22.0 LTS + npm 11.19.1 | Exact build/test tools, pinned with the dependency lockfile |
 
 React documents Vite as an option for an app built from scratch, including its
 TypeScript template. This project already has a Java API and does not currently

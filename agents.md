@@ -12,8 +12,8 @@ Rules for every task:
 1. Current workflow (updated 2026-10-19): the backend/local deployment baseline
    is complete. The owner approved the frontend extension described in
    `docs/frontend-extension-plan.md` for a free academic and placement project.
-   Organize the repository and documentation first, then implement and verify
-   the browser app, then begin the detailed understanding phase from scratch.
+   Repository preparation is complete. Implement and verify the browser app,
+   then begin the detailed understanding phase from scratch.
    Work autonomously across coherent milestones without stopping after every
    numbered task. Keep the existing business features; do not expand the scope.
 2. Before writing code, explain in a few sentences what you will build and why,
@@ -60,8 +60,9 @@ syllabus and task references; it no longer requires a stop after every task.
 ## 2. Project summary
 
 SplitNest is an academic expense-sharing application for flatmates, families,
-or trip groups. Its Java backend and local delivery lab are verified; the
-approved browser frontend is the next implementation phase.
+or trip groups. Its Java backend and local delivery lab are verified. The React
+frontend is implemented and browser-tested; current delivery verification is
+tracked in `docs/project-status.md`.
 
 - Users register and log in.
 - A user creates a group and becomes its ADMIN. The admin adds existing users
@@ -74,8 +75,8 @@ approved browser frontend is the next implementation phase.
 - Admins set a monthly budget per category. A daily scheduled job creates an
   alert when spending crosses the budget.
 - Login and uploads are rate limited.
-- The current API is usable through Swagger UI. The approved React frontend
-  will provide registration, sign-in and the existing expense-sharing workflows.
+- The React frontend provides registration, sign-in and the existing
+  expense-sharing workflows. The API is also usable through Swagger UI.
   Keep Swagger available for API exploration and developer verification.
 
 Explicitly OUT of scope (do not build): microservices, Kafka/RabbitMQ, public or
@@ -106,8 +107,8 @@ the app itself. A large-scale commercial service is not the objective.
 - k6 for load testing
 - Approved frontend: React, TypeScript, Vite, React Router, plain CSS
 - Frontend testing: Vitest, React Testing Library, Playwright
-- Supported Node.js LTS and npm for frontend build/tests only; resolve compatible
-  versions and pin the runtime and lockfile when implementation begins. Node.js
+- Node.js 24.22.0 LTS and npm 11.19.1 for frontend build/tests only; runtime and
+  dependencies are pinned in `frontend/`. Node.js
   is not an additional production runtime. Package compiled UI assets in the
   existing Spring Boot image.
 
@@ -136,7 +137,7 @@ splitnest/
 │   ├── application.yml
 │   └── db/migration/  # Flyway: V1__..., V2__...
 ├── src/test/java/com/splitnest/...
-├── frontend/          # README now; approved React app implemented next
+├── frontend/          # React app, typed API, component tests and Playwright
 ├── deploy/
 │   ├── kind/kind-config.yaml
 │   ├── base/          # app, postgres, redis manifests + kustomization.yaml

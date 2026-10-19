@@ -5,17 +5,17 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 
 These instructions support a fresh Windows setup. The original host has now
 verified Java 21, Docker Desktop, Git, the generated wrapper and a kind cluster.
-The backend, Compose files and local deployment are implemented and verified;
-the approved browser frontend is not implemented yet. The commands below run the
-current backend. See [verification evidence](evidence/verification.md) for exact
-execution results. Do not paste credentials into chat.
+The backend/local delivery baseline is verified. The frontend and browser-auth
+adapter are now implemented with passing source/browser tests; combined-image
+deployment verification is tracked in [project status](project-status.md).
+See [verification evidence](evidence/verification.md) for dated execution results.
+Do not paste credentials into chat.
 
 This is a local academic and placement project. These instructions require no
 paid hosting, domain, managed database or cloud deployment. GitHub remains the
 existing source-control and CI service; the application itself runs locally.
-Frontend build-tool installation will be documented with the implementation,
-after versions are selected and verified. There is no frontend setup step to run
-at this documentation-only stage.
+Node/npm are needed when developing or testing the frontend. A Docker image build
+provides its own pinned Node build stage; the final runtime needs only Java.
 
 ## 1. Prerequisites for a fresh checkout
 
@@ -129,6 +129,35 @@ Docker must be available for the full verification suite. On Linux/CI the
 equivalent command is `./mvnw verify`. The repository's Git attributes preserve
 Linux wrapper/script line endings and its wrapper is executable in Git.
 
+### Node.js and npm for frontend development
+
+Use Node 24.22.0 and npm 11.19.1, matching
+[frontend/.nvmrc](../frontend/.nvmrc) and `packageManager` in
+[frontend/package.json](../frontend/package.json). The declared engine ranges are
+Node `>=24.22.0 <25` and npm `>=11.19.1 <12`; exact CI/image versions are pinned.
+On a fresh machine, install the compatible Node 24 LTS distribution from
+[Node.js](https://nodejs.org/en/download), then verify both commands. An older
+Node 24.14 installation does not satisfy this project's engine constraint.
+
+The current workspace also has an ignored portable installation. If it exists,
+select it for this PowerShell session without replacing your global installation:
+
+```powershell
+Set-Location E:\SplitNest
+$taskNodeDirectory = Join-Path (Get-Location) '.work\node\node-v24.22.0-win-x64'
+if (Test-Path -LiteralPath (Join-Path $taskNodeDirectory 'node.exe')) {
+    $env:Path = $taskNodeDirectory + ';' + $env:Path
+}
+node --version
+npm.cmd --version
+```
+
+Expected pinned versions are `v24.22.0` and `11.19.1`. The portable directory is
+not committed and will not exist after a fresh clone. A compatible installation
+must supply these tools before npm commands run. No global Vite or TypeScript
+installation is required. `@types/node` 24.19.2 supplies compile-time declarations;
+its version is separate from the Node executable.
+
 ## 2. GitHub repository and authentication
 
 The owner has already created
@@ -192,7 +221,7 @@ available laptop memory, CPU, and disk before running kind plus monitoring; use 
 modest local resource profile and avoid running a duplicate full Compose stack
 at the same time as the cluster unless needed.
 
-## 4. Run and verify the current backend
+## 4. Run and verify the application
 
 From the repository directory:
 
@@ -205,11 +234,71 @@ docker compose up --build -d --wait --wait-timeout 300
 
 `Initialize-Local.ps1` creates random ignored credentials and preserves an
 existing `.env`. `Smoke-Test.ps1` creates synthetic demonstration users and data;
-it verifies the real API without printing credentials. Open
-[Swagger UI](http://localhost:8080/swagger-ui/index.html) after startup.
-Swagger is the current developer interface. These commands do not start the
-approved user-facing screens; those will be added under the
-[frontend plan](frontend-extension-plan.md).
+it verifies the real API without printing credentials. The combined Dockerfile
+builds the frontend into the Java image. Its intended browser URL is
+[SplitNest](http://localhost:8080/); Swagger remains at
+[Swagger UI](http://localhost:8080/swagger-ui/index.html). Check
+[project status](project-status.md) for the combined-image execution result;
+the earlier backend deployment evidence alone does not verify this new image.
+
+### Edit the frontend with Vite
+
+Use two terminals. From the repository root, start the Java API and its local
+data stores:
+
+```powershell
+.\scripts\Initialize-Local.ps1
+.\scripts\Start-Local.ps1
+```
+
+That launcher selects explicit loopback HTTP cookie settings. In the other
+terminal, with the Node version selected above:
+
+```powershell
+Set-Location E:\SplitNest\frontend
+npm.cmd ci --ignore-scripts
+npm.cmd test
+npm.cmd run build
+npm.cmd run dev
+```
+
+Open [Vite development UI](http://127.0.0.1:5173/). Its `/api` proxy targets
+`http://127.0.0.1:8080` by default, keeping browser requests on one origin. Start
+the API and Vite rather than a second Compose app on 8080. To target a deliberately
+different local API, set `SPLITNEST_API_TARGET` before starting Vite. Internal
+verification ports in ignored `.work` logs are not required user defaults.
+
+### Frontend checks and browser workflows
+
+From `frontend/`, with a real API/data stores running on the proxy target:
+
+```powershell
+npm.cmd ci --ignore-scripts
+npm.cmd test
+npm.cmd run build
+npx.cmd playwright install chromium
+npm.cmd run test:e2e
+```
+
+Playwright starts Vite if `SPLITNEST_WEB_URL` is unset. To test an already-running
+packaged application instead, set the URL before the last command:
+
+```powershell
+$env:SPLITNEST_WEB_URL = 'http://127.0.0.1:8080'
+npm.cmd run test:e2e
+Remove-Item Env:SPLITNEST_WEB_URL
+```
+
+The tests create synthetic accounts and financial records. Browser auth needs a
+current browser with Web Locks on localhost/loopback; access tokens stay in memory.
+Secure cookies default to true in Java. The local launch script, Compose and kind
+configuration deliberately select `BROWSER_COOKIE_SECURE=false` for local HTTP.
+Keep the default for an HTTPS environment.
+
+Before `mvnw verify` or repackaging on Windows, stop any process running the same
+`target/splitnest-*.jar`; a running JVM can prevent the package rename. A stopped
+package step does not invalidate passing test results, but it is not a successful
+complete build. Source tests and packaged browser/deployment checks are separate.
 
 For installation, commands and explanations beyond Compose, follow:
 
@@ -226,7 +315,8 @@ examples contain placeholders and require the user to set real values.
 The initial handoff is complete: Java 21 and Docker work, and the GitHub remote
 is https://github.com/Aadyant-7/splitnest.git. The owner explicitly approved the
 local Kubernetes Secret creation from ignored .env values. No per-feature
-approvals are required by the execution plan. The frontend extension is approved,
-but its implementation and verification remain pending. Complete the full local
-app before beginning the owner's detailed learning walkthrough; the
+approvals are required by the execution plan. Frontend source, security and
+browser workflows are implemented; follow current status for remaining delivery
+verification. Complete the full local app before beginning the owner's detailed
+learning walkthrough when they are ready; the
 [documentation index](README.md) separates runbooks from that later reading path.

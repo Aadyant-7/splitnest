@@ -1,6 +1,7 @@
 # GitOps with Argo CD
 
-GitHub Actions builds, tests and publishes an image. Argo CD runs inside the local
+GitHub Actions builds, tests and publishes one image containing the browser UI
+and Java API. Argo CD runs inside the local
 cluster and regularly compares live resources with Git, then reconciles them.
 This pull-based model works when GitHub's runners cannot connect to a laptop's
 private Kubernetes API. It still requires the laptop, Docker and cluster to be
@@ -43,8 +44,10 @@ kubectl --context kind-splitnest -n splitnest get deployment,pods
 
 Check the Application status, the deployed image digest, and the ready Pods.
 `Synced` describes agreement with Git; `Healthy` describes runtime health. Either
-one alone is insufficient evidence of a working API. Run the API demo after a
-successful reconciliation.
+one alone is insufficient evidence of a working app. Run both the API smoke test
+and actual browser workflows after a successful reconciliation. The browser UI
+uses the same application Service/port-forward; there is no separate frontend
+server, ingress or hosting service in the local deployment.
 
 ## Image visibility and authentication
 
@@ -101,6 +104,14 @@ watermark remains after reverting an image-only commit, allowing a subsequent
 documentation-only update to preserve that deliberate rollback. A successful
 build/scan alone does not mean a different image must replace the current one;
 the build profile determines whether application inputs changed.
+
+The profile includes frontend source, lockfiles, engine/build configuration and
+frontend test inputs because the combined image builds and typechecks them.
+Frontend-only functionality changes must promote a new digest. Markdown, including
+`frontend/README.md`, is excluded so a documentation edit cannot undo a deliberate
+image rollback. The [promotion fixture suite](gitops-promotion.md#run-the-isolated-tests)
+checks both behaviors. The local ConfigMap explicitly permits non-Secure cookies
+for loopback HTTP; the server's general default remains Secure.
 
 Argo CD's Application enables automated sync, prune and self-heal. It ignores the
 app Deployment's `/spec/replicas` with `RespectIgnoreDifferences=true` so the HPA

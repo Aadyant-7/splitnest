@@ -3,23 +3,29 @@
 An academic expense-sharing project for flatmates, families, and travel groups.
 Its Java 21/Spring Boot backend combines exact financial arithmetic and group
 access isolation with background processing and a local Kubernetes delivery lab.
-A React/TypeScript browser interface is approved as the next implementation phase.
+A React/TypeScript interface provides real registration, sign-in and shared-expense workflows.
 
-**Status:** original backend/local scope **100% verified**; frontend **0% implemented**.
-Current interaction uses Swagger UI. The target is a polished, free local demo
+**Status:** backend baseline verified; frontend **5/6 milestones complete (83%)**.
+The browser app is implemented and tested; final packaged delivery checks are underway.
+The target is a polished, free local demo
 for learning and placement interviews. Public hosting and commercial operation
 are outside this project's scope. See the [project status](docs/project-status.md),
 [documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).
 
-**Verified:** 75 Java tests with real PostgreSQL/Redis containers, 20 script
-scenarios, Compose and Kubernetes API smoke tests, Pod recovery, Git rollback and
-restoration, and separate cache/autoscaling experiments. [GitHub CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
-passed verification, image scanning, public GHCR publication and deployment-branch
-generation. Argo CD reconciled the published image with Healthy/Synced status.
+**Locally tested:** 92 Java tests with real PostgreSQL/Redis containers,
+82 frontend unit/component tests, 8 real Chromium workflows and 23 script scenarios.
+The original backend evidence also includes Compose/kind API smoke tests, Pod
+recovery, Git rollback/restoration and separate cache/autoscaling experiments.
+[GitHub CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
+now includes browser checks; the combined-image rollout is being verified separately.
 See the [verification record](docs/evidence/verification.md) for evidence.
 
-## Implemented backend features
+## Features
 
+- Responsive browser UI with registration, sign-in, groups, role-aware membership,
+  paginated expenses, stored shares, balances, statement imports and budgets.
+- Memory-only access tokens, HttpOnly refresh cookies, browser CSRF protection,
+  coordinated refresh/logout across tabs and stale-response cancellation.
 - Registration, BCrypt passwords, 15-minute HS256 access JWTs, rotating refresh
   token families with replay detection, and ownership-checked logout.
 - Group administration and reusable membership checks. Outsiders receive 404;
@@ -33,14 +39,17 @@ See the [verification record](docs/evidence/verification.md) for evidence.
 - Monthly category budgets, conflict-safe daily alerts, and database-backed
   ShedLock coordination across replicas.
 - Structured logs, Prometheus metrics, a Grafana dashboard and k6 workloads.
-  The GitOps promotion/rollback generator has eight passing local Git fixtures;
+  The GitOps promotion/rollback generator has eleven passing local Git fixtures;
   those fixtures do not establish a successful remote deployment.
 
 ## Current architecture
 
 ```mermaid
 flowchart LR
-    Client[Swagger / API client] --> Security[JWT validation]
+    Browser[React browser interface] --> Session[Cookie + CSRF browser auth adapter]
+    Session --> Security[JWT validation]
+    Browser --> Security
+    Client[Swagger / API client] --> Security
     Security --> API[Feature controllers and services]
     API --> DB[(PostgreSQL + Flyway)]
     API --> Redis[(Redis: limiting and cache)]
@@ -55,11 +64,11 @@ JPA manages user/token entities; explicit Spring JDBC repositories handle
 financial aggregates and atomic job operations within the same transaction
 manager. [Architecture and flows](docs/architecture.md).
 
-The approved extension will place feature-organized React source in `frontend/`
-and package its compiled assets inside the same Spring Boot application image.
-The existing Maven root, Java source, deployment topology and business rules stay
-in place. Browser authentication will receive its own cookie/CSRF integration
-and tests. This target architecture is documented; it is not deployed yet.
+React source is organized by feature in `frontend/`. A locked Node build produces
+static assets that the existing Spring Boot image serves alongside the API.
+Node is a build/test tool; the final container runs the JRE. Browser authentication
+reuses the existing token services; Swagger retains its JSON-token contract.
+The Maven root, deployment topology and financial rules stay in place.
 
 ## Repository map
 
@@ -67,7 +76,7 @@ and tests. This target architecture is documented; it is not deployed yet.
 |---|---|
 | `src/main/` | Java features, configuration and Flyway migrations |
 | `src/test/` | Java unit/integration tests and statement fixtures |
-| [frontend/](frontend/README.md) | Approved browser app; preparation notes only at present |
+| [frontend/](frontend/README.md) | React app, typed API client, styles, component and browser tests |
 | `deploy/` | Local kind, Kustomize, Argo CD and monitoring configuration |
 | `scripts/` | Setup, smoke checks, manifest validation and GitOps helpers |
 | `loadtest/` | k6 workloads and local-cluster job definitions |
@@ -91,13 +100,15 @@ Initialize-Local creates an ignored `.env` with random credentials; it preserves
 an existing file. Alternatively fill `.env.example` and save it as `.env`.
 Never commit that file or real tokens.
 
+- App: [127.0.0.1:8080](http://127.0.0.1:8080)
 - Swagger: [127.0.0.1:8080/swagger-ui/index.html](http://127.0.0.1:8080/swagger-ui/index.html)
 - Readiness: [127.0.0.1:9090/actuator/health/readiness](http://127.0.0.1:9090/actuator/health/readiness)
 - Metrics: [127.0.0.1:9090/actuator/prometheus](http://127.0.0.1:9090/actuator/prometheus)
 
-Register and log in through Swagger, copy `accessToken`, then select Authorize
-and enter the token. The [demo guide](docs/demo.md) walks through the complete
-scenario. All exposed Compose ports bind to loopback.
+Register and sign in through the app, create a group, and add other registered
+users by email. The [demo guide](docs/demo.md) covers the complete workflow.
+For API exploration, Swagger still accepts an access token from its JSON login
+endpoint. All exposed Compose ports bind to loopback.
 
 ```powershell
 docker compose logs -f app
@@ -120,7 +131,23 @@ docker compose stop app
 
 On Linux/CI: `./mvnw verify`. Tests cover monetary invariants, cross-group access,
 refresh replay/concurrency, rollback, caching, limiter races, parser resource
-limits, import recovery, scheduler locking and observable metrics.
+limits, import recovery, scheduler locking, metrics and browser cookie/CSRF rules.
+
+Frontend development uses Node **24.22.0** and npm **11.19.1**. With the backend
+running on port 8080, open a second terminal:
+
+```powershell
+cd frontend
+npm ci --ignore-scripts
+npm test
+npm run build
+npm run dev
+```
+
+Open [127.0.0.1:5173](http://127.0.0.1:5173) for development. Vite proxies API
+requests to Spring Boot. The [frontend guide](frontend/README.md) explains browser
+testing against the development server or packaged app. Run one browser UI origin
+at a time when comparing local environments; cookies are scoped to hosts/paths.
 
 The separate GitOps fixture suite uses Bash and temporary local Git repositories:
 
@@ -146,7 +173,7 @@ can be reverted separately from manifest changes. Successful remote runs and
 reconciliation are tracked in the verification record.
 
 The initial image scan rejected Boot's Tomcat 11.0.24 dependency. The POM now
-uses Tomcat 11.0.27 within the same major version, and all 75 tests pass with that
+uses Tomcat 11.0.27 within the same major version, and the expanded tests pass with that
 override. The rebuilt local image also passed Trivy with zero CRITICAL findings.
 The remote CI gate also passed. A passing scan or tests alone do not establish
 a successful deployment; the verification record tracks runtime reconciliation.
@@ -193,7 +220,10 @@ the detailed learning phase does not interrupt each build milestone.
 
 ## Resume summary
 
-Built a Java 21/Spring Boot expense-sharing API with PostgreSQL transactions,
-JWT security, Redis caching/rate limiting and asynchronous statement imports;
-automated testing, image scanning and local Kubernetes delivery using GitHub
-Actions, Argo CD and Prometheus/Grafana.
+Built an expense-sharing application with React/TypeScript and Java 21/Spring
+Boot, secure browser authentication, transactional equal splits, PostgreSQL,
+Redis caching/rate limiting and asynchronous imports; automated testing and
+container delivery with Docker, GitHub Actions, Kubernetes, Argo CD and Grafana.
+
+Use the final full-stack delivery claim after the remaining verification gate
+passes; the evidence record distinguishes it from the completed backend baseline.

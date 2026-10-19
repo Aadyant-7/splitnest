@@ -1,0 +1,66 @@
+{
+  "observedAt": "2026-10-19T14:07:32.0611062Z",
+  "scope": "Free local full-stack application; original backend evidence retained separately",
+  "java": {
+    "failures": 0,
+    "errors": 0,
+    "elapsedSeconds": 52.302,
+    "tests": 92,
+    "skipped": 0,
+    "command": "mvnw.cmd -B -ntp verify",
+    "build": "SUCCESS"
+  },
+  "frontend": {
+    "npmAuditVulnerabilities": 0,
+    "unitAndComponentTests": 82,
+    "npm": "11.19.1",
+    "build": "TypeScript strict + Vite PASS",
+    "node": "24.22.0"
+  },
+  "chromium": {
+    "coverage": [
+      "registration and HttpOnly cookie restoration",
+      "exact three-user splits, balances and former-member history",
+      "member/admin/outsider permissions",
+      "real CSV import and budget changes",
+      "two-tab real refresh rotation and shared logout",
+      "mobile layout and validation",
+      "actual fixed-window login 429",
+      "keyboard sign-in, skip link and group sections"
+    ],
+    "viteRun": {
+      "result": "PASS",
+      "elapsedSeconds": 20.3
+    },
+    "scenarios": 8,
+    "note": "Only access expiry is simulated by a one-time 401 interception in the multi-tab test. Refresh rotation and business requests are real.",
+    "packagedComposeRun": {
+      "elapsedSeconds": 19.6,
+      "url": "http://127.0.0.1:8080",
+      "result": "PASS"
+    }
+  },
+  "compose": {
+    "openApiPaths": 21,
+    "dataVolume": "Preserved",
+    "uiRootStatus": 200,
+    "services": "app,postgres,redis healthy",
+    "legacyApiSmoke": "PASS"
+  },
+  "imageScan": "frontend-image-scan.json",
+  "screenshots": {
+    "data": "Synthetic accounts, actual API expenses; no tokens or passwords visible",
+    "runtime": "Packaged Compose application at port8080",
+    "files": [
+      "frontend-login.png",
+      "frontend-groups.png",
+      "frontend-expenses.png",
+      "frontend-mobile.png"
+    ]
+  },
+  "delivery": {
+    "kubernetes": "Pending combined-image rollout",
+    "ci": "Pending first full-stack source push",
+    "frontendOnlyPromotion": "11 local GitOps fixtures include frontend source and lockfile promotion plus README rollback preservation"
+  }
+}

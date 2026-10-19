@@ -19,6 +19,8 @@ if ([string]::IsNullOrWhiteSpace($env:DB_PASSWORD) -or [string]::IsNullOrWhiteSp
 $taskPostgresPort = if ($env:POSTGRES_PORT) { $env:POSTGRES_PORT } else { '5433' }
 $env:DB_URL = "jdbc:postgresql://localhost:$taskPostgresPort/splitnest"
 $env:DB_USER = 'splitnest'
+# This launcher is only for loopback HTTP development; the server default stays Secure.
+$env:BROWSER_COOKIE_SECURE = 'false'
 Push-Location $taskProjectRoot
 try {
     if (-not $SkipInfrastructure) {

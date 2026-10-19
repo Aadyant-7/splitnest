@@ -1,6 +1,8 @@
 package com.splitnest.common.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.splitnest.auth.BrowserSessionCookies;
+import com.splitnest.common.config.SpaRoutes;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
@@ -31,6 +33,11 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration(proxyBeanMethods = false)
@@ -71,6 +78,7 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, JsonMapper json,
+                                            BrowserSessionCookies browserCookies,
                                             @Value("${management.server.port:9090}") int managementPort) throws Exception {
         var unauthenticated = (org.springframework.security.web.AuthenticationEntryPoint) (request, response, exception) -> {
             ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication is required or the bearer token is invalid");
@@ -80,22 +88,48 @@ public class SecurityConfiguration {
             response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
             json.writeValue(response.getOutputStream(), problem);
         };
+        AccessDeniedHandler denied = (request, response, exception) -> {
+            String detail = exception instanceof CsrfException
+                    ? "A valid CSRF token is required for browser authentication" : "Access is denied";
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, detail);
+            problem.setInstance(URI.create(request.getRequestURI()));
+            response.setStatus(403);
+            response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+            json.writeValue(response.getOutputStream(), problem);
+        };
+        var csrfCookies = new CookieCsrfTokenRepository();
+        csrfCookies.setCookieName(BrowserSessionCookies.CSRF_NAME);
+        csrfCookies.setHeaderName(BrowserSessionCookies.CSRF_HEADER);
+        csrfCookies.setCookieCustomizer(cookie -> cookie.httpOnly(true).secure(browserCookies.secure())
+                .sameSite("Strict").path(BrowserSessionCookies.AUTH_PATH));
+        var browserCsrf = new CsrfFilter(csrfCookies);
+        browserCsrf.setRequireCsrfProtectionMatcher(request ->
+                request.getRequestURI().startsWith(BrowserSessionCookies.AUTH_PATH + "/")
+                        && CsrfFilter.DEFAULT_CSRF_MATCHER.matches(request));
+        browserCsrf.setAccessDeniedHandler(denied);
+        // Resource-server DSL exempts bearer requests from its CSRF config. A dedicated standard
+        // filter keeps cookie-backed browser logout protected even when it also carries a JWT.
         return http.csrf(csrf -> csrf.disable())
+                .addFilterBefore(browserCsrf, BearerTokenAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers.addHeaderWriter((request, response) -> {
+                    if (SpaRoutes.page(request.getRequestURI()) || SpaRoutes.resource(request.getRequestURI())) {
+                        response.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'; "
+                                + "style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; "
+                                + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
+                    }
+                }))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(request -> (request.getMethod().equals("GET") || request.getMethod().equals("HEAD"))
+                                && (SpaRoutes.page(request.getRequestURI()) || SpaRoutes.resource(request.getRequestURI()))).permitAll()
                         .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
+                                "/api/v1/browser-auth/csrf", "/api/v1/browser-auth/login", "/api/v1/browser-auth/refresh",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(request -> request.getLocalPort() == managementPort
                                 && request.getRequestURI().equals("/actuator/prometheus")).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(unauthenticated)
-                        .accessDeniedHandler((request, response, exception) -> {
-                            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access is denied");
-                            problem.setInstance(URI.create(request.getRequestURI()));
-                            response.setStatus(403);
-                            response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-                            json.writeValue(response.getOutputStream(), problem);
-                        }))
+                        .accessDeniedHandler(denied))
                 .oauth2ResourceServer(resource -> resource.jwt(jwt -> { }).authenticationEntryPoint(unauthenticated))
                 .build();
     }

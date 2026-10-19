@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-19T14:04:16.7731994Z",
+  "imageTag": "splitnest:fullstack-local",
+  "imageId": "sha256:1f71b0d5ba53bbc1a5d0f9ef125ee7835f2af900c7e965133875d47826f975fc",
+  "runtimeUser": "10001:10001",
+  "imageSizeBytes": 474146183,
+  "scanner": "Trivy 0.70.0",
+  "policy": "Operating-system and library vulnerabilities; fail on CRITICAL including unfixed",
+  "criticalVulnerabilities": 0,
+  "rawReport": "Ignored .work/scan/frontend-trivy.json",
+  "dockerContextChecks": [
+    "root .env excluded",
+    "nested .env and .env.local excluded",
+    "public source control included"
+  ],
+  "note": "Local combined-image build and dated policy result. Other severities and future vulnerabilities are not excluded by this result."
+}

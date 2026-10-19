@@ -19,6 +19,8 @@ digest_a="sha256:$(printf '%064d' 1)"
 digest_b="sha256:$(printf '%064d' 2)"
 digest_c="sha256:$(printf '%064d' 3)"
 digest_d="sha256:$(printf '%064d' 4)"
+digest_e="sha256:$(printf '%064d' 5)"
+digest_f="sha256:$(printf '%064d' 6)"
 mkdir -p "$temporary/bin"
 cat > "$temporary/bin/kubectl" <<'MOCK'
 #!/usr/bin/env bash
@@ -47,10 +49,13 @@ git -C "$source" config user.name 'Promotion Fixture'
 git -C "$source" config user.email 'promotion-fixture@example.invalid'
 git -C "$source" config core.autocrlf false
 git -C "$source" remote add origin "$remote"
-mkdir -p "$source/deploy/base" "$source/deploy/overlays/local" "$source/src/main" "$source/scripts"
+mkdir -p "$source/deploy/base" "$source/deploy/overlays/local" "$source/src/main" "$source/scripts" "$source/frontend/src"
 printf 'FROM example\n' > "$source/Dockerfile"
 printf '<project/>\n' > "$source/pom.xml"
 printf 'version A\n' > "$source/src/main/application.txt"
+printf 'browser version A\n' > "$source/frontend/src/App.tsx"
+printf '{"lockfileVersion":3,"version":"1"}\n' > "$source/frontend/package-lock.json"
+printf 'Frontend setup notes\n' > "$source/frontend/README.md"
 cp -- "$promoter" "$source/scripts/promote-deployment.sh"
 cat > "$source/deploy/overlays/local/kustomization.yaml" <<'YAML'
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -161,4 +166,34 @@ assert_image "$digest_b"
 git --git-dir="$remote" merge-base --is-ancestor "$rollback_head" refs/heads/deploy/local
 deployment_file deploy/base/configmap.yaml | grep -Fx '  version: B' >/dev/null
 printf 'PASS git revert preserves manifest history and a later docs-only push keeps the rollback\n'
-printf 'All 8 promotion scenarios passed. No external repository or Kubernetes cluster was used.\n'
+
+printf 'browser version E\n' > "$source/frontend/src/App.tsx"
+commit_source 'Change only frontend application source'
+frontend_sha=$(source_head)
+promote "$digest_e"
+frontend_promotion=$(deployment_head)
+assert_image "$digest_e"
+deployment_file deploy/provenance/image.env | grep -Fx "source_sha=$frontend_sha" >/dev/null
+printf 'PASS frontend-only source changes promote their exact verified image\n'
+
+git -C "$temporary/rollback" fetch origin deploy/local >> "$temporary/promotion.log" 2>&1
+git -C "$temporary/rollback" reset --hard origin/deploy/local >> "$temporary/promotion.log" 2>&1
+git -C "$temporary/rollback" revert --no-edit "$frontend_promotion" >> "$temporary/promotion.log" 2>&1
+git -C "$temporary/rollback" push origin HEAD:deploy/local >> "$temporary/promotion.log" 2>&1
+frontend_rollback=$(deployment_head)
+assert_image "$digest_b"
+printf 'Updated frontend documentation only\n' > "$source/frontend/README.md"
+commit_source 'Frontend README after deliberate rollback'
+promote "$digest_f"
+assert_image "$digest_b"
+git --git-dir="$remote" merge-base --is-ancestor "$frontend_rollback" refs/heads/deploy/local
+printf 'PASS frontend README-only changes preserve a deliberate image rollback\n'
+
+printf '{"lockfileVersion":3,"version":"2"}\n' > "$source/frontend/package-lock.json"
+commit_source 'Change only the frontend dependency lockfile'
+lockfile_sha=$(source_head)
+promote "$digest_f"
+assert_image "$digest_f"
+deployment_file deploy/provenance/image.env | grep -Fx "source_sha=$lockfile_sha" >/dev/null
+printf 'PASS frontend dependency lockfile changes trigger image promotion\n'
+printf 'All 11 promotion scenarios passed. No external repository or Kubernetes cluster was used.\n'

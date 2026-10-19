@@ -13,7 +13,7 @@ commercial operation are outside the scope.
 |---|---|---|
 | Original backend and local delivery | **100% of the original acceptance scope** | [Verification record](evidence/verification.md): 75 Java tests, 20 script scenarios, actual Compose/kind smoke tests, CI, GitOps rollback/restoration and monitoring/load observations |
 | Full-stack preparation | **Complete** | Approved scope/stack, [execution plan](frontend-extension-plan.md), [repository map](../README.md#repository-map), documentation index, frontend directory notes and learning sequence |
-| Frontend implementation | **0 of 6 milestones complete (0%)** | No UI source, installed frontend dependencies, frontend test result or UI deployment exists yet |
+| Frontend implementation | **5 of 6 milestones complete (83%)** | Actual UI, 82 frontend tests, 8 Chromium workflows; packaged delivery verification underway |
 | Detailed understanding phase | **Scheduled after full-app verification** | [Learning roadmap](learning-roadmap.md), code walkthrough, exercises and unanswered interview questions |
 
 The backend percentage describes the original scope. It does not imply the
@@ -28,12 +28,12 @@ owner's machine. Test counts must be updated when new tests are actually run.
 
 | # | Milestone | State |
 |---|---|---|
-| 1 | Interface foundation: compatible versions, actual DTO contracts, screen layout/routes and typed API errors | Not started |
-| 2 | Browser authentication and app shell: cookie/CSRF adapter, session restoration and refresh coordination | Not started |
-| 3 | Groups, membership, expenses and balances | Not started |
-| 4 | Statement uploads, real job polling, budgets and alerts | Not started |
-| 5 | Responsive/accessibility polish, error states, component and browser reliability tests | Not started |
-| 6 | Packaged frontend build, CI/GitOps promotion, Compose/kind verification and complete demo documentation | Not started |
+| 1 | Interface foundation: compatible versions, actual DTO contracts, screen layout/routes and typed API errors | Verified |
+| 2 | Browser authentication and app shell: cookie/CSRF adapter, session restoration and refresh coordination | Verified: Java security and browser-session tests |
+| 3 | Groups, membership, expenses and balances | Verified: actual three-user browser scenario, historical balances and permissions |
+| 4 | Statement uploads, real job polling, budgets and alerts | Verified: actual mixed CSV processing and budget changes; snapshot rendering/component tests |
+| 5 | Responsive/accessibility polish, error states, component and browser reliability tests | Verified: desktop/mobile capture, keyboard navigation and multi-tab regressions |
+| 6 | Packaged frontend build, CI/GitOps promotion, Compose/kind verification and complete demo documentation | In progress |
 
 Acceptance evidence for every milestone is in the
 [frontend execution plan](frontend-extension-plan.md#5-focused-execution-milestones).
@@ -57,8 +57,8 @@ happen; ask the owner only for an indispensable decision, access or constraint.
 ## Workflow and handoff
 
 1. **Preparation:** organize instructions, scope, repository map and docs. Complete.
-2. **Build:** implement the six frontend milestones, maintaining tests, decisions
-   and meaningful verified Git commits throughout.
+2. **Build:** frontend features and browser integration are implemented; preserve
+   tests, decisions and meaningful verified Git commits throughout.
 3. **Verify:** run the full browser journeys against the real backend and the
    packaged app; record the actual deployment and test results.
 4. **Understand:** explain the completed system from requirements and data design
@@ -72,7 +72,9 @@ architecture decisions and measured evidence so they can be read in context.
 
 ## Preparation file inventory
 
-This milestone changes documentation and generated-file exclusions only:
+Preparation commit `90d459e` changed documentation and generated-file exclusions
+only. Its file inventory is retained below; the current implementation inventory
+is maintained in [implementation.md](implementation.md).
 
 | File | Change |
 |---|---|
@@ -94,16 +96,16 @@ This milestone changes documentation and generated-file exclusions only:
 | [0007-browser-frontend.md](decisions/0007-browser-frontend.md) | Record the accepted frontend decision with implementation pending |
 | [evidence/verification.md](evidence/verification.md) | Clarify the scope of existing evidence without changing measured results |
 
-The operational guides and first six ADRs were reviewed for scope consistency;
-their existing backend procedures remain applicable. No Java source, database
-schema, deployed resource or dependency version changes in this milestone.
+The operational guides and first six ADRs were reviewed for scope consistency.
+The later frontend implementation adds source/security/tests and updates the
+delivery pipeline; those changes are separate from this preparation record.
 
 Review the preparation commit and ignored frontend artifacts from PowerShell in
 the repository root:
 
 ```powershell
 git status --short
-git log -1 --oneline
+git show --stat --oneline 90d459e
 git diff --check
 git check-ignore -- frontend/node_modules/react/index.js frontend/dist/index.html frontend/coverage/index.html frontend/test-results/results.json frontend/.env
 ```
@@ -111,6 +113,5 @@ git check-ignore -- frontend/node_modules/react/index.js frontend/dist/index.htm
 The last command should list every supplied path as ignored. Frontend source and
 `package-lock.json` must remain trackable. Documentation checks cover local file
 links, heading-fragment links, balanced fenced blocks, preserved demo commands
-and unchanged original interview questions. No new application behavior is added
-in this preparation milestone; runtime test results remain the dated baseline
-until the next actual run.
+and unchanged original interview questions. The preparation record does not
+claim runtime results for the later frontend implementation.

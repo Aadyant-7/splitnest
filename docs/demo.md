@@ -3,11 +3,12 @@
 Navigation: [documentation index](README.md) · [project status](project-status.md) ·
 [approved frontend plan](frontend-extension-plan.md).
 
-This guide demonstrates the verified backend through Swagger and HTTP. The
-approved browser frontend has not been implemented, so no user-facing screen
-walkthrough or frontend test result is claimed here. The final full-app browser
-demonstration will be added after implementation. This project runs locally for
-academic and placement use; public hosting and paid services are outside scope.
+This guide demonstrates the implemented React interface and the preserved Swagger
+and HTTP workflows. The strict frontend build, 82 unit/component tests, seven
+real-backend Vite/Chromium scenarios and 92 Java tests have passed. Combined-image
+delivery verification is a separate gate; check [project status](project-status.md)
+for its latest result. This project runs locally for academic and placement use;
+public hosting and paid services are outside scope.
 
 Use disposable local accounts and data. Start Docker Desktop, then follow
 [setup.md](setup.md) and [docker.md](docker.md) to run either the JVM app with
@@ -38,6 +39,67 @@ The script creates disposable accounts, verifies uneven splits/net zero, denies 
 outsider, processes valid/invalid import rows and rejects refresh-token replay.
 It prints a safe result summary rather than passwords or tokens. The walkthrough
 below adds manual membership, role and operational observations.
+
+## Browser demonstration
+
+For the verified development flow, start the API with `scripts/Start-Local.ps1`,
+then run `npm ci --ignore-scripts` and `npm run dev` from `frontend/` using the
+versions in [setup.md](setup.md). Open `http://127.0.0.1:5173`. The packaged
+application uses the same screens on `http://localhost:8080/`; its runtime
+verification is recorded separately. Never run two app processes on 8080.
+
+1. Choose **Create an account**. Register three disposable users with names,
+   distinct example emails and locally chosen passwords. Use separate browser
+   profiles/private contexts for different users: ordinary tabs share one login.
+2. Sign in as the first user. On **Your groups**, enter a name and choose
+   **Create group**. The workspace shows that user as **Admin**.
+3. Open **Members**, add the other two registered emails, and explain why this
+   adds an existing account rather than sending an invitation.
+4. Open **Expenses**. Record a `100.00` FOOD expense with today's date and the
+   selected payer. Expand **Stored shares** in its row: the actual backend split
+   is 33.34/33.33/33.33. The lowest canonical UUID receives the extra paisa.
+5. Open **Overview**. Compare paid, share and net balances. Add a second payment
+   from another member, then inspect how the stored results change. The group
+   total net remains zero; the UI displays the API's values.
+6. Use the member's separate profile to open the group. Members can record
+   expenses but have no member-management/budget-edit controls; only creators or
+   admins see an expense's Delete button. Server permission checks still apply
+   if someone manually constructs a forbidden request. An unrelated user opening
+   the group's URL receives the server's 404 error.
+7. As admin, remove a member. **Overview** retains their historical paid/share
+   amounts and marks them as a former member. Their account loses group access.
+8. Open **Imports** and upload [mixed.csv](../src/test/resources/statements/mixed.csv).
+   Observe the real job status and final imported/invalid counts. The interface
+   refreshes expenses/balances after completion. It polls every two seconds for
+   up to two minutes, then offers **Check status again**; pausing the browser's
+   checks does not cancel the server job. Only the latest pending job ID is
+   remembered for that account/group in this tab, not an import-history list.
+9. Open **Budgets** and save an admin category limit. Explain the schedule shown
+   on screen: daily at 00:00 UTC, strict overspending, one persisted snapshot per
+   category/month. Saving a limit does not run a check or display a fabricated
+   live spending total. Existing alerts are read from the real API.
+10. Reload the page to restore the session through the refresh cookie. Open a
+    second ordinary tab, then sign out in one; both return to sign-in. Explain
+    the shared Web Lock and generation guard rather than exposing token values.
+11. Try the layout at a narrow viewport and navigate with Tab/Enter. Inspect form
+    labels, validation messages, loading/empty/error states and the skip link.
+    Delete a disposable expense after accepting its confirmation dialog.
+
+The automated browser scenarios create synthetic data and exercise real HTTP
+requests. Run from `frontend/` after starting the API:
+
+```powershell
+npm.cmd test
+npm.cmd run build
+npx.cmd playwright install chromium
+npm.cmd run test:e2e
+```
+
+Use `SPLITNEST_WEB_URL=http://127.0.0.1:8080` for an already-running packaged app;
+without it Playwright starts Vite. See [frontend/README.md](../frontend/README.md)
+for configuration and current evidence. Traces/video are disabled because they
+can capture login bodies or authentication headers. Share only reviewed synthetic
+screenshots, never browser storage/network dumps containing credentials.
 
 ## Swagger demonstration
 
@@ -243,26 +305,24 @@ Prometheus/Grafana setup and controlled cache comparisons follow
 demonstrating multi-replica traffic. A Service port-forward selects a backing Pod
 and cannot prove that load was distributed.
 
-## Planned full-app acceptance demonstration
+## Delivery evidence and the learning phase
 
-After the frontend is implemented, the acceptance walkthrough must use ordinary
-browser screens to register/sign in, create a group, add registered members, add
-an expense, inspect exact balances, import a sample statement, view budgets and
-alerts, and sign out. It must also show validation errors, role restrictions and
-safe session expiry using the real backend. The packaged application must work
-through both Compose and the local Kubernetes Service.
-
-These are pending acceptance checks, not recorded results. Preserve the API
-walkthrough above as a developer/debugging path. Follow the
-[approved plan](frontend-extension-plan.md) for the complete criteria and
-[project status](project-status.md) for verified progress. The detailed code and
-interview learning walkthrough begins after the full local app is finished.
+The browser source and real-backend development workflows are implemented and
+tested. The combined image, its scan, Compose/kind browser operation and a
+frontend-only GitOps promotion need their own execution evidence; source files
+or a Vite run alone cannot establish those results. Use
+[project status](project-status.md) and the [verification ledger](evidence/verification.md)
+for the latest delivery state. The original API walkthrough remains a useful
+developer/debugging path. The detailed code/interview walkthrough starts after
+the full local app is verified, when the owner is ready.
 
 ## A concise interview explanation
 
-This describes the verified backend; full-stack wording follows frontend verification.
+This describes the implemented source and its demonstrated browser/API behavior.
+Attach deployment claims only to the corresponding evidence record.
 
-> SplitNest is a Java expense-sharing API built as a modular monolith. I focused
+> SplitNest is a full-stack expense-sharing application with a React interface
+> and a Java modular monolith. I focused
 > on exact financial arithmetic and access isolation: PostgreSQL transactions
 > save expenses with immutable split snapshots, and SQL aggregates calculate net
 > balances. JWTs authenticate requests, rotating refresh families detect replay,
@@ -270,15 +330,16 @@ This describes the verified backend; full-stack wording follows frontend verific
 > imports use persisted jobs, atomic claims and recovery rather than depending on
 > an in-memory event alone. The repository includes container, Kubernetes,
 > GitOps delivery and monitoring, verified against a local Kubernetes cluster,
-> with tests and operating documentation.
+> with tests and operating documentation. Browser sessions use HttpOnly refresh
+> cookies, CSRF checks and coordinated rotation across tabs.
 
 The verification ledger links the successful CI run and exact registry image
 reconciled by Argo CD. Describe the controlled performance results with their
 dataset and limits; do not treat one local run as a capacity guarantee. The local single PostgreSQL instance and PVC
 are a deployment learning setup, not a highly available database or a backup plan.
-Until the frontend acceptance checks pass, describe this as a completed backend
-with an approved browser extension in progress. After verification, the full-app
-description can include the implemented user interface and its actual tests.
+The original delivery evidence identifies the backend release it tested; the
+combined frontend image requires a new record. A source/browser result does not
+prove a registry publication or Kubernetes rollout.
 
 After demonstrating, explain without reading:
 

@@ -1,8 +1,8 @@
 # SplitNest learning guide
 
-This guide explains the implemented backend and its local delivery design. The
-React extension is approved but not implemented; its concepts below are marked
-as future work. Use the [project status](project-status.md) to check what exists
+This guide explains the implemented Java backend, React interface and delivery
+design. The frontend strict build and source/browser tests have passed; the new
+combined-image delivery needs its own evidence. Use [project status](project-status.md) to check what exists
 and the [documentation index](README.md) to find the relevant guide.
 
 The detailed from-scratch learning phase starts after the complete browser app
@@ -159,8 +159,9 @@ An image is the packaged application and runtime. A container is a running
 instance of an image. Docker Compose describes how the app, PostgreSQL, and
 Redis run together on the developer's computer.
 
-A multistage Dockerfile uses a JDK/build stage to package the app and a smaller
-JRE stage to run it. The final image need not include Maven or source files.
+A multistage Dockerfile uses Node to compile the React assets, a JDK stage to
+package them with Java, and a JRE stage to run the result. The final image does
+not need a Node server, npm, Maven or application source files.
 Running as a non-root user reduces unnecessary privileges. Image layers let
 Docker reuse unchanged build steps.
 
@@ -249,9 +250,9 @@ For each major decision, practice explaining the problem, chosen design,
 alternative, tradeoff, and evidence. Be ready to open the implementation and its
 test. Explain a failure case as well as the successful path.
 
-Today, describe this as a backend application with a local Kubernetes delivery lab.
-After the frontend acceptance gates pass, describe the verified result as a
-full-stack expense-sharing application. Planned screens are not completed work.
+The source now implements a full-stack expense-sharing application. Explain its
+real browser/API tests and identify which image a deployment record verified.
+A successful Vite workflow does not establish a combined-image rollout.
 Explain what would be needed for public production use, such as TLS, managed
 backups/restores, database high availability, access controls, and operational
 capacity. Those are limits to understand, not additional implementation scope.
@@ -264,38 +265,89 @@ Three initial self-checks:
 
 The full unanswered question list is in [interview-prep.md](interview-prep.md).
 
-## 13. Browser concepts to study after implementation
+## 13. Trace the implemented browser interface
 
-The following is the accepted design, not a description of existing UI code.
-The [frontend plan](frontend-extension-plan.md) and
-[ADR 0007](decisions/0007-browser-frontend.md) define its implementation gates.
+Start with [App.tsx](../frontend/src/app/App.tsx), then
+[GroupPage.tsx](../frontend/src/features/groups/GroupPage.tsx) and
+[ExpenseForm.tsx](../frontend/src/features/expenses/ExpenseForm.tsx). React renders
+state as components; an event updates state or sends a request. TypeScript checks
+declared shapes during a build, while actual server validation still decides
+whether an amount, payer or membership is valid. The form sends the decimal as
+text. Only Java/PostgreSQL create authoritative stored splits.
 
-React components will turn state into a visible interface. TypeScript will make
-form data and API response shapes explicit, while runtime validation and the
-server's rules will still decide whether a request is valid. A hidden Delete
-button improves the interface; only the backend's permission check prevents an
-unauthorized deletion. The UI must show stored financial results rather than
-perform its own authoritative split calculation.
+The group workspace reads group details, balances and a page of expenses. After
+a mutation, it fetches actual results again. `AbortController`, cleanup flags and
+account/group-keyed components prevent old responses updating a different screen.
+A hidden Delete button improves the interface; server authorization is what
+prevents a forbidden deletion. The UI formats returned INR values rather than
+reimplementing the financial algorithm in JavaScript.
 
-Vite will serve the interface during development and build static assets for the
-packaged application. Its development proxy and the packaged Spring Boot server
-keep browser API requests on the same origin. React Router will handle screen
-navigation. A page refresh on an app route must load the interface, while an
-unknown API route must retain its API error instead of returning HTML.
+Vite serves the development interface and proxies `/api` to Java. It also builds
+static files for Spring Boot. React Router handles screen navigation; the Java
+allowlist forwards known page refreshes to `index.html` and leaves unknown API,
+actuator and static paths as errors. Follow
+[SpaController](../src/main/java/com/splitnest/common/config/SpaController.java)
+and its tests to see that boundary. Bundled same-origin scripts/styles work with
+the UI's restrictive content security policy.
 
-Browser storage changes the security model. The design keeps the access JWT in
-memory and refresh capability in an HttpOnly cookie. JavaScript cannot read an
-HttpOnly cookie, but the browser can send it automatically; cookie-based actions
-therefore need explicit CSRF protection. Browser refresh/logout will reuse the
-existing token services through an adapter. Requests across tabs must coordinate
-refresh because the existing replay defense revokes a reused token family.
-The current bearer API alone does not prove these future browser boundaries.
+### Why browser authentication needs another boundary
 
-Component tests will verify interaction states; real-browser tests will exercise
-navigation, authentication, permissions and multi-tab behavior with the backend.
-The final image will need a frontend build stage and the CI/GitOps source profile
-will need to include frontend source and lockfiles. A working Vite screen alone
-will not prove that the packaged app or a frontend-only deployment works.
+Read [session.ts](../frontend/src/app/session.ts) and
+[BrowserAuthController](../src/main/java/com/splitnest/auth/BrowserAuthController.java).
+The access JWT lives only in memory; reloading loses it. The browser automatically
+sends the HttpOnly refresh cookie to its narrow browser-auth path, allowing the
+application to restore access. HttpOnly prevents JavaScript reading that cookie;
+it does not stop the browser sending it. Therefore all unsafe browser-auth calls,
+including login and bearer-authenticated logout, require the masked CSRF header
+and matching cookie. Existing JSON bearer API clients retain their contracts.
 
-No paid service or public app host is needed for this learning phase. Use
-synthetic accounts and statements with the existing local Compose/kind setup.
+The frontend fetches the CSRF token while holding a shared Web Lock, then posts
+the browser operation. A local promise merges concurrent refresh requests within
+one tab. The Web Lock additionally serializes the shared cookie across tabs.
+Without it, two tabs could submit the same refresh secret and trigger the
+backend's family-replay defense. Logout refreshes directly under its existing
+lock rather than trying to acquire that same lock again.
+
+BroadcastChannel sends only account-change/sign-out notifications. A generation
+number invalidates older requests: if `/users/me` finishes after another tab
+signed out, the profile must not revive that user. The API client likewise checks
+generation before returning results and retries an authentication rejection only
+once. It preserves JSON/FormData and cancellation signals. Authentication secrets
+never enter browser storage or channel messages.
+
+For a transient server error, the adapter preserves the refresh cookie so the
+user can retry. A confirmed invalid/expired token clears it. A rejected logout
+with a different owner's token returns 403 without deleting that owner's valid
+cookie. The four focused controller failure tests distinguish these outcomes.
+
+### Interface state and test layers
+
+[ImportsPanel](../frontend/src/features/imports/ImportsPanel.tsx) remembers only a
+validated job UUID under a user/group key in per-tab sessionStorage. It polls
+every two seconds, bounds automatic checks to two minutes and offers a manual
+recheck. Changing account/group aborts the old lifecycle. The backend remains
+responsible for access and processing even if the browser stops checking.
+[BudgetsPanel](../frontend/src/features/budgets/BudgetsPanel.tsx) distinguishes
+limits and first-detection alert snapshots from live spending. Saving a limit
+does not run the daily job.
+
+The current source checks include 82 unit/component tests, 92 Java tests and the
+first seven real-backend Chromium workflows through Vite. Component tests isolate
+loading, validation, error, permission and timing states; Chromium checks browser
+navigation, real cookies, actual financial writes and two-tab sessions. Java
+tests establish CSRF, cookie scope, permissions and transactions independently.
+Consult current status for later keyboard/packaged runs. Image scanning and a
+local deployment require separate evidence; build/promotion source now includes
+the frontend, and eleven GitOps fixtures cover its change profile.
+
+Understanding checks:
+
+1. Why does a TypeScript interface not validate a real HTTP response at runtime?
+2. Why is a promise sufficient inside one tab but insufficient for its shared refresh cookie?
+3. Which result should be discarded when an account changes while a request is running?
+4. Why is a remembered job UUID safe to persist while a refresh token is not?
+5. Which test layer can prove a real cookie works, and which additional check proves the image serves the compiled UI?
+
+No paid service or public app host is required. The later guided study phase
+begins when the full app is verified and the owner is ready, using synthetic
+accounts and statements.

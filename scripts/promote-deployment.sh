@@ -52,10 +52,12 @@ if git -C "$repo" ls-tree -r "$source_sha" -- deploy | awk '$1 != "100644" && $1
   die 'Deployment inputs must be ordinary files; symlinks and submodules are not supported'
 fi
 
-# Include build inputs and the build/promotion pipeline, but not documentation,
-# tests or deploy manifests. Those changes must preserve an intentional rollback.
+# Frontend tests/configuration are typechecked in the Docker build, so include
+# every tracked frontend input except Markdown. Java tests and deploy manifests
+# remain separate from the application build profile.
 build_profile=$(git -C "$repo" ls-tree -r "$source_sha" -- \
-  Dockerfile .dockerignore pom.xml mvnw .mvn src/main .github/workflows/ci.yml scripts/promote-deployment.sh \
+  Dockerfile .dockerignore pom.xml mvnw .mvn src/main frontend .github/workflows/ci.yml scripts/promote-deployment.sh \
+  | awk 'tolower($0) !~ /\tfrontend\/.*\.md$/' \
   | git -C "$repo" hash-object --stdin)
 manifest_profile=$(git -C "$repo" rev-parse "$source_sha:deploy")
 

@@ -3,12 +3,15 @@
 Initial verification: 18 October 2026; runtime follow-up: 19 October 2026 (India).
 Record observed results, not inferred completion.
 
-This record verifies the original backend and local delivery scope. The owner
-subsequently approved a free, local browser-app extension; its implementation
-has not started and no frontend test or UI deployment is claimed here. See the
-[current project status](../project-status.md) for the expanded acceptance gates.
+The original sections below preserve the backend/local delivery baseline. The
+owner subsequently approved the free local browser-app extension, now implemented
+and tested. New full-stack checks are recorded separately below and in
+[current project status](../project-status.md).
 
 ## Backend
+
+This section records the original 75-test backend release; the expanded 92-test
+full-stack verification is recorded in the final section below.
 
 - Java: Temurin 21.0.12.1; Maven wrapper: 3.10.0; Spring Boot: 4.1.1.
 - `mvnw.cmd verify`: **75 tests, 0 failures, 0 errors, 0 skipped**.
@@ -154,3 +157,35 @@ Backup/restore rehearsal, off-machine backup retention, a highly available
 PostgreSQL service and production/cloud deployment are not claimed. The runbooks
 document additional failure and recovery procedures; a documented command alone
 does not establish that every optional experiment was executed.
+
+## Browser application — 19 October 2026
+
+[Full-stack verification](frontend-verification.json) records the new checks
+separately from the original release:
+
+- Complete Maven verification: **92 tests, no failures/errors/skips; BUILD SUCCESS**.
+  The temporary host test server was stopped before packaging to release its
+  Windows JAR lock. No test or packaging failure was ignored.
+- **82 frontend unit/component tests**, strict TypeScript build and Vite build
+  pass. The locked npm installation/audit reports zero vulnerabilities.
+- **8 real Chromium scenarios** pass against Vite plus the Java API, then pass
+  again against the actual Compose image (**19.6 seconds**). They cover sessions,
+  exact three-user splits and historical balances, permissions, actual imports,
+  budgets, two-tab rotation/logout, mobile layout, rate limiting and keyboard use.
+  The multi-tab case simulates access expiry with one 401 per tab; refresh-cookie
+  rotations and subsequent API requests are real.
+- Combined-image build passes: runtime UID **10001:10001**, **474,146,183 bytes**.
+  The [Trivy 0.70.0 scan summary](frontend-image-scan.json) records **0 CRITICAL**
+  findings for operating-system/library packages. Other severities and future
+  vulnerability status are not implied.
+- Compose app/PostgreSQL/Redis are healthy; app root returns HTML200, Swagger
+  exposes **21 paths**, and the existing financial/auth/import smoke script passes.
+  Database volumes were preserved.
+- Actual packaged-app captures: [sign-in](frontend-login.png),
+  [groups](frontend-groups.png), [expenses](frontend-expenses.png) and
+  [mobile](frontend-mobile.png). All shown accounts and expenses are synthetic.
+- The delivery source now includes frontend verification, a Node build stage and
+  frontend-aware GitOps fingerprints. **11 local promotion fixtures** pass,
+  including frontend-only source/lockfile promotion and README-only preservation
+  after an intentional rollback. First full-stack remote CI and kind reconciliation
+  are still pending at this milestone; they will be recorded after observation.

@@ -6,8 +6,8 @@ Verification status updated: 19 October 2026 (India).
 
 Current scope: the backend and local delivery baseline below are verified. The
 owner has approved the React browser extension for a free local academic and
-placement demonstration. Frontend implementation is **0%**: no UI code or new
-frontend dependencies have been added. Documentation preparation comes first.
+placement demonstration. Frontend milestones 1–5 are implemented and verified
+(**83%**); combined-image CI/GitOps delivery verification is in progress.
 Use the [documentation index](README.md) and [project status](project-status.md)
 to distinguish the completed baseline from the approved work still ahead.
 
@@ -487,46 +487,47 @@ Add performance numbers only after repeatable measurements exist.
 - See [evidence/verification.md](evidence/verification.md) for exact completed,
   pending and externally blocked checks. Do not infer results from file presence.
 
-## 11. Approved browser extension — implementation not started
+## 11. Browser extension — implementation verified, final delivery in progress
 
 The objective is a complete local application that can be demonstrated in an
 academic review or placement interview using ordinary browser screens. The UI
-will expose existing registration, group, expense, balance, import, budget and
+exposes existing registration, group, expense, balance, import, budget and
 alert workflows. It does not add payments, invitations, new split types, public
 hosting or paid services. Swagger remains available for API inspection.
 
 The approved frontend tools are React, TypeScript, Vite, React Router, plain CSS,
 Vitest/React Testing Library and Playwright, with supported Node.js LTS/npm for
-building and testing. Versions and compatibility will be verified and pinned
-when implementation starts. Acceptance of the design has not installed any of
-these dependencies or produced a working frontend.
+building and testing. Compatible versions and dependencies are pinned in
+`frontend/package.json`, `.nvmrc` and `package-lock.json`: Node 24.22.0/npm
+11.19.1, React 19.3.1, Router 8.4.0, TypeScript 7.0.2 and Vite 8.3.4.
 
 The accepted runtime design keeps one Spring Boot application and image: a
 frontend build stage produces static assets that the Java application serves
-alongside the API. Vite will proxy API calls during development. No additional
+alongside the API. Vite proxies API calls during development. No additional
 web-server service, ingress or hosted frontend is needed for the local demo.
 The existing free GitHub/GHCR workflow remains code and artifact delivery;
 application access stays local through Compose or kind port-forwarding.
 
-Browser authentication needs an adapter over the existing authentication
+Browser authentication uses an adapter over the existing authentication
 services, with in-memory access tokens, an HttpOnly refresh cookie, CSRF
 protection for cookie-based actions and coordinated refresh across tabs. The
 existing JSON-token API remains available to Swagger/API clients. These browser
-changes, static-route permissions and navigation fallbacks are planned and must
-be tested; the completed bearer API does not establish their safety or behavior.
+changes, static-route permissions and navigation fallbacks have dedicated Java,
+component and browser tests. The original JSON-token API remains compatible.
 
 | Implementation milestone | Acceptance gate | Current state |
 |---|---|---|
-| 1. Interface foundation | Compatible pinned tools, actual DTO contracts, screen layouts/routes and typed API/error handling produce a runnable shell with route/API tests | Not started |
-| 2. Authentication and app shell | Real registration/login/logout, cookie/CSRF boundaries, session restoration, refresh coordination and navigation work without copying tokens | Not started |
-| 3. Core expense-sharing experience | Groups, membership, expense forms/pagination/deletion, stored equal shares and current/former balances match backend truth, including denied actions | Not started |
-| 4. Imports and budgets | Actual upload state/counts, failure handling, admin budget changes and persisted alert snapshots are shown honestly | Not started |
-| 5. Usability and browser reliability | Responsive accessible forms, loading/empty/error states, component tests and real-browser/multi-tab regressions pass | Not started |
-| 6. Package, deliver and document | Packaged UI works in Compose/kind; Java/browser/image gates pass; a frontend-only change reaches GitOps and is demonstrated | Not started |
+| 1. Interface foundation | Compatible pinned tools, actual DTO contracts, layouts/routes and typed API/errors | Verified |
+| 2. Authentication and app shell | Cookie/CSRF boundaries, restoration, refresh coordination and navigation | Verified |
+| 3. Core expense-sharing experience | Groups, membership, expenses, exact shares and historical balances | Verified |
+| 4. Imports and budgets | Actual upload counts, failures, budget changes and alert snapshots | Verified |
+| 5. Usability and browser reliability | Responsive layout, keyboard access, errors and multi-tab tests | Verified |
+| 6. Package, deliver and document | Combined Compose/kind app, scan/CI gates and automatic GitOps delivery | In progress |
 
-Frontend implementation is **0 of 6 milestones complete (0%)**. Planning and
-documentation are preparation, not implemented screens. Do not derive a combined
-project percentage by averaging this with the completed backend.
+Frontend acceptance is **5 of 6 milestones complete (83%)**. Local checks pass
+92 Java tests, 82 frontend tests and eight real Chromium workflows. Image/CI/
+deployment evidence is recorded separately; the original backend measurements
+remain dated baseline observations.
 
 The full application is complete only after these browser gates pass against
 the real backend and packaged local deployment. The previous 75 Java tests,

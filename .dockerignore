@@ -1,4 +1,4 @@
-# An allowlist keeps local secrets, Git history, test data and previous build outputs out of the context.
+# An allowlist keeps secrets, Git history and generated artifacts out of the context.
 **
 !Dockerfile
 !.dockerignore
@@ -10,3 +10,21 @@
 !src/
 !src/main/
 !src/main/**
+!frontend/
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/.npmrc
+!frontend/.nvmrc
+!frontend/index.html
+!frontend/tsconfig.json
+!frontend/vite.config.ts
+!frontend/playwright.config.ts
+!frontend/src/
+!frontend/src/**
+!frontend/public/
+!frontend/public/**
+!frontend/e2e/
+!frontend/e2e/**
+# Never permit nested environment files even inside an included source directory.
+**/.env
+**/.env.*

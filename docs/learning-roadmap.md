@@ -1,8 +1,9 @@
 # Learning roadmap: understand the completed application
 
 The detailed guided phase starts **after the full browser app is implemented
-and verified**. The backend/local delivery baseline is complete; frontend
-implementation is **0 of 6 milestones complete (0%)**. Check
+and verified, when the owner is ready**. The backend/local delivery baseline is
+complete. React screens and browser auth are implemented with passing source and
+real-browser checks; combined-image delivery has its own verification gate. Check
 [project status](project-status.md) and the [documentation index](README.md)
 for current scope, commands and evidence.
 
@@ -15,8 +16,8 @@ reference; study sessions do not block each implementation step.
 For each stage: explain the problem simply, draw a small example, trace actual
 code, run a synthetic local demo, then explain a failure case and tradeoff in
 your own words. Use the [learning guide](learning-guide.md) for concepts and
-[implementation map](implementation.md) for file-by-file reading. Add exact
-frontend references and commands when its code exists; do not invent them now.
+[implementation map](implementation.md) for file-by-file reading. This is the
+later study sequence, not a tutorial session that must start during development.
 
 ## 1. Requirements and scope
 
@@ -34,7 +35,7 @@ Read [architecture](architecture.md), [ADR 0001](decisions/0001-modular-monolith
 and the [group](../src/main/java/com/splitnest/group/) and
 [expense](../src/main/java/com/splitnest/expense/) packages. Draw users, groups,
 memberships, expenses and stored shares. Label one controller, service,
-repository and DTO; distinguish each from a future browser view.
+repository and DTO; distinguish each from the React view rendering its result.
 
 Understanding check: which responsibilities belong to a component, a service
 and the database, and why keep this project one deployable application?
@@ -59,9 +60,12 @@ and [RefreshTokenService](../src/main/java/com/splitnest/auth/RefreshTokenServic
 Learn requests, DTOs, validation, dependency injection, error responses,
 authentication/authorization, JWTs and rotation. Draw one request's complete path.
 
-After UI implementation, trace a component, typed API client, route and rendered
-response; then inspect in-memory access state, cookie/CSRF protection and
-cross-tab refresh/logout in actual code. Compare with the preserved JSON API.
+Trace [App.tsx](../frontend/src/app/App.tsx),
+[session.ts](../frontend/src/app/session.ts), the
+[typed API client](../frontend/src/shared/api/client.ts) and an expense form's
+rendered result. Inspect memory-only access state, cookie/CSRF protection,
+Web Locks, BroadcastChannel and generation checks. Compare the browser adapter
+with the preserved JSON token API.
 
 Understanding check: why does a valid JWT not authorize every group, and how
 does an automatically sent refresh cookie change the browser security boundary?
@@ -97,12 +101,15 @@ response is not completion, and saving a budget does not run the daily check.
 Read [financial integration tests](../src/test/java/com/splitnest/expense/FinancialApiIntegrationTests.java),
 [authentication tests](../src/test/java/com/splitnest/auth/AuthenticationIntegrationTest.java)
 and [verification evidence](evidence/verification.md). Compare unit,
-PostgreSQL/Redis, HTTP/security and future component/browser tests. Predict an
+PostgreSQL/Redis, HTTP/security and component/browser tests. Predict an
 assertion before running it; explain a rollback, access-isolation and race case.
 
 With Docker available, run `./mvnw.cmd verify` from the root; use the current
-README for script and later UI commands. The recorded 75 Java tests and 20 script
-scenarios are dated backend evidence, not frontend results or a fixed future count.
+README for scripts. From `frontend/`, use the pinned Node/npm versions and run
+`npm ci --ignore-scripts`, `npm test`, `npm run build` and `npm run test:e2e`
+with the API running. Current source evidence includes 92 Java tests, 82 frontend
+tests and seven real-backend Vite/Chromium scenarios; the status/evidence pages
+record later runs. Original 75-test backend evidence belongs to its dated release.
 Understanding check: what can a real-browser test catch that a controller test cannot?
 
 ## 8. Docker and Compose
@@ -110,12 +117,13 @@ Understanding check: what can a real-browser test catch that a controller test c
 Read the [Docker guide](docker.md), [Dockerfile](../Dockerfile),
 [compose.yaml](../compose.yaml) and [.dockerignore](../.dockerignore). Explain
 images/containers, layers, build context, stages, non-root execution, networking
-and volumes. Follow the documented local commands and inspect health. After UI
-packaging, repeat a browser journey through Compose rather than only Vite.
+and volumes. Follow the documented local commands and inspect health. Compare a
+browser journey through the packaged Compose app with the Vite development flow,
+using its actual verification record.
 
 Understanding check: why does container-local `localhost` differ from the host,
 and why does a persistent volume not establish a tested backup? Explain the
-future Node build stage separately from the final Java runtime.
+Node asset-build stage separately from the final Java runtime.
 
 ## 9. Kubernetes and local operations
 
@@ -137,7 +145,8 @@ Read the [workflow](../.github/workflows/ci.yml),
 [promotion runbook](gitops-promotion.md) and [GitOps guide](gitops.md). Trace
 one real source SHA through tests/scan, registry digest, generated deployment
 commit and Argo observation. Explain permissions, stale-run rejection and
-manual rollback preservation; after implementation trace a frontend-only commit.
+manual rollback preservation and the frontend source profile. Trace a
+frontend-only commit only when its real publication/promotion record exists.
 
 Understanding check: why can a cluster on the laptop pull desired state while a
 hosted runner cannot reach it directly, and what does Git image rollback leave
@@ -157,8 +166,8 @@ production improvement, and why does scaling app pods not make PostgreSQL highly
 available? The HPA evidence does not time post-load scale-down.
 
 Practice a short demo and a five-minute architecture explanation. Use the original
-20 unanswered [interview questions](interview-prep.md), then the future browser
-questions after the UI exists. Cover problem, decision, alternative, tradeoff and
+20 unanswered [interview questions](interview-prep.md), then its browser questions
+against the implemented code. Cover problem, decision, alternative, tradeoff and
 evidence. Describe public-production concerns as limits to understand, not work
 to add to this free local academic/placement project.
 

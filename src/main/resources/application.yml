@@ -63,6 +63,8 @@ management:
           include: readinessState,db
 
 splitnest:
+  browser:
+    cookie-secure: ${BROWSER_COOKIE_SECURE:true}
   jwt:
     secret: ${JWT_SECRET}
     issuer: splitnest

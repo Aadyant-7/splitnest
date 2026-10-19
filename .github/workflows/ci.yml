@@ -17,7 +17,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -27,8 +27,71 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked frontend dependencies without lifecycle scripts
+        working-directory: frontend
+        run: |
+          test "$(npm --version)" = '11.19.1'
+          npm ci --ignore-scripts
+      - name: Reject HIGH and CRITICAL frontend dependency vulnerabilities
+        working-directory: frontend
+        run: npm audit --audit-level=high
+      - name: Verify frontend behavior and compile the browser app
+        working-directory: frontend
+        run: |
+          npm test
+          npm run build
       - name: Verify with PostgreSQL and Redis integration tests
         run: ./mvnw -B -ntp verify
+      - name: Package the verified frontend inside the Java application
+        run: |
+          mkdir -p target/classes/static
+          cp -R frontend/dist/. target/classes/static/
+          ./mvnw -B -ntp -Dmaven.test.skip=true package
+      - name: Install the locked Chromium browser and its Linux dependencies
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Create private synthetic local credentials
+        id: local-env
+        shell: pwsh
+        run: ./scripts/Initialize-Local.ps1
+      - name: Start only the browser-test data stores
+        run: docker compose up -d --wait --wait-timeout 120 postgres redis
+      - name: Verify the packaged app through real browser workflows
+        env:
+          SPLITNEST_WEB_URL: http://127.0.0.1:8080
+          BROWSER_COOKIE_SECURE: 'false' # Explicit loopback HTTP test only.
+        run: |
+          set -euo pipefail
+          while IFS='=' read -r key value; do
+            case "$key" in DB_PASSWORD|JWT_SECRET) export "$key=$value" ;; esac
+          done < .env
+          app_log="$RUNNER_TEMP/splitnest-browser-app.log"
+          java -jar target/splitnest-*.jar > "$app_log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true; wait "$app_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$app_pid" 2>/dev/null; then
+              echo 'The packaged application exited before becoming ready.' >&2
+              exit 1
+            fi
+            if curl --fail --silent http://127.0.0.1:9090/actuator/health/readiness > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [[ "$ready" != true ]]; then
+            echo 'The packaged application did not become ready within 180 seconds.' >&2
+            exit 1
+          fi
+          npm --prefix frontend run test:e2e
+          kill -0 "$app_pid"
       - name: Verify synthetic load-data preparation and credential handling
         shell: pwsh
         run: ./scripts/Test-PrepareLoadTest.ps1
@@ -45,8 +108,13 @@ jobs:
           path: |
             target/surefire-reports/
             target/failsafe-reports/
+            frontend/playwright-report/
+            frontend/test-results/
           if-no-files-found: ignore
           retention-days: 14
+      - name: Stop only this runner's local browser-test services
+        if: always() && steps.local-env.outcome == 'success'
+        run: docker compose down --remove-orphans
 
   publish-image:
     needs: verify
@@ -75,7 +143,7 @@ jobs:
           tags: ${{ steps.image.outputs.name }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.title=SplitNest
-            org.opencontainers.image.description=Expense-sharing REST API
+            org.opencontainers.image.description=Expense-sharing web app and REST API
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
@@ -84,7 +152,7 @@ jobs:
         env:
           IMAGE: ${{ steps.image.outputs.name }}:${{ github.sha }}
         run: test "$(docker image inspect "$IMAGE" --format '{{.Config.User}}')" = '10001:10001'
-      - name: Reject CRITICAL operating-system and Java dependency vulnerabilities
+      - name: Reject CRITICAL operating-system and application dependency vulnerabilities
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: image

@@ -5,10 +5,10 @@ Navigation: [documentation index](README.md) · [project status](project-status.
 
 SplitNest is one Java 21/Spring Boot application organized by feature. PostgreSQL
 stores the business records. Redis holds short-lived balance results and shared
-request counters. The verified implementation currently exposes its API through
-Swagger UI and HTTP clients. A user-facing browser interface is approved and
-planned, but has not been implemented. All amounts represent INR; this version
-has no currency conversion.
+request counters. A React/TypeScript interface now uses the real API for account,
+group, expense, import and budget workflows. Swagger and HTTP clients retain the
+existing JSON-token API. All amounts represent INR; this version has no currency
+conversion.
 
 The project is a free, local academic and placement demonstration. The application,
 data stores, Kubernetes cluster and monitoring run on the owner's machine; paid
@@ -18,15 +18,20 @@ Read [implementation.md](implementation.md) beside the code, then follow
 [demo.md](demo.md). The [decision records](decisions/0001-modular-monolith.md)
 explain the tradeoffs. Deployment files describe a reproducible local target;
 runtime and CI claims belong in the verification evidence, not this diagram.
-The diagram below describes the implemented backend, not the pending browser UI.
+The diagram describes the implemented source. Combined-image deployment evidence
+is tracked separately in [project status](project-status.md).
 
 ```mermaid
 flowchart LR
-    Client[Swagger or HTTP client] --> Security[Bearer validation]
+    Browser[React browser interface] --> Adapter[Browser auth: CSRF and refresh cookie]
+    Browser --> Security[Bearer validation]
+    Client[Swagger or HTTP client] --> Security
+    Adapter --> Auth[Existing authentication services]
+    Auth --> PG[(PostgreSQL)]
     Security --> Controller[Feature controller and DTO validation]
     Controller --> Service[Service: access checks and transactions]
     Service --> Repository[Feature repository]
-    Repository --> PG[(PostgreSQL)]
+    Repository --> PG
     Service --> Redis[(Redis counters and cache)]
     Service --> Jobs[Persisted import jobs]
     Jobs --> Workers[Bounded workers and recovery]
@@ -35,27 +40,87 @@ flowchart LR
     Service --> Metrics[Actuator metrics and structured logs]
 ```
 
-## Approved browser extension: pending implementation
+## Browser interface and runtime boundary
 
-The accepted [frontend plan](frontend-extension-plan.md) adds registration/sign-in
-forms, a group workspace, expenses and balances, statement uploads, budgets and
-alerts. Every screen will call the existing backend rather than simulate business
-results. Java remains responsible for identity, authorization, exact amounts,
-transactions and background work.
+[App.tsx](../frontend/src/app/App.tsx) defines account screens, the authenticated
+shell, group list and group workspace. Feature panels display expenses, stored
+balances, members, statement-job results, category limits and alert snapshots.
+Java remains responsible for authorization, exact amounts, transactions and jobs.
+Form amounts travel as decimal text; `Intl.NumberFormat` formats returned values
+for display. The browser never calculates authoritative expense splits.
 
-The intended packaging is a React/TypeScript application built with Vite, whose
-compiled assets are served by Spring Boot from the same application image. The
-current Dockerfile, security configuration and CI do not yet include that build.
-Browser session handling, cookie/CSRF protection and frontend tests must be
-implemented and verified before this document can describe them as working.
-Existing JSON token endpoints and Swagger remain available for API clients.
+During development Vite serves port 5173 and proxies `/api` to the JVM on 8080.
+The Dockerfile builds static assets with Node 24.22.0/npm 11.19.1, copies them into
+Spring Boot's resources and packages one Java image. Node is build/test tooling;
+the final runtime is the existing non-root JRE container. CI source includes the
+frontend build, component tests and packaged-app Chromium workflows. The GitOps
+source profile includes frontend source/configuration/lockfiles, so a UI-only
+change counts as an application release. These files and eleven local promotion
+fixtures are verified; a combined-image rollout must have its own runtime record.
 
-Current backend evidence stays valid for its recorded source/image. It does not
-establish frontend correctness or verify a future combined image. The expanded
-project will need a real browser demonstration, new automated checks and another
-local delivery verification. Use [project status](project-status.md) for that
-distinction. The detailed learning walkthrough follows completion of the full
-local app; the explanations below remain available as a reference meanwhile.
+`SpaRoutes` and `SpaController` allow `/`, `/login`, `/register`, `/app`,
+`/app/groups` and `/app/groups/{UUID}`. Spring serves `/index.html`, `/assets/**`
+and the explicit favicon paths. An unknown API, actuator or asset path retains
+its HTTP error; there is no catch-all HTML response. The UI's content security
+policy permits bundled same-origin scripts/styles and avoids inline script/eval.
+Swagger retains its own compatible response policy.
+
+### Browser authentication
+
+The adapter adds four routes beneath `/api/v1/browser-auth`:
+
+| Operation | Contract |
+|---|---|
+| `GET /csrf` | Returns a masked `{token, headerName}` and initializes a host-only HttpOnly CSRF cookie, without an HTTP session. |
+| `POST /login` | Existing login body plus CSRF cookie/header; same email/IP Redis limit; access-only JSON and refresh cookie. |
+| `POST /refresh` | CSRF plus refresh cookie; rotates the existing token family and returns access-only JSON with the successor cookie. |
+| `POST /logout` | Valid access bearer, CSRF and owned refresh cookie; revokes its family and clears the cookie. |
+
+The refresh cookie is `splitnest_refresh`, HttpOnly, host-only, SameSite=Strict,
+scoped to `/api/v1/browser-auth`, and valid for seven days. Secure defaults to
+true; `BROWSER_COOKIE_SECURE=false` is explicitly set by local HTTP Compose,
+kind configuration and the host launcher. A dedicated standard Spring Security
+CSRF filter protects every unsafe browser-auth method, even when it carries a
+bearer token. Existing bearer API routes remain CSRF-exempt. This explicit filter
+avoids the resource-server DSL's normal bearer exemption weakening cookie routes.
+
+[session.ts](../frontend/src/app/session.ts) holds the access token only in module
+memory. It obtains CSRF immediately before each browser-auth POST while holding
+the `splitnest-browser-session` Web Lock. One promise coalesces refresh requests
+within a tab; the shared browser lock serializes cookie rotation across tabs.
+Login/refresh use the public client without a stale Authorization header. Logout
+can refresh its bearer directly inside the existing lock, avoiding a nested-lock
+deadlock. A browser without Web Locks shows an explicit coordination error.
+
+BroadcastChannel carries only `changed`/`signed-out` notifications. It never
+transmits credentials or tokens. A generation counter invalidates old requests:
+a delayed `/users/me` response cannot restore a user after logout/account change,
+and a cookie-change notification waits for an invalidated refresh to settle before
+starting another. The API client retries an authentication-rejected request once,
+preserving its JSON/FormData body and cancellation signal; it discards responses
+from an older account generation. The browser owns multipart boundaries.
+
+On confirmed refresh 401, the adapter clears the unusable cookie. A temporary
+server failure preserves it for retry. Logout clears after successful revocation
+or confirmed 401; a mismatched owner 403 leaves the real owner's cookie intact.
+No auth token is stored in localStorage or sessionStorage. Imports remember only
+a validated, non-secret job UUID in per-tab sessionStorage, keyed by user/group.
+The backend still checks membership on every status request. Panel lifecycles
+abort old requests when the account/group changes.
+
+Source verification currently includes a strict frontend build, 82 unit/component
+tests, seven real-backend Vite/Chromium scenarios and 92 passing Java tests. The
+latest Maven attempt completed all Java tests but packaging encountered a running
+JAR's Windows file lock. Consult [project status](project-status.md) for the later
+package/image/deployment results; original backend evidence does not establish a
+new combined-image release. The guided learning phase begins after full-app
+verification, when the owner is ready.
+
+Understanding checks:
+
+1. Why does an HttpOnly refresh cookie require CSRF protection while the bearer API remains exempt?
+2. Why does a shared cookie require both a per-tab promise and a browser-wide lock?
+3. How does the generation check prevent a delayed response reviving the wrong account?
 
 ## Follow one request
 

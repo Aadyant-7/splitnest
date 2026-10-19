@@ -1,8 +1,8 @@
 # ADR 0007: Browser frontend in the Spring Boot application
 
-Status: **accepted design; implementation pending**. The owner approved this
-extension on 19 October 2026. Frontend implementation is **0 of 6 milestones
-complete (0%)**; this record does not claim working UI code or browser tests.
+Status: **implemented and browser-tested; final delivery verification in progress**.
+The owner approved this extension on 19 October 2026. Frontend acceptance is
+**5 of 6 milestones complete (83%)**; actual UI, security and browser tests exist.
 See [project status](../project-status.md) and the
 [frontend execution plan](../frontend-extension-plan.md).
 
