@@ -5,9 +5,12 @@ Its Java 21/Spring Boot backend combines exact financial arithmetic and group
 access isolation with background processing and a local Kubernetes delivery lab.
 A React/TypeScript interface provides real registration, sign-in and shared-expense workflows.
 
-**Status: 6/6 full-stack milestones complete (100%).** The browser app, backend,
+**Functional status: 6/6 milestones verified (100%).** The browser app, backend,
 Compose image and automatic local Kubernetes delivery are implemented and verified.
-The target is a polished, free local demo
+**Frontend design/UX revision is pending**, deferred at the owner's request after
+review of its copy, layout, repeated content and logo. Passing workflow tests
+does not establish visual design quality. See the [user manual](docs/user-guide.md).
+The project is a free local demo
 for learning and placement interviews. Public hosting and commercial operation
 are outside this project's scope. See the [project status](docs/project-status.md),
 [documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).

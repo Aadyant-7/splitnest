@@ -14,12 +14,19 @@ commercial operation are outside the scope.
 | Original backend and local delivery | **100% of the original acceptance scope** | [Verification record](evidence/verification.md): 75 Java tests, 20 script scenarios, actual Compose/kind smoke tests, CI, GitOps rollback/restoration and monitoring/load observations |
 | Full-stack preparation | **Complete** | Approved scope/stack, [execution plan](frontend-extension-plan.md), [repository map](../README.md#repository-map), documentation index, frontend directory notes and learning sequence |
 | Full-stack application | **6 of 6 milestones complete (100%)** | 93 Java tests, 90 frontend tests, 9 Chromium scenarios, 23 script scenarios; [automatic frontend-only rollout](evidence/frontend-gitops.json), image scan and Compose/kind verified |
+| Frontend product design | **Revision pending; deferred at the owner's request** | Excessive slogans, sparse sidebar, repeated content, weak visual hierarchy and unsuitable logo; functional test results do not establish design acceptance |
 | Detailed understanding phase | **Next, when the owner is ready** | [Learning roadmap](learning-roadmap.md), code walkthrough, exercises and unanswered interview questions |
 
 The full-stack percentage follows the six acceptance milestones below. It
 includes implementation and verification; the later guided learning phase is
 tracked separately. Eight browser journeys use the real API/database; the ninth
 uses a deterministic large-decimal response to verify exact display.
+
+The owner has not accepted the current frontend's visual design and UX. The
+100% figure above describes the implemented and tested functional scope. It
+does not mean the interface is polished or that the design follow-up is complete.
+Keep the interface unchanged until that follow-up is requested. The
+[user guide](user-guide.md) explains the current features without technical detail.
 
 Existing observations are dated evidence, not continuous monitoring of the
 owner's machine. Test counts must be updated when new tests are actually run.

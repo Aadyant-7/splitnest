@@ -3,6 +3,8 @@
 Start with [project status](project-status.md). All six full-stack milestones
 are verified, including the browser app, backend, combined image, CI and automatic
 local Kubernetes delivery.
+Functional verification is complete; the owner's review identified frontend
+design/UX issues, with revision deferred until later.
 The project is a free local academic and placement demo. The detailed learning
 phase follows completion and verification of the full app.
 
@@ -21,6 +23,7 @@ phase follows completion and verification of the full app.
 
 | Document | Read it for |
 |---|---|
+| [User guide](user-guide.md) | A plain-language manual for accounts, groups, expenses, balances, imports, budgets and common problems |
 | [Setup](setup.md) | Installed baseline, Windows prerequisites and repository setup |
 | [Demo](demo.md) | Browser and Swagger/API walkthroughs using synthetic data |
 | [Docker](docker.md) | Image stages, runtime settings, Compose and verification |
