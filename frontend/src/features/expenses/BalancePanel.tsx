@@ -1,6 +1,6 @@
 import type { Balance } from '../../shared/api/types';
 import { EmptyState } from '../../shared/ui/Feedback';
-import { money } from '../../shared/ui/format';
+import { money, moneySign } from '../../shared/ui/format';
 
 export function BalancePanel({ balances, currentUserId }: { balances: Balance[]; currentUserId: string }) {
   return (
@@ -19,8 +19,8 @@ export function BalancePanel({ balances, currentUserId }: { balances: Balance[];
               <tr key={balance.userId}>
                 <th scope="row">{balance.displayName}{balance.userId === currentUserId && ' (you)'} {!balance.currentMember && <span className="tag">Former member</span>}</th>
                 <td>{money(balance.totalPaid)}</td><td>{money(balance.totalShare)}</td>
-                <td className={balance.netBalance > 0 ? 'balance-positive' : balance.netBalance < 0 ? 'balance-negative' : 'muted'}>
-                  <strong>{money(balance.netBalance)}</strong><span className="muted"> {balance.netBalance > 0 ? 'is owed' : balance.netBalance < 0 ? 'owes' : 'even'}</span>
+                <td className={moneySign(balance.netBalance) > 0 ? 'balance-positive' : moneySign(balance.netBalance) < 0 ? 'balance-negative' : 'muted'}>
+                  <strong>{money(balance.netBalance)}</strong><span className="muted"> {moneySign(balance.netBalance) > 0 ? 'is owed' : moneySign(balance.netBalance) < 0 ? 'owes' : 'even'}</span>
                 </td>
               </tr>
             ))}</tbody>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/client';
 import { categories, type Budget, type BudgetAlert, type Category } from '../../shared/api/types';
 import { EmptyState, ErrorNotice, Loading } from '../../shared/ui/Feedback';
-import { money, shortDate } from '../../shared/ui/format';
+import { decimalAmount, money, shortDate } from '../../shared/ui/format';
 
 function categoryName(category: Category) {
   return category.charAt(0) + category.slice(1).toLowerCase();
@@ -59,7 +59,7 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
   function chooseCategory(next: Category) {
     setCategory(next);
     const existing = budgets.find((budget) => budget.category === next);
-    setAmount(existing ? existing.monthlyLimit.toFixed(2) : '');
+    setAmount(existing ? decimalAmount(existing.monthlyLimit) : '');
     setValidation('');
     setSuccess('');
     setSaveError(null);

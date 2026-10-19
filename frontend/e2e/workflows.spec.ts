@@ -2,6 +2,20 @@ import { expect, test } from '@playwright/test';
 import type { Balance, ExpensePage } from '../src/shared/api/types';
 import { DEMO_PASSWORD, addApiMember, addUiExpense, apiToken, bearer, createApiGroup, createUiGroup, expectNoPersistentCredentials, registerAccount, signIn, uniqueEmail } from './helpers';
 
+test('decimal display boundary retains every paise from a large numeric JSON response', async ({ page, request }) => {
+  const account = await registerAccount(request, 'Precision Demo');
+  const token = await apiToken(request, account);
+  const group = await createApiGroup(request, token, 'Decimal presentation');
+  await signIn(page, account);
+  // Only this response is a deterministic display fixture; no huge ledger is inserted or claimed.
+  await page.route(`**/api/v1/groups/${group.id}/balances`, route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: `[{"userId":"${account.id}","displayName":"Precision Demo","currentMember":true,"totalPaid":99999999999999.99,"totalShare":0.00,"netBalance":99999999999999.99}]`,
+  }));
+  await page.goto(`/app/groups/${group.id}`);
+  await expect(page.getByRole('heading', { level: 2 }).filter({ hasText: '₹' })).toHaveText('₹9,99,99,99,99,99,999.99');
+});
+
 test('registration, HttpOnly-cookie session restoration, logout and sign-in use the real backend', async ({ page, context }) => {
   const email = uniqueEmail('register');
   await page.goto('/register');
@@ -72,9 +86,9 @@ test('three users share exact stored splits and balances, then delete expenses t
     const balance = balances.find((item) => item.userId === member.id);
     expect(balance?.totalPaid).toBe(member.id === admin.id ? 100 : 0);
     expect(balance?.totalShare).toBe(index === 0 ? 33.34 : 33.33);
-    expect(Math.round(balance!.netBalance * 100)).toBe((member.id === admin.id ? 10_000 : 0) - (index === 0 ? 3_334 : 3_333));
+    expect(Math.round(Number(balance!.netBalance) * 100)).toBe((member.id === admin.id ? 10_000 : 0) - (index === 0 ? 3_334 : 3_333));
   }
-  expect(balances.map((balance) => Math.round(balance.netBalance * 100)).reduce((sum, cents) => sum + cents, 0)).toBe(0);
+  expect(balances.map((balance) => Math.round(Number(balance.netBalance) * 100)).reduce((sum, cents) => sum + cents, 0)).toBe(0);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   for (const member of ordered) await expect(page.getByRole('row').filter({ hasText: member.displayName })).toBeVisible();
 

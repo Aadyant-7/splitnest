@@ -82,11 +82,13 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The 82 unit/component tests cover forms, permissions, API errors, imports,
-cancellation, locking and stale-session races. Eight browser scenarios use real
+The 90 unit/component tests cover forms, permissions, API errors, imports,
+cancellation, locking, stale-session races and exact monetary display. Eight browser scenarios use real
 synthetic accounts for sessions, exact money/history, permissions, imports/budgets,
 concurrent tabs, mobile layout, rate limiting and keyboard navigation. They create
-demo records in the selected local database. Traces/video are disabled.
+demo records in the selected local database. A ninth browser case injects one
+large-decimal balance response to verify presentation without inserting a huge
+ledger; this fixture is not a database-capacity claim. Traces/video are disabled.
 
 To test a running packaged app instead of Vite:
 
@@ -112,8 +114,16 @@ also sends a valid access token. Secure cookies default on; local launchers
 explicitly allow HTTP. Coordination requires a current browser on localhost.
 
 The backend owns permissions, exact money, stored shares and job results. The UI
-sends decimal strings and formats returned amounts without recalculating financial
-rules. Import polling is abortable and pauses after two minutes; only a non-secret
+sends decimal strings and preserves numeric monetary response tokens through
+`JSON.parse` reviver source text, then formats those exact strings with native
+`Intl.NumberFormat`. It keeps the existing numeric JSON API contract while
+avoiding one-paisa errors on large aggregates. No financial rule is recalculated
+in the browser. Unsupported older browsers reject an unsafe large amount rather
+than silently rounding it. References:
+[JSON source preservation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse),
+[exact decimal-string formatting](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/format).
+
+Import polling is abortable and pauses after two minutes; only a non-secret
 user/group-scoped job ID enters sessionStorage. Budget alerts are scheduled
 snapshots rather than live spending charts.
 

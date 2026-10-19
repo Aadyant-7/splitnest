@@ -4,7 +4,7 @@ import { useSession } from '../../app/SessionContext';
 import { api } from '../../shared/api/client';
 import type { Balance, ExpensePage, Group } from '../../shared/api/types';
 import { ErrorNotice, Loading } from '../../shared/ui/Feedback';
-import { money } from '../../shared/ui/format';
+import { money, moneySign } from '../../shared/ui/format';
 import { ImportsPanel } from '../imports/ImportsPanel';
 import { BudgetsPanel } from '../budgets/BudgetsPanel';
 import { BalancePanel } from '../expenses/BalancePanel';
@@ -60,6 +60,7 @@ export function GroupPage() {
   const { group, balances, expenses } = workspace;
   const isAdmin = group.members.some((member) => member.userId === user.id && member.role === 'ADMIN');
   const ownBalance = balances.find((balance) => balance.userId === user.id);
+  const ownSign = ownBalance ? moneySign(ownBalance.netBalance) : 0;
 
   return (
     <div className="stack">
@@ -72,7 +73,7 @@ export function GroupPage() {
       <ErrorNotice error={error} />
       {tab === 'Overview' && <>
         <div className="form-grid">
-          <section className="panel stack"><p className="eyebrow">YOUR NET BALANCE</p><h2 className={ownBalance && ownBalance.netBalance > 0 ? 'balance-positive' : ownBalance && ownBalance.netBalance < 0 ? 'balance-negative' : ''}>{money(ownBalance?.netBalance ?? 0)}</h2><p className="muted">{ownBalance && ownBalance.netBalance > 0 ? 'Your group owes you.' : ownBalance && ownBalance.netBalance < 0 ? 'Your share is owed to the group.' : 'You’re all even.'}</p></section>
+          <section className="panel stack"><p className="eyebrow">YOUR NET BALANCE</p><h2 className={ownSign > 0 ? 'balance-positive' : ownSign < 0 ? 'balance-negative' : ''}>{money(ownBalance?.netBalance ?? 0)}</h2><p className="muted">{ownSign > 0 ? 'Your group owes you.' : ownSign < 0 ? 'Your share is owed to the group.' : 'You’re all even.'}</p></section>
           <section className="panel stack"><p className="eyebrow">IN THIS TOGETHER</p><h2>{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</h2><button className="button secondary" type="button" onClick={() => setTab('Members')}>See members</button></section>
           <section className="panel stack"><p className="eyebrow">RECORDED & SHARED</p><h2>{expenses.totalElements} {expenses.totalElements === 1 ? 'expense' : 'expenses'}</h2><button className="button primary" type="button" onClick={() => setTab('Expenses')}>Manage expenses</button></section>
         </div>

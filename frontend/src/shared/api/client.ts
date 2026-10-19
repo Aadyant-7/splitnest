@@ -1,3 +1,5 @@
+import { parseApiJson } from './json';
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -28,7 +30,7 @@ async function request<T>(path: string, init: RequestInit, token: string | null)
     throw new ApiError(response.status, problem.detail ?? `Request failed (${response.status}). Please try again.`,
       problem.errors ?? {}, response.headers.has('Retry-After') && Number.isFinite(retry) ? Math.max(0, retry) : null);
   }
-  return response.status === 204 ? undefined as T : response.json() as Promise<T>;
+  return response.status === 204 ? undefined as T : parseApiJson(await response.text()) as T;
 }
 
 export function publicApi<T>(path: string, init: RequestInit = {}): Promise<T> {
