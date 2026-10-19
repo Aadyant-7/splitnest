@@ -3,6 +3,11 @@
 Initial verification: 18 October 2026; runtime follow-up: 19 October 2026 (India).
 Record observed results, not inferred completion.
 
+This record verifies the original backend and local delivery scope. The owner
+subsequently approved a free, local browser-app extension; its implementation
+has not started and no frontend test or UI deployment is claimed here. See the
+[current project status](../project-status.md) for the expanded acceptance gates.
+
 ## Backend
 
 - Java: Temurin 21.0.12.1; Maven wrapper: 3.10.0; Spring Boot: 4.1.1.

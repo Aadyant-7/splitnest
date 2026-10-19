@@ -4,27 +4,44 @@ Reviewed: 18 October 2026. This is the current execution plan. The original
 feature specification and numbered learning tasks remain in `agents.md`.
 Verification status updated: 19 October 2026 (India).
 
+Current scope: the backend and local delivery baseline below are verified. The
+owner has approved the React browser extension for a free local academic and
+placement demonstration. Frontend implementation is **0%**: no UI code or new
+frontend dependencies have been added. Documentation preparation comes first.
+Use the [documentation index](README.md) and [project status](project-status.md)
+to distinguish the completed baseline from the approved work still ahead.
+
 ## 1. Review outcome
 
 The initial repository contained only `agents.md`. There was no source code,
 build file, Maven wrapper, Docker configuration, or Git repository to preserve.
-This is a new implementation, rather than a partially completed application.
+That review began a new backend implementation, which is now complete and
+verified. The browser extension is a later, explicitly approved stage.
 
-The proposed modular monolith is appropriate: one deployable application with
+The implemented modular monolith remains appropriate: one deployable application with
 packages for auth, users, groups, expenses, budgets, imports, and rate limiting.
 Its strongest interview material will be financial correctness, authorization,
 transactions, background-job reliability, and reproducible delivery.
 
-Keep all the original product features. Keep the original exclusions, including
-no frontend, microservices, message broker, cloud deployment, Terraform, unequal
-splits, or settlement optimization. Do not add infrastructure just to lengthen
-the technology list.
+Keep all the original business features. The owner's approval supersedes the
+original no-frontend exclusion for the React interface described in
+[frontend-extension-plan.md](frontend-extension-plan.md) and
+[ADR 0007](decisions/0007-browser-frontend.md). Microservices, message brokers,
+cloud deployment, paid hosting, Terraform, unequal splits, invitation emails and
+settlement optimization remain outside scope. The app will be demonstrated
+locally; a public hosted service is not part of this project stage.
 
 Execute six milestones rather than pausing at every original task. Start CI
 early, implement tests with behavior, and update explanations alongside code.
 The milestones are execution order and acceptance gates, not requests for
 repeated permission. Setup and GitHub instructions are collected in
 [setup.md](setup.md).
+
+The six milestones below describe the completed backend work. Section 11 defines
+the approved browser extension without resetting that evidence. A detailed
+from-scratch learning phase starts after the complete browser application has
+been implemented and verified; the [learning roadmap](learning-roadmap.md)
+defines that later teaching order.
 
 ## 2. Environment and baseline
 
@@ -91,6 +108,9 @@ to make a build pass. Approved dependencies and container images are now pinned
 in pom.xml, Dockerfile and deployment files.
 
 ## 3. Implemented application architecture
+
+This diagram describes the verified backend. A React client is approved but does
+not exist yet; its future requests will use the same services and database rules.
 
 ```mermaid
 flowchart LR
@@ -227,6 +247,9 @@ ledger distinguish application tests, completed delivery checks and stated limit
 
 ## 5. Milestones and acceptance gates
 
+These are the original backend/local-delivery milestones. Their completion does
+not claim that the approved browser extension is implemented.
+
 | Milestone | Original task references | Deliverable | Acceptance evidence | Status |
 |---|---|---|---|---|
 | 1. Reproducible foundation | 0.1-0.3, 1.1, 6.1 | Wrapper, Boot project, feature packages, Compose data services, configuration, errors, initial test CI | Java 21 build; PostgreSQL/Redis connectivity; migration startup; Windows verify and Linux CI results | Verified locally and in a fresh Linux GitHub Actions checkout |
@@ -352,8 +375,13 @@ limitations. Do not invent results or add badges before their checks exist.
 
 Current learning material:
 
+- [README.md](README.md): documentation entry point and reading routes.
+- [project-status.md](project-status.md): current scope, completed evidence and
+  unfinished frontend work.
 - [learning-guide.md](learning-guide.md): concepts and the reasoning to revisit
   while reading implementation.
+- [learning-roadmap.md](learning-roadmap.md): the later from-scratch curriculum,
+  starting after the complete app is verified.
 - [interview-prep.md](interview-prep.md): twenty unanswered questions, basic to
   advanced.
 - [setup.md](setup.md): grouped Windows prerequisites and GitHub setup.
@@ -404,7 +432,7 @@ concurrency, and fixed replica count. Demonstrate HPA separately. A cached endpo
 may not create enough CPU demand to scale; report observation instead of forcing
 or inventing a scaling result. Record hardware/resources and errors alongside p95.
 
-Completion means all feature gates are verified, documentation can reproduce
+Completion of the backend baseline means its feature gates are verified, documentation can reproduce
 the demo, external repository/image/cluster steps have actually succeeded, and
 remaining limitations are explicit. A kind cluster with one PostgreSQL instance
 demonstrates deployment skills; it is not a highly available production service.
@@ -458,3 +486,57 @@ Add performance numbers only after repeatable measurements exist.
   single-pair cache comparison and unmeasured post-load scale-down timing.
 - See [evidence/verification.md](evidence/verification.md) for exact completed,
   pending and externally blocked checks. Do not infer results from file presence.
+
+## 11. Approved browser extension — implementation not started
+
+The objective is a complete local application that can be demonstrated in an
+academic review or placement interview using ordinary browser screens. The UI
+will expose existing registration, group, expense, balance, import, budget and
+alert workflows. It does not add payments, invitations, new split types, public
+hosting or paid services. Swagger remains available for API inspection.
+
+The approved frontend tools are React, TypeScript, Vite, React Router, plain CSS,
+Vitest/React Testing Library and Playwright, with supported Node.js LTS/npm for
+building and testing. Versions and compatibility will be verified and pinned
+when implementation starts. Acceptance of the design has not installed any of
+these dependencies or produced a working frontend.
+
+The accepted runtime design keeps one Spring Boot application and image: a
+frontend build stage produces static assets that the Java application serves
+alongside the API. Vite will proxy API calls during development. No additional
+web-server service, ingress or hosted frontend is needed for the local demo.
+The existing free GitHub/GHCR workflow remains code and artifact delivery;
+application access stays local through Compose or kind port-forwarding.
+
+Browser authentication needs an adapter over the existing authentication
+services, with in-memory access tokens, an HttpOnly refresh cookie, CSRF
+protection for cookie-based actions and coordinated refresh across tabs. The
+existing JSON-token API remains available to Swagger/API clients. These browser
+changes, static-route permissions and navigation fallbacks are planned and must
+be tested; the completed bearer API does not establish their safety or behavior.
+
+| Implementation milestone | Acceptance gate | Current state |
+|---|---|---|
+| 1. Interface foundation | Compatible pinned tools, actual DTO contracts, screen layouts/routes and typed API/error handling produce a runnable shell with route/API tests | Not started |
+| 2. Authentication and app shell | Real registration/login/logout, cookie/CSRF boundaries, session restoration, refresh coordination and navigation work without copying tokens | Not started |
+| 3. Core expense-sharing experience | Groups, membership, expense forms/pagination/deletion, stored equal shares and current/former balances match backend truth, including denied actions | Not started |
+| 4. Imports and budgets | Actual upload state/counts, failure handling, admin budget changes and persisted alert snapshots are shown honestly | Not started |
+| 5. Usability and browser reliability | Responsive accessible forms, loading/empty/error states, component tests and real-browser/multi-tab regressions pass | Not started |
+| 6. Package, deliver and document | Packaged UI works in Compose/kind; Java/browser/image gates pass; a frontend-only change reaches GitOps and is demonstrated | Not started |
+
+Frontend implementation is **0 of 6 milestones complete (0%)**. Planning and
+documentation are preparation, not implemented screens. Do not derive a combined
+project percentage by averaging this with the completed backend.
+
+The full application is complete only after these browser gates pass against
+the real backend and packaged local deployment. The previous 75 Java tests,
+20 script scenarios and deployment evidence remain the baseline to preserve;
+they are not frontend test results. Add browser security/component/end-to-end
+coverage and new dated delivery evidence when that behavior exists.
+
+After that verification, use [learning-roadmap.md](learning-roadmap.md) for the
+owner's requested deep explanation from requirements through monitoring. The
+learning sequence explains the finished system in a logical build order; actual
+development history remains in Git and verification evidence. Current guides
+can be consulted during development, without making study sessions a prerequisite
+for each implementation step.

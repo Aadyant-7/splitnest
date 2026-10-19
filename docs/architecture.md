@@ -1,14 +1,24 @@
 # How SplitNest works
 
+Navigation: [documentation index](README.md) · [project status](project-status.md) ·
+[approved frontend plan](frontend-extension-plan.md).
+
 SplitNest is one Java 21/Spring Boot application organized by feature. PostgreSQL
 stores the business records. Redis holds short-lived balance results and shared
-request counters. There is no frontend: Swagger UI is the interactive API client.
-All amounts represent INR; this version has no currency conversion.
+request counters. The verified implementation currently exposes its API through
+Swagger UI and HTTP clients. A user-facing browser interface is approved and
+planned, but has not been implemented. All amounts represent INR; this version
+has no currency conversion.
+
+The project is a free, local academic and placement demonstration. The application,
+data stores, Kubernetes cluster and monitoring run on the owner's machine; paid
+hosting, public deployment and cloud infrastructure are outside the agreed scope.
 
 Read [implementation.md](implementation.md) beside the code, then follow
 [demo.md](demo.md). The [decision records](decisions/0001-modular-monolith.md)
 explain the tradeoffs. Deployment files describe a reproducible local target;
 runtime and CI claims belong in the verification evidence, not this diagram.
+The diagram below describes the implemented backend, not the pending browser UI.
 
 ```mermaid
 flowchart LR
@@ -24,6 +34,28 @@ flowchart LR
     Scheduler[Daily budget scheduler and ShedLock] --> PG
     Service --> Metrics[Actuator metrics and structured logs]
 ```
+
+## Approved browser extension: pending implementation
+
+The accepted [frontend plan](frontend-extension-plan.md) adds registration/sign-in
+forms, a group workspace, expenses and balances, statement uploads, budgets and
+alerts. Every screen will call the existing backend rather than simulate business
+results. Java remains responsible for identity, authorization, exact amounts,
+transactions and background work.
+
+The intended packaging is a React/TypeScript application built with Vite, whose
+compiled assets are served by Spring Boot from the same application image. The
+current Dockerfile, security configuration and CI do not yet include that build.
+Browser session handling, cookie/CSRF protection and frontend tests must be
+implemented and verified before this document can describe them as working.
+Existing JSON token endpoints and Swagger remain available for API clients.
+
+Current backend evidence stays valid for its recorded source/image. It does not
+establish frontend correctness or verify a future combined image. The expanded
+project will need a real browser demonstration, new automated checks and another
+local delivery verification. Use [project status](project-status.md) for that
+distinction. The detailed learning walkthrough follows completion of the full
+local app; the explanations below remain available as a reference meanwhile.
 
 ## Follow one request
 

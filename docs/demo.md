@@ -1,5 +1,14 @@
 # Demonstrate and explain SplitNest
 
+Navigation: [documentation index](README.md) · [project status](project-status.md) ·
+[approved frontend plan](frontend-extension-plan.md).
+
+This guide demonstrates the verified backend through Swagger and HTTP. The
+approved browser frontend has not been implemented, so no user-facing screen
+walkthrough or frontend test result is claimed here. The final full-app browser
+demonstration will be added after implementation. This project runs locally for
+academic and placement use; public hosting and paid services are outside scope.
+
 Use disposable local accounts and data. Start Docker Desktop, then follow
 [setup.md](setup.md) and [docker.md](docker.md) to run either the JVM app with
 Compose data stores or the complete Compose stack. The API must be reachable at
@@ -234,7 +243,24 @@ Prometheus/Grafana setup and controlled cache comparisons follow
 demonstrating multi-replica traffic. A Service port-forward selects a backing Pod
 and cannot prove that load was distributed.
 
+## Planned full-app acceptance demonstration
+
+After the frontend is implemented, the acceptance walkthrough must use ordinary
+browser screens to register/sign in, create a group, add registered members, add
+an expense, inspect exact balances, import a sample statement, view budgets and
+alerts, and sign out. It must also show validation errors, role restrictions and
+safe session expiry using the real backend. The packaged application must work
+through both Compose and the local Kubernetes Service.
+
+These are pending acceptance checks, not recorded results. Preserve the API
+walkthrough above as a developer/debugging path. Follow the
+[approved plan](frontend-extension-plan.md) for the complete criteria and
+[project status](project-status.md) for verified progress. The detailed code and
+interview learning walkthrough begins after the full local app is finished.
+
 ## A concise interview explanation
+
+This describes the verified backend; full-stack wording follows frontend verification.
 
 > SplitNest is a Java expense-sharing API built as a modular monolith. I focused
 > on exact financial arithmetic and access isolation: PostgreSQL transactions
@@ -250,6 +276,9 @@ The verification ledger links the successful CI run and exact registry image
 reconciled by Argo CD. Describe the controlled performance results with their
 dataset and limits; do not treat one local run as a capacity guarantee. The local single PostgreSQL instance and PVC
 are a deployment learning setup, not a highly available database or a backup plan.
+Until the frontend acceptance checks pass, describe this as a completed backend
+with an approved browser extension in progress. After verification, the full-app
+description can include the implemented user interface and its actual tests.
 
 After demonstrating, explain without reading:
 

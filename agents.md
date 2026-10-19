@@ -9,11 +9,13 @@ than speed.
 
 Rules for every task:
 
-1. Current workflow (updated 2026-10-18): finish the repository analysis and
-   execution plan first, then give setup and GitHub instructions together.
-   For implementation, work autonomously across coherent milestones instead
-   of stopping after each numbered task. The owner's newer request supersedes
-   the original one-task-per-request rule. Do not expand the product scope.
+1. Current workflow (updated 2026-10-19): the backend/local deployment baseline
+   is complete. The owner approved the frontend extension described in
+   `docs/frontend-extension-plan.md` for a free academic and placement project.
+   Organize the repository and documentation first, then implement and verify
+   the browser app, then begin the detailed understanding phase from scratch.
+   Work autonomously across coherent milestones without stopping after every
+   numbered task. Keep the existing business features; do not expand the scope.
 2. Before writing code, explain in a few sentences what you will build and why,
    and which files you will create or change.
 3. Keep changes small and focused on the task. Do not refactor unrelated code.
@@ -40,15 +42,26 @@ Rules for every task:
 11. Once the owner creates the GitHub repository and supplies its URL,
     commit and push meaningful, verified milestones using existing authorized
     authentication. Do not invent an identity or request tokens in chat.
+12. Include a one-line completion update in every response. State its scope:
+    the original backend/local baseline is complete; frontend completion must
+    follow its own acceptance gates. Planning is not implemented functionality.
+13. Keep the project free to build and demonstrate locally. Do not provision
+    public hosting, paid services, a domain, or commercial infrastructure.
+14. Record decisions, implementation details and evidence while building. After
+    the full app is verified, teach the project from requirements and data design
+    through implementation, tests and delivery using `docs/learning-roadmap.md`.
+    Do not make the owner complete tutorials or quizzes between build milestones.
 
-The updated execution order and design clarifications are in
-`docs/development-plan.md`. Section 7 below preserves the original learning
+Start with `docs/README.md` and `docs/project-status.md`. The updated execution
+order and design clarifications are in `docs/development-plan.md` and
+`docs/frontend-extension-plan.md`. Section 7 preserves the original backend
 syllabus and task references; it no longer requires a stop after every task.
 
 ## 2. Project summary
 
-SplitNest is a backend for sharing expenses among flatmates, families, or trip
-groups.
+SplitNest is an academic expense-sharing application for flatmates, families,
+or trip groups. Its Java backend and local delivery lab are verified; the
+approved browser frontend is the next implementation phase.
 
 - Users register and log in.
 - A user creates a group and becomes its ADMIN. The admin adds existing users
@@ -61,16 +74,19 @@ groups.
 - Admins set a monthly budget per category. A daily scheduled job creates an
   alert when spending crosses the budget.
 - Login and uploads are rate limited.
-- There is no frontend. The API is used through Swagger UI.
+- The current API is usable through Swagger UI. The approved React frontend
+  will provide registration, sign-in and the existing expense-sharing workflows.
+  Keep Swagger available for API exploration and developer verification.
 
-Explicitly OUT of scope (do not build): microservices, Kafka/RabbitMQ, a
-frontend, cloud deployment, Terraform, invitation emails, unequal splits,
-settle-up optimization, Ingress/Gateway, Helm charts for the app itself.
+Explicitly OUT of scope (do not build): microservices, Kafka/RabbitMQ, public or
+cloud deployment, paid services, Terraform, invitation emails, unequal splits,
+payment processing, settle-up optimization, Ingress/Gateway, and Helm charts for
+the app itself. A large-scale commercial service is not the objective.
 
 ## 3. Tech stack
 
 - Java 21 (LTS), Maven
-- Spring Boot (latest stable release from start.spring.io):
+- Spring Boot 4.1.1 (verified baseline; review updates explicitly):
   Web, Validation, Data JPA, Security, OAuth2 Resource Server (for JWT),
   Actuator, Data Redis, Cache
 - PostgreSQL + Flyway for schema migrations
@@ -79,7 +95,7 @@ settle-up optimization, Ingress/Gateway, Helm charts for the app itself.
 - Apache Commons CSV and Apache POI for statement parsing
 - ShedLock (added in Phase 7)
 - Micrometer Prometheus registry (added in Phase 9)
-- JUnit Jupiter (Boot-managed; proposed current equivalent is JUnit 6),
+- JUnit Jupiter 6 (Boot-managed and verified),
   Mockito, AssertJ, Testcontainers (PostgreSQL, Redis)
 - No Lombok. Use Java records for DTOs.
 - Docker, Docker Compose
@@ -88,12 +104,18 @@ settle-up optimization, Ingress/Gateway, Helm charts for the app itself.
 - Argo CD
 - kube-prometheus-stack (Prometheus + Grafana) via Helm
 - k6 for load testing
+- Approved frontend: React, TypeScript, Vite, React Router, plain CSS
+- Frontend testing: Vitest, React Testing Library, Playwright
+- Supported Node.js LTS and npm for frontend build/tests only; resolve compatible
+  versions and pin the runtime and lockfile when implementation begins. Node.js
+  is not an additional production runtime. Package compiled UI assets in the
+  existing Spring Boot image.
 
 ## 4. Repository layout
 
 ```
 splitnest/
-├── AGENTS.md
+├── agents.md
 ├── README.md
 ├── pom.xml
 ├── compose.yaml
@@ -114,6 +136,7 @@ splitnest/
 │   ├── application.yml
 │   └── db/migration/  # Flyway: V1__..., V2__...
 ├── src/test/java/com/splitnest/...
+├── frontend/          # README now; approved React app implemented next
 ├── deploy/
 │   ├── kind/kind-config.yaml
 │   ├── base/          # app, postgres, redis manifests + kustomization.yaml
@@ -121,14 +144,23 @@ splitnest/
 │   ├── argocd/application.yaml
 │   └── monitoring/    # Helm values, ServiceMonitor
 ├── loadtest/balances.js
+├── scripts/           # setup, verification and delivery helpers
 └── docs/
+    ├── README.md      # documentation index
+    ├── project-status.md
+    ├── frontend-extension-plan.md
     ├── architecture.md
-    └── decisions/     # short ADRs: 0001-why-modular-monolith.md, etc.
+    ├── learning-roadmap.md
+    ├── evidence/      # measured results and runtime captures
+    └── decisions/     # short architecture decision records
 ```
 
 Code organization: package by feature (as above). Inside each feature use
 `Controller -> Service -> Repository`. Controllers never touch repositories
 directly. Entities are never returned from controllers; map to DTO records.
+Keep the Maven root and `src/` in place. Organize frontend code by feature
+inside `frontend/`; its planned structure is documented in `frontend/README.md`.
+Generated dependencies, assets, test reports and local credentials are ignored.
 
 ## 5. Data model
 
@@ -194,7 +226,15 @@ Conventions:
 
 ## 7. Plan
 
-Each task lists what to build and how we know it is done.
+The phases below preserve the original backend syllabus. They are not a current
+pending-work checklist: see `docs/evidence/verification.md` for completed checks
+and `docs/project-status.md` for the approved frontend extension. Older task
+wording is interpreted using the implemented decisions in
+`docs/development-plan.md` (including the separate `deploy/local` GitOps branch).
+The owner subsequently authorized creating the local cluster Secret from the
+ignored `.env`; it was created without committing or printing its values.
+
+Each original task lists what to build and how we know it is done.
 
 ### Phase 0 — Setup
 

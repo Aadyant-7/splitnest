@@ -1,9 +1,21 @@
 # Windows setup and GitHub handoff
 
+Navigation: [documentation index](README.md) · [project status](project-status.md) ·
+[approved frontend plan](frontend-extension-plan.md).
+
 These instructions support a fresh Windows setup. The original host has now
 verified Java 21, Docker Desktop, Git, the generated wrapper and a kind cluster.
-Source and Compose files are implemented. Do not paste credentials into chat;
-see evidence/verification.md for current execution results.
+The backend, Compose files and local deployment are implemented and verified;
+the approved browser frontend is not implemented yet. The commands below run the
+current backend. See [verification evidence](evidence/verification.md) for exact
+execution results. Do not paste credentials into chat.
+
+This is a local academic and placement project. These instructions require no
+paid hosting, domain, managed database or cloud deployment. GitHub remains the
+existing source-control and CI service; the application itself runs locally.
+Frontend build-tool installation will be documented with the implementation,
+after versions are selected and verified. There is no frontend setup step to run
+at this documentation-only stage.
 
 ## 1. Prerequisites for a fresh checkout
 
@@ -180,7 +192,7 @@ available laptop memory, CPU, and disk before running kind plus monitoring; use 
 modest local resource profile and avoid running a duplicate full Compose stack
 at the same time as the cluster unless needed.
 
-## 4. Run and verify the implementation
+## 4. Run and verify the current backend
 
 From the repository directory:
 
@@ -195,6 +207,9 @@ docker compose up --build -d --wait --wait-timeout 300
 existing `.env`. `Smoke-Test.ps1` creates synthetic demonstration users and data;
 it verifies the real API without printing credentials. Open
 [Swagger UI](http://localhost:8080/swagger-ui/index.html) after startup.
+Swagger is the current developer interface. These commands do not start the
+approved user-facing screens; those will be added under the
+[frontend plan](frontend-extension-plan.md).
 
 For installation, commands and explanations beyond Compose, follow:
 
@@ -211,4 +226,7 @@ examples contain placeholders and require the user to set real values.
 The initial handoff is complete: Java 21 and Docker work, and the GitHub remote
 is https://github.com/Aadyant-7/splitnest.git. The owner explicitly approved the
 local Kubernetes Secret creation from ignored .env values. No per-feature
-approvals are required by the execution plan.
+approvals are required by the execution plan. The frontend extension is approved,
+but its implementation and verification remain pending. Complete the full local
+app before beginning the owner's detailed learning walkthrough; the
+[documentation index](README.md) separates runbooks from that later reading path.

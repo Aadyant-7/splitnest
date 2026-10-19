@@ -1,9 +1,15 @@
 # SplitNest
 
-An expense-sharing REST API for flatmates, families, and travel groups, built
-with Java 21 and Spring Boot. It combines exact financial arithmetic and group
+An academic expense-sharing project for flatmates, families, and travel groups.
+Its Java 21/Spring Boot backend combines exact financial arithmetic and group
 access isolation with background processing and a local Kubernetes delivery lab.
-Swagger UI is the interactive API interface; there is no separate frontend.
+A React/TypeScript browser interface is approved as the next implementation phase.
+
+**Status:** original backend/local scope **100% verified**; frontend **0% implemented**.
+Current interaction uses Swagger UI. The target is a polished, free local demo
+for learning and placement interviews. Public hosting and commercial operation
+are outside this project's scope. See the [project status](docs/project-status.md),
+[documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).
 
 **Verified:** 75 Java tests with real PostgreSQL/Redis containers, 20 script
 scenarios, Compose and Kubernetes API smoke tests, Pod recovery, Git rollback and
@@ -12,7 +18,7 @@ passed verification, image scanning, public GHCR publication and deployment-bran
 generation. Argo CD reconciled the published image with Healthy/Synced status.
 See the [verification record](docs/evidence/verification.md) for evidence.
 
-## Features
+## Implemented backend features
 
 - Registration, BCrypt passwords, 15-minute HS256 access JWTs, rotating refresh
   token families with replay detection, and ownership-checked logout.
@@ -30,7 +36,7 @@ See the [verification record](docs/evidence/verification.md) for evidence.
   The GitOps promotion/rollback generator has eight passing local Git fixtures;
   those fixtures do not establish a successful remote deployment.
 
-## Architecture
+## Current architecture
 
 ```mermaid
 flowchart LR
@@ -48,6 +54,24 @@ One application, organized by feature: Controller -> Service -> Repository.
 JPA manages user/token entities; explicit Spring JDBC repositories handle
 financial aggregates and atomic job operations within the same transaction
 manager. [Architecture and flows](docs/architecture.md).
+
+The approved extension will place feature-organized React source in `frontend/`
+and package its compiled assets inside the same Spring Boot application image.
+The existing Maven root, Java source, deployment topology and business rules stay
+in place. Browser authentication will receive its own cookie/CSRF integration
+and tests. This target architecture is documented; it is not deployed yet.
+
+## Repository map
+
+| Location | Responsibility |
+|---|---|
+| `src/main/` | Java features, configuration and Flyway migrations |
+| `src/test/` | Java unit/integration tests and statement fixtures |
+| [frontend/](frontend/README.md) | Approved browser app; preparation notes only at present |
+| `deploy/` | Local kind, Kustomize, Argo CD and monitoring configuration |
+| `scripts/` | Setup, smoke checks, manifest validation and GitOps helpers |
+| `loadtest/` | k6 workloads and local-cluster job definitions |
+| [docs/](docs/README.md) | Plans, explanations, runbooks, decisions and verification evidence |
 
 ## Run with Docker Compose
 
@@ -148,6 +172,7 @@ be publicly pullable or use an image pull secret.
 
 ## Learn and explain the project
 
+- [Learning sequence after the full app is complete](docs/learning-roadmap.md)
 - [Implementation: file-by-file reading guide](docs/implementation.md)
 - [Concepts from beginner to advanced](docs/learning-guide.md)
 - [Architecture decisions](docs/decisions/0001-modular-monolith.md)
@@ -160,6 +185,11 @@ bounded eventual consistency; logout does not immediately invalidate access JWTs
 The local cluster uses a single PostgreSQL instance and is not a highly available
 production environment. Current limits and measured evidence are documented
 alongside the implementation.
+
+Implementation comes first, followed by verification of the complete browser app,
+then a guided explanation from requirements and data design through each major
+implementation and deployment decision. Documentation is maintained throughout;
+the detailed learning phase does not interrupt each build milestone.
 
 ## Resume summary
 

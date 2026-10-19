@@ -1,5 +1,19 @@
 # Implementation reading guide
 
+Navigation: [documentation index](README.md) · [project status](project-status.md) ·
+[approved frontend plan](frontend-extension-plan.md).
+
+This inventory maps the implemented and verified backend, tests and local
+delivery files. The browser frontend is approved but not implemented; there are
+no frontend source files or browser-test results to inventory yet. The project
+remains a free, local academic and placement app, with public/cloud hosting and
+paid services excluded. Existing evidence describes the backend baseline, not a
+completed full-stack application.
+
+Finish the full local app first, then use this guide for the detailed learning
+walkthrough. Runbooks remain available now through the
+[documentation index](README.md).
+
 Use this as a map from behavior to files. Start with [architecture.md](architecture.md),
 then read a controller, its service and its repository together. Java records are
 immutable API messages; entities represent database-managed state. Constructor
@@ -126,6 +140,20 @@ actual execution results are recorded separately by the verification ledger.
 | [values.yaml](../deploy/monitoring/values.yaml), [servicemonitor.yaml](../deploy/monitoring/servicemonitor.yaml), [monitoring/kustomization.yaml](../deploy/monitoring/kustomization.yaml), [splitnest.json](../deploy/monitoring/dashboards/splitnest.json) | Monitoring chart settings, app discovery and dashboard source. A JSON file is not a screenshot or evidence of an installed dashboard. |
 | [balances.js](../loadtest/balances.js), [job.yaml](../loadtest/job.yaml), [loadtest/kustomization.yaml](../loadtest/kustomization.yaml) | k6 workload and in-cluster Job sources; measurement procedure is in [monitoring.md](monitoring.md). |
 
+## Pending frontend inventory
+
+The [approved extension plan](frontend-extension-plan.md) identifies the future
+frontend source/tests, browser-session integration, static-resource routing,
+Docker build changes and CI/GitOps checks. Those files will be added to this
+inventory only as their milestones are implemented. In particular, the current
+security configuration and JSON token DTOs should not be read as an implemented
+HttpOnly-cookie browser session flow.
+
+Reusing the backend's API does not make its tests a substitute for interface
+tests. The extension must add its own component, session/security and real-browser
+checks, then verify the combined image locally. See
+[project status](project-status.md) for the separate backend and frontend states.
+
 ## Reading and interview practice
 
 The practical [operations runbook](operations.md) ties startup, health checks,
@@ -135,9 +163,11 @@ by this file inventory.
 
 Read [demo.md](demo.md) while calling the API. Then explain one expense's journey
 using [architecture.md](architecture.md) without reading the source. Consult the
-six [ADRs](decisions/0001-modular-monolith.md) to discuss consequences rather than
-listing technologies. The original twenty interview questions remain unanswered
-in [interview-prep.md](interview-prep.md).
+six implemented-backend [ADRs](decisions/0001-modular-monolith.md) to discuss
+consequences rather than listing technologies. A seventh
+[frontend ADR](decisions/0007-browser-frontend.md) records the accepted design,
+whose implementation is pending. The original twenty interview questions remain
+unanswered in [interview-prep.md](interview-prep.md).
 
 1. Which repository APIs use JPA, and why do the JDBC writes still share one service transaction?
 2. Which tests would you read before changing member removal or refresh-token rotation?

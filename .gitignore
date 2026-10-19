@@ -17,3 +17,12 @@ Thumbs.db
 *.jks
 *.p12
 *.pem
+
+# Frontend dependencies, generated assets and test artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/.vite/
+frontend/*.tsbuildinfo

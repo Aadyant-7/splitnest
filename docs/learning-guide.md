@@ -1,10 +1,20 @@
 # SplitNest learning guide
 
-This guide explains the implemented backend and its delivery design. Use the
-[file-by-file guide](implementation.md) to connect concepts to actual classes
-and tests, and the [verification record](evidence/verification.md) for results.
-Read the explanation, run its demo, and answer its questions before claiming
-the corresponding skill in an interview.
+This guide explains the implemented backend and its local delivery design. The
+React extension is approved but not implemented; its concepts below are marked
+as future work. Use the [project status](project-status.md) to check what exists
+and the [documentation index](README.md) to find the relevant guide.
+
+The detailed from-scratch learning phase starts after the complete browser app
+is implemented and verified. Follow the [learning roadmap](learning-roadmap.md)
+then. The learning sequence explains the finished system in a logical build
+order; actual development history remains in Git and verification evidence.
+During development, these explanations
+remain available for reference without requiring a study checkpoint after every
+change. Use the [file-by-file guide](implementation.md) to connect concepts to
+actual classes and tests, and the [verification record](evidence/verification.md)
+for results. Run the relevant demo and explain its behavior before claiming the
+corresponding skill in an interview.
 
 ## 1. One application with feature boundaries
 
@@ -205,7 +215,7 @@ Argo CD watches the desired manifests in Git and reconciles them into the cluste
 It can pull changes from GitHub while running on the laptop; GitHub-hosted runners
 do not need inbound access to the local cluster.
 
-The proposed deployment branch separates generated image promotion from protected
+The implemented deployment branch separates generated image promotion from protected
 application source. Guard promotion against out-of-order builds. Argo self-heal
 must also respect the HPA's ownership of replica counts.
 
@@ -239,7 +249,9 @@ For each major decision, practice explaining the problem, chosen design,
 alternative, tradeoff, and evidence. Be ready to open the implementation and its
 test. Explain a failure case as well as the successful path.
 
-Describe this as a backend application with a local Kubernetes delivery lab.
+Today, describe this as a backend application with a local Kubernetes delivery lab.
+After the frontend acceptance gates pass, describe the verified result as a
+full-stack expense-sharing application. Planned screens are not completed work.
 Explain what would be needed for public production use, such as TLS, managed
 backups/restores, database high availability, access controls, and operational
 capacity. Those are limits to understand, not additional implementation scope.
@@ -251,3 +263,39 @@ Three initial self-checks:
 3. Why is a valid JWT insufficient to authorize a request for any group?
 
 The full unanswered question list is in [interview-prep.md](interview-prep.md).
+
+## 13. Browser concepts to study after implementation
+
+The following is the accepted design, not a description of existing UI code.
+The [frontend plan](frontend-extension-plan.md) and
+[ADR 0007](decisions/0007-browser-frontend.md) define its implementation gates.
+
+React components will turn state into a visible interface. TypeScript will make
+form data and API response shapes explicit, while runtime validation and the
+server's rules will still decide whether a request is valid. A hidden Delete
+button improves the interface; only the backend's permission check prevents an
+unauthorized deletion. The UI must show stored financial results rather than
+perform its own authoritative split calculation.
+
+Vite will serve the interface during development and build static assets for the
+packaged application. Its development proxy and the packaged Spring Boot server
+keep browser API requests on the same origin. React Router will handle screen
+navigation. A page refresh on an app route must load the interface, while an
+unknown API route must retain its API error instead of returning HTML.
+
+Browser storage changes the security model. The design keeps the access JWT in
+memory and refresh capability in an HttpOnly cookie. JavaScript cannot read an
+HttpOnly cookie, but the browser can send it automatically; cookie-based actions
+therefore need explicit CSRF protection. Browser refresh/logout will reuse the
+existing token services through an adapter. Requests across tabs must coordinate
+refresh because the existing replay defense revokes a reused token family.
+The current bearer API alone does not prove these future browser boundaries.
+
+Component tests will verify interaction states; real-browser tests will exercise
+navigation, authentication, permissions and multi-tab behavior with the backend.
+The final image will need a frontend build stage and the CI/GitOps source profile
+will need to include frontend source and lockfiles. A working Vite screen alone
+will not prove that the packaged app or a frontend-only deployment works.
+
+No paid service or public app host is needed for this learning phase. Use
+synthetic accounts and statements with the existing local Compose/kind setup.

@@ -1,0 +1,116 @@
+# Project status
+
+Updated: 19 October 2026 (India).
+
+SplitNest is a free, local academic and placement project. The objective is a
+working application that demonstrates backend engineering and delivery with
+evidence the owner can explain in interviews. Public hosting, paid services and
+commercial operation are outside the scope.
+
+## Completion and evidence
+
+| Workstream | Status | Evidence or completion rule |
+|---|---|---|
+| Original backend and local delivery | **100% of the original acceptance scope** | [Verification record](evidence/verification.md): 75 Java tests, 20 script scenarios, actual Compose/kind smoke tests, CI, GitOps rollback/restoration and monitoring/load observations |
+| Full-stack preparation | **Complete** | Approved scope/stack, [execution plan](frontend-extension-plan.md), [repository map](../README.md#repository-map), documentation index, frontend directory notes and learning sequence |
+| Frontend implementation | **0 of 6 milestones complete (0%)** | No UI source, installed frontend dependencies, frontend test result or UI deployment exists yet |
+| Detailed understanding phase | **Scheduled after full-app verification** | [Learning roadmap](learning-roadmap.md), code walkthrough, exercises and unanswered interview questions |
+
+The backend percentage describes the original scope. It does not imply the
+expanded full-stack application is complete. Do not calculate an overall number
+by averaging unrelated tasks. Report backend completion and frontend acceptance
+milestones separately; preparation does not count as implemented UI behavior.
+
+Existing observations are dated evidence, not continuous monitoring of the
+owner's machine. Test counts must be updated when new tests are actually run.
+
+## Next implementation milestones
+
+| # | Milestone | State |
+|---|---|---|
+| 1 | Interface foundation: compatible versions, actual DTO contracts, screen layout/routes and typed API errors | Not started |
+| 2 | Browser authentication and app shell: cookie/CSRF adapter, session restoration and refresh coordination | Not started |
+| 3 | Groups, membership, expenses and balances | Not started |
+| 4 | Statement uploads, real job polling, budgets and alerts | Not started |
+| 5 | Responsive/accessibility polish, error states, component and browser reliability tests | Not started |
+| 6 | Packaged frontend build, CI/GitOps promotion, Compose/kind verification and complete demo documentation | Not started |
+
+Acceptance evidence for every milestone is in the
+[frontend execution plan](frontend-extension-plan.md#5-focused-execution-milestones).
+Work proceeds autonomously across coherent milestones. Record results as they
+happen; ask the owner only for an indispensable decision, access or constraint.
+
+## Scope that stays fixed
+
+- Existing features: authentication, groups/roles, INR equal-split expenses,
+  balances, CSV/XLSX imports, category budgets and scheduled alerts.
+- One modular Java application. The compiled React interface joins the same
+  Spring Boot image; PostgreSQL and Redis remain its data services.
+- Current Swagger and API-client contracts remain available. Browser session
+  integration needs additional implementation and security tests.
+- Use the existing free local environments and authorized GitHub setup. No paid
+  account upgrade, cloud runtime, hosted database, external authentication
+  provider, payment integration or invitation-email service is planned.
+- Demonstrate with synthetic users and statements. No claim of commercial
+  operations, production capacity, highly available PostgreSQL or tested backups.
+
+## Workflow and handoff
+
+1. **Preparation:** organize instructions, scope, repository map and docs. Complete.
+2. **Build:** implement the six frontend milestones, maintaining tests, decisions
+   and meaningful verified Git commits throughout.
+3. **Verify:** run the full browser journeys against the real backend and the
+   packaged app; record the actual deployment and test results.
+4. **Understand:** explain the completed system from requirements and data design
+   onward, with code references and small exercises. Keep interview questions
+   unanswered in the question list.
+5. **Demonstrate:** use a complete local demo, architecture explanation and resume
+   wording grounded in the final evidence.
+
+The [documentation index](README.md) separates current runbooks, accepted plans,
+architecture decisions and measured evidence so they can be read in context.
+
+## Preparation file inventory
+
+This milestone changes documentation and generated-file exclusions only:
+
+| File | Change |
+|---|---|
+| [README.md](../README.md) | Current/target status, repository map and learning-phase sequence |
+| [agents.md](../agents.md) | Approved frontend stack, free local scope, workflow and honest progress reporting |
+| [.gitignore](../.gitignore) | Exclude frontend dependencies, generated builds and test artifacts |
+| [docs/README.md](README.md) | Central documentation navigation |
+| [project-status.md](project-status.md) | Completion by scope, acceptance milestones and preparation inventory |
+| [frontend-extension-plan.md](frontend-extension-plan.md) | Accepted stack/design, screen/API mapping, browser security and delivery gates |
+| [frontend/README.md](../frontend/README.md) | Planned feature directories and frontend build/runtime responsibilities |
+| [development-plan.md](development-plan.md) | Current scope/order while preserving the original backend plan and evidence |
+| [architecture.md](architecture.md) | Distinguish implemented backend flows from the accepted frontend target |
+| [setup.md](setup.md) | Current backend setup and explicitly pending frontend tool setup |
+| [demo.md](demo.md) | Preserve the current API demo and define the future browser demonstration |
+| [implementation.md](implementation.md) | Preserve the code map and mark future browser/security/build work |
+| [learning-roadmap.md](learning-roadmap.md) | Later guided explanation and exercises from requirements through deployment |
+| [learning-guide.md](learning-guide.md) | Connect the existing explanations to the later guided sequence |
+| [interview-prep.md](interview-prep.md) | Preserve unanswered questions and accurate current/future interview framing |
+| [0007-browser-frontend.md](decisions/0007-browser-frontend.md) | Record the accepted frontend decision with implementation pending |
+| [evidence/verification.md](evidence/verification.md) | Clarify the scope of existing evidence without changing measured results |
+
+The operational guides and first six ADRs were reviewed for scope consistency;
+their existing backend procedures remain applicable. No Java source, database
+schema, deployed resource or dependency version changes in this milestone.
+
+Review the preparation commit and ignored frontend artifacts from PowerShell in
+the repository root:
+
+```powershell
+git status --short
+git log -1 --oneline
+git diff --check
+git check-ignore -- frontend/node_modules/react/index.js frontend/dist/index.html frontend/coverage/index.html frontend/test-results/results.json frontend/.env
+```
+
+The last command should list every supplied path as ignored. Frontend source and
+`package-lock.json` must remain trackable. Documentation checks cover local file
+links, heading-fragment links, balanced fenced blocks, preserved demo commands
+and unchanged original interview questions. No new application behavior is added
+in this preparation milestone; runtime test results remain the dated baseline
+until the next actual run.
