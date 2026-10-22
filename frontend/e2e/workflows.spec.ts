@@ -44,7 +44,7 @@ test('registration, HttpOnly-cookie session restoration, logout and sign-in use 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
   expect((await context.cookies()).some((cookie) => cookie.name === 'splitnest_refresh')).toBe(false);
   await signIn(page, { id: '', email, displayName: 'Avery Demo', createdAt: '', password: DEMO_PASSWORD });
 });
@@ -55,7 +55,7 @@ test('three users share exact stored splits and balances, then delete expenses t
   const charlie = await registerAccount(request, 'Casey');
   await signIn(page, admin);
   const groupId = await createUiGroup(page, 'A weekend together');
-  await page.getByRole('button', { name: 'Members', exact: true }).click();
+  await page.getByRole('tab', { name: 'Members', exact: true }).click();
   for (const member of [bob, charlie]) {
     await page.getByLabel('Member email').fill(member.email);
     await page.getByRole('button', { name: 'Add member', exact: true }).click();
@@ -89,22 +89,22 @@ test('three users share exact stored splits and balances, then delete expenses t
     expect(Math.round(Number(balance!.netBalance) * 100)).toBe((member.id === admin.id ? 10_000 : 0) - (index === 0 ? 3_334 : 3_333));
   }
   expect(balances.map((balance) => Math.round(Number(balance.netBalance) * 100)).reduce((sum, cents) => sum + cents, 0)).toBe(0);
-  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('tab', { name: 'Overview', exact: true }).click();
   for (const member of ordered) await expect(page.getByRole('row').filter({ hasText: member.displayName })).toBeVisible();
 
   page.on('dialog', (dialog) => void dialog.accept());
-  await page.getByRole('button', { name: 'Members', exact: true }).click();
+  await page.getByRole('tab', { name: 'Members', exact: true }).click();
   await page.getByRole('button', { name: `Remove ${charlie.displayName}`, exact: true }).click();
   await expect(page.getByRole('button', { name: `Remove ${charlie.displayName}`, exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('tab', { name: 'Overview', exact: true }).click();
   await expect(page.getByRole('row').filter({ hasText: charlie.displayName })).toContainText('Former member');
   await expect(page.getByRole('row').filter({ hasText: charlie.displayName })).toContainText(charlie.id === ordered[0].id ? '33.34' : '33.33');
   await addUiExpense(page, 'Shared groceries', '60.00', bob.id);
   await page.getByRole('button', { name: 'Delete Shared groceries', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Delete Shared groceries', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Delete Shared dinner', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your first expense starts here' })).toBeVisible();
-  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'No expenses yet' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Overview', exact: true }).click();
   await expect(page.getByRole('heading', { name: '0 expenses' })).toBeVisible();
   await expectNoPersistentCredentials(page);
 });
@@ -121,11 +121,11 @@ test('member controls match real server permissions and outsiders receive 404', 
   const expense = await created.json() as { id: string };
   await signIn(page, member);
   await page.goto(`/app/groups/${group.id}`);
-  await page.getByRole('button', { name: 'Members', exact: true }).click();
+  await page.getByRole('tab', { name: 'Members', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Add member', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Delete Owner expense', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Budgets', exact: true }).click();
+  await page.getByRole('tab', { name: 'Budgets', exact: true }).click();
   await expect(page.getByText('Only group admins can change category limits.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save monthly limit', exact: true })).toHaveCount(0);
 
@@ -145,22 +145,41 @@ test('CSV import reports actual valid/invalid rows and budgets show limits witho
   const account = await registerAccount(request, 'Import Demo');
   await signIn(page, account);
   await createUiGroup(page, 'Statements and plans');
-  await page.getByRole('button', { name: 'Imports', exact: true }).click();
+  await page.getByRole('tab', { name: 'Imports', exact: true }).click();
+  const example = await request.get('/examples/statement.csv');
+  expect(example.status(), 'The packaged application serves the public CSV example').toBe(200);
+  const exampleCsv = await example.text();
+  expect(exampleCsv).toMatch(/^date,description,amount\r?\n/);
+  const downloadReady = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Download sample CSV', exact: true }).click();
+  const download = await downloadReady;
+  expect(download.suggestedFilename()).toBe('splitnest-statement-example.csv');
+  expect(await download.failure()).toBeNull();
+  await page.getByLabel('Statement file').setInputFiles({ name: 'downloaded-example.csv', mimeType: 'text/csv', buffer: Buffer.from(exampleCsv) });
+  await page.getByRole('button', { name: 'Upload statement', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Import complete.' })).toContainText('2 expenses saved; 0 invalid rows skipped', { timeout: 30_000 });
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
+  await expect(page.getByRole('row').filter({ hasText: 'BIGBASKET groceries' })).toContainText('Groceries');
+  await expect(page.getByRole('row').filter({ hasText: 'ZOMATO dinner' })).toContainText('Food');
+  await page.getByRole('tab', { name: 'Imports', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Import complete.' })).toContainText('2 expenses saved; 0 invalid rows skipped');
   const date = new Date().toISOString().slice(0, 10);
   await page.getByLabel('Statement file').setInputFiles({ name: 'synthetic-statement.csv', mimeType: 'text/csv', buffer: Buffer.from(`date,description,amount\n${date},SWIGGY lunch,100.00\nnot-a-date,Invalid row,25.00\n`) });
   await page.getByRole('button', { name: 'Upload statement', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Import complete.' })).toContainText('1 expense saved; 1 invalid row skipped', { timeout: 30_000 });
   await expect(page.getByText('COMPLETED', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await expect(page.getByRole('row').filter({ hasText: 'SWIGGY lunch' })).toBeVisible();
-  await expect(page.getByText('Statement import', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Budgets', exact: true }).click();
+  await expect(page.getByRole('row').filter({ hasText: 'SWIGGY lunch' }).getByText('Statement import', { exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: 'Imports', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Import complete.' })).toContainText('1 expense saved; 1 invalid row skipped');
+  await page.getByRole('tab', { name: 'Budgets', exact: true }).click();
   await page.getByLabel('Monthly limit (INR)').fill('500.00');
   await page.getByRole('button', { name: 'Save monthly limit', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Food budget saved.');
   await expect(page.getByRole('table').filter({ hasText: 'Monthly category limits' }).getByRole('row').filter({ hasText: 'Food' })).toContainText('500.00');
   await expect(page.getByText('No budget alerts yet', { exact: true })).toBeVisible();
-  await expect(page.getByText(/not live spending totals or an immediate check/)).toBeVisible();
+  await expect(page.getByText(/not live spending totals/)).toBeVisible();
 });
 
 test('two tabs rotate the shared refresh cookie safely and sign out together', async ({ page, context, request }) => {
@@ -190,8 +209,8 @@ test('two tabs rotate the shared refresh cookie safely and sign out together', a
   await expect.poll(() => successfulRefreshes[0]).toBeGreaterThanOrEqual(1);
   await expect.poll(() => successfulRefreshes[1]).toBeGreaterThanOrEqual(1);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
-  await expect(second.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(second.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
 });
 
 test('mobile layout supports group and expense entry without horizontal page overflow', async ({ page, request }) => {
@@ -199,7 +218,7 @@ test('mobile layout supports group and expense entry without horizontal page ove
   const account = await registerAccount(request, 'Mobile Demo');
   await signIn(page, account);
   await createUiGroup(page, 'A mobile weekend');
-  await page.getByRole('button', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await page.getByLabel('Amount (INR)').fill('1.234');
   await page.getByLabel('Description', { exact: true }).fill('Mobile breakfast');
   await page.getByRole('button', { name: 'Add expense', exact: true }).click();
@@ -207,6 +226,9 @@ test('mobile layout supports group and expense entry without horizontal page ove
   await page.getByLabel('Amount (INR)').fill('100.00');
   await page.getByRole('button', { name: 'Add expense', exact: true }).click();
   await expect(page.getByRole('row').filter({ hasText: 'Mobile breakfast' })).toBeVisible();
+  const mobileExpense = page.getByRole('row').filter({ hasText: 'Mobile breakfast' });
+  await expect(mobileExpense.getByText('₹100.00', { exact: true })).toBeInViewport();
+  await expect(mobileExpense.getByRole('button', { name: 'Delete Mobile breakfast', exact: true })).toBeInViewport();
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   expect(fits, 'Tables may scroll internally; the page itself must fit the mobile viewport').toBe(true);
 });
@@ -226,6 +248,30 @@ test('real login rate limiting announces Retry-After accessibly', async ({ page,
     await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
   }
   await expect(page.getByRole('alert')).toContainText(/Try again in \d+ seconds/);
+});
+
+test('every workspace section fits phone, tablet and desktop viewports', async ({ page, request }) => {
+  const account = await registerAccount(request, 'Responsive Workspace');
+  const token = await apiToken(request, account);
+  const group = await createApiGroup(request, token, 'Household expenses and shared travel');
+  await signIn(page, account);
+  await page.goto(`/app/groups/${group.id}`);
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.getByRole('banner').getByText(account.displayName, { exact: true })).toBeVisible();
+    for (const section of ['Overview', 'Expenses', 'Members', 'Imports', 'Budgets']) {
+      const tab = page.getByRole('tab', { name: section, exact: true });
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tabpanel', { name: section, exact: true })).toBeVisible();
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        { message: `${section} must fit the ${width}px page; wide tables may scroll inside their own container` }).toBe(true);
+    }
+    await page.getByRole('link', { name: 'My groups', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await page.getByRole('link', { name: group.name, exact: true }).click();
+  }
 });
 
 test('keyboard navigation supports password visibility, sign-in, skip link and group sections', async ({ page, request }) => {
@@ -263,13 +309,19 @@ test('keyboard navigation supports password visibility, sign-in, skip link and g
   await expect(page.getByRole('link', { name: group.name, exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: group.name, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Overview', exact: true }).focus();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Expenses', exact: true })).toBeFocused();
+  await page.getByRole('tab', { name: 'Overview', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Expenses', exact: true })).toBeFocused();
   await page.keyboard.press('Space');
   await expect(page.getByRole('heading', { name: 'Add an expense', exact: true })).toBeVisible();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Members', exact: true })).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Members', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Group members', exact: true })).toBeVisible();
+  await page.keyboard.press('End');
+  await expect(page.getByRole('tab', { name: 'Budgets', exact: true })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Budgets', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('Home');
+  await expect(page.getByRole('tab', { name: 'Overview', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Group balances', exact: true })).toBeVisible();
 });

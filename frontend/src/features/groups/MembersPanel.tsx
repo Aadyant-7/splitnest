@@ -43,25 +43,25 @@ export function MembersPanel({ groupId, members, currentUserId, isAdmin, onChang
 
   return (
     <section className="panel stack" aria-labelledby="members-heading">
-      <div className="section-heading"><div><p className="eyebrow">YOUR PEOPLE</p><h2 id="members-heading">Group members</h2></div><span className="tag">{members.length} current</span></div>
+      <div><h2 id="members-heading">Group members</h2></div>
       <p className="muted">New expenses include current members. Joining or leaving never changes earlier shares.</p>
       <ErrorNotice error={error} />
       {notice && <p className="notice" role="status">{notice}</p>}
-      <div className="table-wrap"><table className="table">
-        <caption className="muted">Admins can add or remove members; at least one admin must remain.</caption>
+      <div className="table-wrap"><table className="table member-table">
+        <caption className="sr-only">Current group members and roles</caption>
         <thead><tr><th scope="col">Member</th><th scope="col">Role</th><th scope="col">Joined</th>{isAdmin && <th scope="col">Actions</th>}</tr></thead>
         <tbody>{members.map((member) => {
           const lastAdmin = member.role === 'ADMIN' && adminCount === 1;
           return <tr key={member.userId}>
-            <th scope="row"><div>{member.displayName}{member.userId === currentUserId && ' (you)'}</div><span className="muted">{member.email}</span></th>
-            <td><span className="tag">{member.role === 'ADMIN' ? 'Admin' : 'Member'}</span></td><td>{shortDate(member.joinedAt)}</td>
+            <th scope="row"><div className="cell-primary">{member.displayName}{member.userId === currentUserId && ' (you)'}</div><span className="muted cell-secondary">{member.email}</span></th>
+            <td data-label="Role"><span className="tag">{member.role === 'ADMIN' ? 'Admin' : 'Member'}</span></td><td data-label="Joined">{shortDate(member.joinedAt)}</td>
             {isAdmin && <td>{lastAdmin ? <span className="muted">Last admin</span> : <button className="button danger" type="button" disabled={pending} aria-label={`Remove ${member.displayName}`} onClick={() => void removeMember(member)}>Remove</button>}</td>}
           </tr>;
         })}</tbody>
       </table></div>
-      {isAdmin ? <form className="stack" onSubmit={addMember}>
-        <div><h3>Add someone to the group</h3><p className="muted">They need an existing account. Membership is immediate; no invitation email is sent.</p></div>
-        <label className="field" htmlFor={`${formId}-email`}>Member email<input id={`${formId}-email`} type="email" autoComplete="email" required maxLength={320} placeholder="friend@example.com" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
+      {isAdmin ? <form className="members-add-form" onSubmit={addMember}>
+        <div className="field-wide"><h3>Add a member</h3><p className="muted" id={`${formId}-hint`}>Use their registered email address. They’ll get access immediately.</p></div>
+        <label className="field" htmlFor={`${formId}-email`}>Member email<input id={`${formId}-email`} type="email" autoComplete="email" aria-describedby={`${formId}-hint`} required maxLength={320} placeholder="friend@example.com" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
         <div><button className="button primary" type="submit" disabled={pending}>{pending ? 'Updating members…' : 'Add member'}</button></div>
       </form> : <p className="notice">An admin can add or remove members for this group.</p>}
     </section>

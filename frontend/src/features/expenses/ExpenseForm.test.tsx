@@ -56,4 +56,17 @@ describe('ExpenseForm', () => {
     expect(screen.getByLabelText('Amount (INR)')).toHaveValue('0.01');
     expect(onCreated).not.toHaveBeenCalled();
   });
+
+  it('defaults the expense date to the browser calendar day rather than a UTC ISO date', () => {
+    // Emulate the local calendar getters being on a different day from the UTC timestamp.
+    const year = vi.spyOn(Date.prototype, 'getFullYear').mockReturnValue(2030);
+    const month = vi.spyOn(Date.prototype, 'getMonth').mockReturnValue(2);
+    const day = vi.spyOn(Date.prototype, 'getDate').mockReturnValue(4);
+    try {
+      render(<ExpenseForm groupId="trip" members={members} currentUserId="alice" onCreated={vi.fn()} />);
+      expect(screen.getByLabelText('Expense date')).toHaveValue('2030-03-04');
+    } finally {
+      year.mockRestore(); month.mockRestore(); day.mockRestore();
+    }
+  });
 });

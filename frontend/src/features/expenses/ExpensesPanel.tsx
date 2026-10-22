@@ -36,37 +36,37 @@ export function ExpensesPanel({ groupId, members, balances, expenses, currentUse
   }
 
   return (
-    <div className="stack">
+    <div className="workspace-columns">
       <ExpenseForm groupId={groupId} members={members} currentUserId={currentUserId} onCreated={() => { onPageChange(0); onChanged(); }} />
-      <section className="panel stack" aria-labelledby="expenses-heading">
-        <div className="section-heading"><div><p className="eyebrow">SHARED MOMENTS</p><h2 id="expenses-heading">Expenses</h2></div><span className="tag">{expenses.totalElements} total</span></div>
+      <section className="panel stack expense-history" aria-labelledby="expenses-heading">
+        <div className="section-heading"><h2 id="expenses-heading">Expenses</h2><span className="muted">{expenses.totalElements} total</span></div>
         <ErrorNotice error={error} />
-        {expenses.content.length === 0 ? <EmptyState title="Your first expense starts here">Record something shared using the form above.</EmptyState> : (
+        {expenses.content.length === 0 ? <EmptyState title="No expenses yet">Add an expense to start tracking what everyone paid and owes.</EmptyState> : (
           <div className="table-wrap">
-            <table className="table">
-              <caption className="muted">Newest entries first. Open an expense’s shares to see the saved split.</caption>
-              <thead><tr><th scope="col">Expense</th><th scope="col">Paid by</th><th scope="col">Date</th><th scope="col">Amount</th><th scope="col">Actions</th></tr></thead>
+            <table className="table ledger-table">
+              <caption className="sr-only">Expenses, newest entries first. Expand stored shares for the original split.</caption>
+              <thead><tr><th scope="col">Expense</th><th scope="col">Paid by</th><th scope="col">Date</th><th className="numeric-cell" scope="col">Amount</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
               <tbody>{expenses.content.map((expense) => (
                 <tr key={expense.id}>
                   <th scope="row">
-                    <div>{expense.description}</div><span className="tag">{categoryName(expense.category)}</span> {expense.importJobId && <span className="tag">Statement import</span>}
+                    <div className="cell-primary">{expense.description}</div><span className="muted cell-secondary">{categoryName(expense.category)}</span> {expense.importJobId && <span className="tag">Statement import</span>}
                     <details>
                       <summary>Stored shares for {expense.description}</summary>
-                      <ul>{expense.splits.map((split) => <li key={split.userId}>{names.get(split.userId) ?? 'Former member'}: {money(split.shareAmount)}</li>)}</ul>
+                      <ul className="shares-list">{expense.splits.map((split) => <li key={split.userId}>{names.get(split.userId) ?? 'Former member'}: {money(split.shareAmount)}</li>)}</ul>
                     </details>
                   </th>
-                  <td>{names.get(expense.paidBy) ?? 'Former member'}{expense.paidBy === currentUserId && ' (you)'}</td>
-                  <td>{shortDate(expense.expenseDate)}</td><td><strong>{money(expense.amount)}</strong></td>
+                  <td data-label="Paid by">{names.get(expense.paidBy) ?? 'Former member'}{expense.paidBy === currentUserId && ' (you)'}</td>
+                  <td data-label="Date">{shortDate(expense.expenseDate)}</td><td data-label="Amount" className="numeric-cell"><strong>{money(expense.amount)}</strong></td>
                   <td>{isAdmin || expense.createdBy === currentUserId ? (
                     <button type="button" className="button danger" aria-label={`Delete ${expense.description}`} disabled={deletingId !== null} onClick={() => void remove(expense)}>{deletingId === expense.id ? 'Deleting…' : 'Delete'}</button>
-                  ) : <span className="muted">Creator or admin</span>}</td>
+                  ) : <span className="muted" aria-label="Only the creator or an admin can delete this expense">—</span>}</td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
         )}
         {!expenses.first || !expenses.last ? (
-          <nav className="section-heading" aria-label="Expense pages">
+          <nav className="pagination" aria-label="Expense pages">
             <button className="button secondary" type="button" disabled={expenses.first} onClick={() => onPageChange(expenses.number - 1)}>Previous</button>
             <span className="muted">Page {expenses.number + 1} of {Math.max(expenses.totalPages, 1)}</span>
             <button className="button secondary" type="button" disabled={expenses.last} onClick={() => onPageChange(expenses.number + 1)}>Next</button>

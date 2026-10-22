@@ -44,7 +44,7 @@ describe('GroupPage', () => {
     installApi(ordinaryResponse);
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Goa weekend' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '2 members' })).toBeInTheDocument();
+    expect(screen.getByText(/2 members.*Admin.*INR/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '1 expense' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Group balances' })).toBeInTheDocument();
     expect(api).toHaveBeenCalledTimes(3);
@@ -60,7 +60,7 @@ describe('GroupPage', () => {
     });
     renderPage();
     await screen.findByRole('heading', { name: 'Goa weekend' });
-    fireEvent.click(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Members' }));
     fireEvent.change(screen.getByLabelText('Member email'), { target: { value: 'charlie@example.test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     expect(await screen.findByText('Charlie')).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('GroupPage', () => {
     });
     renderPage();
     await screen.findByRole('heading', { name: 'Goa weekend' });
-    fireEvent.click(screen.getByRole('button', { name: 'Expenses' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Expenses' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Final taxi' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete Final taxi' })).not.toBeInTheDocument());
@@ -94,7 +94,7 @@ describe('GroupPage', () => {
     installApi(ordinaryResponse);
     renderPage();
     await screen.findByRole('heading', { name: 'Goa weekend' });
-    fireEvent.click(screen.getByRole('button', { name: 'Imports' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Imports' }));
     fireEvent.click(screen.getByRole('button', { name: 'Finish statement import' }));
     await waitFor(() => expect(api).toHaveBeenCalledTimes(6));
   });
@@ -104,9 +104,42 @@ describe('GroupPage', () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'We couldn’t open this group' })).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('Group not found');
-    expect(screen.queryByRole('button', { name: 'Expenses' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Expenses' })).not.toBeInTheDocument();
     installApi(ordinaryResponse);
     fireEvent.click(screen.getByRole('button', { name: 'Try opening group again' }));
     expect(await screen.findByRole('heading', { name: 'Goa weekend' })).toBeInTheDocument();
+  });
+
+  it('supports a single tab stop and arrow, Home and End navigation for group sections', async () => {
+    installApi(ordinaryResponse);
+    renderPage();
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    const overview = screen.getByRole('tab', { name: 'Overview' });
+    const expenses = screen.getByRole('tab', { name: 'Expenses' });
+    const budgets = screen.getByRole('tab', { name: 'Budgets' });
+    expect(overview).toHaveAttribute('aria-selected', 'true');
+    expect(overview).toHaveAttribute('tabindex', '0');
+    expect(expenses).toHaveAttribute('tabindex', '-1');
+    for (const section of screen.getAllByRole('tab')) {
+      expect(document.getElementById(section.getAttribute('aria-controls')!)).toBeInTheDocument();
+    }
+
+    overview.focus();
+    fireEvent.keyDown(overview, { key: 'ArrowRight' });
+    expect(expenses).toHaveFocus();
+    expect(expenses).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Expenses' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Add an expense' })).toBeInTheDocument();
+
+    fireEvent.keyDown(expenses, { key: 'End' });
+    expect(budgets).toHaveFocus();
+    expect(screen.getByRole('tabpanel', { name: 'Budgets' })).toBeInTheDocument();
+    fireEvent.keyDown(budgets, { key: 'ArrowRight' });
+    expect(overview).toHaveFocus();
+    fireEvent.keyDown(overview, { key: 'ArrowLeft' });
+    expect(budgets).toHaveFocus();
+    fireEvent.keyDown(budgets, { key: 'Home' });
+    expect(overview).toHaveFocus();
+    expect(screen.getByRole('tabpanel', { name: 'Overview' })).toBeInTheDocument();
   });
 });

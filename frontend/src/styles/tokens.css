@@ -1,9 +1,14 @@
 :root {
   color-scheme: light;
-  --canvas: #f5f6ee;
-  --paper: #fff;
-  --ink: #29392e;
-  --muted: #68775f;
-  --forest: #244c3f;
-  --line: #e3e7da;
+  --canvas: #f3f6f8;
+  --paper: #ffffff;
+  --ink: #172b3a;
+  --muted: #526675;
+  --forest: #176b68;
+  --accent-hover: #125855;
+  --line: #dce4e9;
+  --soft: #edf3f5;
+  --positive: #16644f;
+  --negative: #a53b31;
+  --radius: 12px;
 }

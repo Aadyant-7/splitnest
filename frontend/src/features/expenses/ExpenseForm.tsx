@@ -15,7 +15,11 @@ export function ExpenseForm({ groupId, members, currentUserId, onCreated }: Prop
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<Category>('FOOD');
-  const [expenseDate, setExpenseDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [expenseDate, setExpenseDate] = useState(() => {
+    const today = new Date();
+    // The date input represents the user's calendar day, not the UTC day.
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  });
   const [paidBy, setPaidBy] = useState(currentUserId);
   const [error, setError] = useState<unknown>(null);
   const [saving, setSaving] = useState(false);
@@ -56,28 +60,27 @@ export function ExpenseForm({ groupId, members, currentUserId, onCreated }: Prop
   }
 
   return (
-    <section className="panel stack" aria-labelledby={`${formId}-heading`}>
+    <section className="panel stack expense-form" aria-labelledby={`${formId}-heading`}>
       <div className="section-heading">
-        <div><p className="eyebrow">MAKE IT EVEN</p><h2 id={`${formId}-heading`}>Add an expense</h2></div>
-        <span className="tag">INR · Equal split</span>
+        <div><h2 id={`${formId}-heading`}>Add an expense</h2></div>
       </div>
-      <p className="muted">Split between all {members.length} current {members.length === 1 ? 'member' : 'members'}. Stored shares stay the same when membership changes.</p>
+      <p className="muted" id={`${formId}-split`}>Split equally between {members.length} current {members.length === 1 ? 'member' : 'members'}.</p>
       <ErrorNotice error={error} />
       {saved && <p className="notice" role="status">Expense added. Your group balances are updating.</p>}
-      <form className="stack" onSubmit={submit}>
+      <form className="stack" aria-describedby={`${formId}-split`} onSubmit={submit}>
         <div className="form-grid">
           <label className="field" htmlFor={`${formId}-amount`}>Amount (INR)
             <input id={`${formId}-amount`} inputMode="decimal" placeholder="0.00" required maxLength={13} value={amount} onChange={(event) => setAmount(event.target.value)} />
           </label>
-          <label className="field" htmlFor={`${formId}-description`}>Description
-            <input id={`${formId}-description`} required maxLength={500} placeholder="Dinner, rent, a shared adventure…" value={description} onChange={(event) => setDescription(event.target.value)} />
+          <label className="field field-wide" htmlFor={`${formId}-description`}>Description
+            <input id={`${formId}-description`} required maxLength={500} placeholder="e.g. Weekly groceries" value={description} onChange={(event) => setDescription(event.target.value)} />
           </label>
           <label className="field" htmlFor={`${formId}-category`}>Category
             <select id={`${formId}-category`} value={category} onChange={(event) => setCategory(event.target.value as Category)}>
               {categories.map((item) => <option key={item} value={item}>{categoryName(item)}</option>)}
             </select>
           </label>
-          <label className="field" htmlFor={`${formId}-date`}>Expense date
+          <label className="field field-wide" htmlFor={`${formId}-date`}>Expense date
             <input id={`${formId}-date`} type="date" required value={expenseDate} onChange={(event) => setExpenseDate(event.target.value)} />
           </label>
           <label className="field" htmlFor={`${formId}-payer`}>Paid by
@@ -86,7 +89,7 @@ export function ExpenseForm({ groupId, members, currentUserId, onCreated }: Prop
             </select>
           </label>
         </div>
-        <div><button className="button primary" disabled={saving || members.length === 0} type="submit">{saving ? 'Adding expense…' : 'Add expense'}</button></div>
+        <div className="form-actions"><button className="button primary" disabled={saving || members.length === 0} type="submit">{saving ? 'Adding expense…' : 'Add expense'}</button></div>
       </form>
     </section>
   );

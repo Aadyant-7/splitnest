@@ -2,8 +2,8 @@
 
 React/TypeScript interface for the real Java expense-sharing API. Registration,
 browser sessions, groups, expenses, balances, uploads and budgets are implemented.
-See [project status](../docs/project-status.md) and the
-[verification record](../docs/evidence/verification.md) for delivery evidence.
+See the [verification record](../docs/evidence/verification.md) for dated
+test and delivery evidence.
 
 ## Tools and organization
 
@@ -56,20 +56,9 @@ backend. Server credentials stay in the backend's ignored `.env`, never frontend
 variables. For an ordinary demo, use the packaged app on port 8080 and leave the
 development server stopped.
 
-The prepared Windows workspace has a checksum-verified portable runtime in
-ignored `.work/node/`. If the global version is older, select it in the current
-PowerShell terminal while in `frontend/`:
-
-```powershell
-$taskNode = Join-Path (Get-Location) '../.work/node/node-v24.22.0-win-x64'
-if (Test-Path (Join-Path $taskNode 'node.exe')) {
-    $env:Path = $taskNode + ';' + $env:Path
-}
-```
-
-Fresh checkouts should install the pinned Node 24 LTS release from the
-[official downloads](https://nodejs.org/en/download). The global runtime was not
-changed during implementation.
+Use the pinned Node 24 LTS release from the
+[official downloads](https://nodejs.org/en/download). No global Vite or TypeScript
+installation is required; `npm ci` installs the locked project dependencies.
 
 ## Verify
 
@@ -82,13 +71,15 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The 90 unit/component tests cover forms, permissions, API errors, imports,
-cancellation, locking, stale-session races and exact monetary display. Eight browser scenarios use real
-synthetic accounts for sessions, exact money/history, permissions, imports/budgets,
-concurrent tabs, mobile layout, rate limiting and keyboard navigation. They create
-demo records in the selected local database. A ninth browser case injects one
-large-decimal balance response to verify presentation without inserting a huge
-ledger; this fixture is not a database-capacity claim. Traces/video are disabled.
+The unit/component tests cover forms, permissions, API errors, imports,
+cancellation, locking, stale-session races and exact monetary display. Nine browser
+scenarios use real synthetic accounts for sessions, exact money/history,
+permissions, imports/budgets, concurrent tabs, mobile layout, rate limiting,
+keyboard navigation and every workspace section at phone/tablet/desktop widths.
+They create records in the selected local database. One additional browser case
+injects a large-decimal balance response to verify presentation without inserting
+a huge ledger; this fixture is not a database-capacity claim. Traces/video are
+disabled.
 
 To test a running packaged app instead of Vite:
 
@@ -102,6 +93,21 @@ On fresh Linux machines, use `npx playwright install --with-deps chromium` for
 browser system dependencies. CI does this on its disposable runner.
 
 ## Authentication and data boundaries
+
+The interface uses a compact top navigation bar and feature tabs within each
+group. Shared CSS tokens define colors, spacing and focus states. Expense and
+member tables become labeled cards on phones; account identity and actions stay
+available. Group tabs support arrow keys, Home and End. Forms connect field errors
+to their inputs, preserve pending states and show the result of actual API calls.
+The SVG brand and downloadable statement example are local assets.
+
+Imports retain the latest account/group-scoped job UUID and a notification UUID
+in sessionStorage. Revisiting the panel reads the actual result from the API,
+including completed/failed jobs. These identifiers contain no credentials or
+statement rows; there is no client-generated history list. Confirmed access loss
+forgets them, while transient failures keep a retry path.
+New expense dates default to the browser's local calendar day; backend timestamp
+and budget-schedule rules remain in UTC.
 
 `app/session.ts` keeps access tokens in memory. Web Locks serializes cookie
 rotations across same-origin tabs; BroadcastChannel sends session notifications,
@@ -127,5 +133,5 @@ Import polling is abortable and pauses after two minutes; only a non-secret
 user/group-scoped job ID enters sessionStorage. Budget alerts are scheduled
 snapshots rather than live spending charts.
 
-Follow the [learning roadmap](../docs/learning-roadmap.md) after complete delivery
-verification for the detailed explanation from scratch.
+See the [architecture](../docs/architecture.md) and
+[source map](../docs/implementation.md) for the session and data-flow details.

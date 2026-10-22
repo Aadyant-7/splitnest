@@ -27,6 +27,7 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
   const amountInput = useRef<HTMLInputElement>(null);
   const saveRequest = useRef<AbortController | null>(null);
   const mounted = useRef(true);
+  const selectedBudget = budgets.find((budget) => budget.category === category);
 
   useEffect(() => {
     mounted.current = true;
@@ -48,6 +49,9 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
       if (!active) return;
       setBudgets(limits);
       setAlerts(snapshots);
+      const initialBudget = limits.find((budget) => budget.category === 'FOOD');
+      setCategory('FOOD');
+      setAmount(initialBudget ? decimalAmount(initialBudget.monthlyLimit) : '');
     }).catch((error: unknown) => {
       if (active && !request.signal.aborted) setLoadError(error);
     }).finally(() => {
@@ -87,7 +91,7 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
       if (!mounted.current || request.signal.aborted) return;
       setBudgets((previous) => [...previous.filter((budget) => budget.category !== saved.category), saved]
         .sort((left, right) => categories.indexOf(left.category) - categories.indexOf(right.category)));
-      setAmount('');
+      setAmount(decimalAmount(saved.monthlyLimit));
       setSuccess(`${categoryName(saved.category)} budget saved.`);
     } catch (error) {
       if (mounted.current && !request.signal.aborted) setSaveError(error);
@@ -96,18 +100,36 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
     }
   }
 
-  return <section className="panel stack" aria-labelledby="budgets-heading">
-    <div>
-      <p className="eyebrow">Plan together</p>
+  return <section className="stack" aria-labelledby="budgets-heading">
+    <header className="section-header"><div>
       <h2 id="budgets-heading">Budgets & alerts</h2>
-      <p className="muted">Category limits are checked daily at 00:00 UTC. Alerts capture spending when a limit is first exceeded in a month; they are not live spending totals or an immediate check after saving.</p>
-    </div>
+      <p className="muted">Set a monthly spending limit for each category you want to track.</p>
+    </div></header>
     {loading ? <Loading label="Loading budgets and alerts…" /> : loadError != null ? <div className="stack">
       <ErrorNotice error={loadError} />
       <div><button className="button secondary" type="button" onClick={() => setReload((value) => value + 1)}>Retry budgets and alerts</button></div>
     </div> : <>
-      {isAdmin ? <form className="stack" onSubmit={save} noValidate aria-label="Category budget">
-        <div className="form-grid">
+      <div className={`feature-layout${isAdmin ? '' : ' feature-layout-single'}`}>
+        <div className="panel stack feature-main">
+          <div className="section-header"><h3>Monthly limits</h3><span className="tag">INR</span></div>
+          {budgets.length === 0 ? <EmptyState title="No category budgets yet">
+            {isAdmin ? 'Set a limit using the budget form to start tracking a category.' : 'An admin can set category limits for this group.'}
+          </EmptyState> : <div className="table-wrap"><table className="table budget-limits-table">
+            <caption className="sr-only">Monthly category limits</caption>
+            <thead><tr><th scope="col">Category</th><th scope="col" className="number">Monthly limit</th>{isAdmin && <th scope="col"><span className="sr-only">Action</span></th>}</tr></thead>
+            <tbody>{budgets.map((budget) => <tr key={budget.id}>
+              <th scope="row">{categoryName(budget.category)}</th><td className="number">{money(budget.monthlyLimit)}</td>
+              {isAdmin && <td className="table-action"><button className="button secondary" type="button" disabled={saving}
+                aria-label={`Edit ${categoryName(budget.category)} budget`}
+                onClick={() => { chooseCategory(budget.category); amountInput.current?.focus(); }}>Edit</button></td>}
+            </tr>)}</tbody>
+          </table></div>}
+          {!isAdmin && <p className="muted">Only group admins can change category limits.</p>}
+          <p className="info-note">Limits are checked daily at 00:00 UTC. Saving a limit does not run an immediate spending check.</p>
+        </div>
+        {isAdmin && <form className="panel stack feature-aside budget-editor" onSubmit={save} noValidate aria-label="Category budget">
+          <h3>{selectedBudget ? 'Edit monthly limit' : 'Set monthly limit'}</h3>
+          <p className="muted">{selectedBudget ? 'Update the saved limit for this category.' : 'Choose a category and enter a monthly limit.'}</p>
           <label className="field" htmlFor="budget-category"><span>Category</span>
             <select id="budget-category" value={category} disabled={saving}
               onChange={(event) => chooseCategory(event.target.value as Category)}>
@@ -115,39 +137,30 @@ function BudgetWorkspace({ groupId, isAdmin }: { groupId: string; isAdmin: boole
             </select>
           </label>
           <label className="field" htmlFor="budget-amount"><span>Monthly limit (INR)</span>
-            <input ref={amountInput} id="budget-amount" type="text" inputMode="decimal" placeholder="For example, 5000.00"
-              value={amount} disabled={saving} aria-describedby={validation ? 'budget-validation' : undefined}
+            <input ref={amountInput} id="budget-amount" type="text" inputMode="decimal" placeholder="5000.00"
+              value={amount} disabled={saving} aria-describedby={validation ? 'budget-amount-help budget-validation' : 'budget-amount-help'}
               aria-invalid={Boolean(validation)} onChange={(event) => { setAmount(event.target.value); setValidation(''); setSuccess(''); }} />
           </label>
-        </div>
-        {validation && <p id="budget-validation" role="alert">{validation}</p>}
-        {saveError != null && <ErrorNotice error={saveError} />}
-        {success && <p role="status">{success}</p>}
-        <div><button className="button primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save monthly limit'}</button></div>
-      </form> : <p className="muted">Only group admins can change category limits.</p>}
+          <p id="budget-amount-help" className="muted">Use a positive amount with up to two decimal places.</p>
+          {validation && <p id="budget-validation" className="notice error" role="alert">{validation}</p>}
+          {saveError != null && <ErrorNotice error={saveError} />}
+          {success && <p className="notice success" role="status">{success}</p>}
+          <div><button className="button primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save monthly limit'}</button></div>
+        </form>}
+      </div>
 
-      {budgets.length === 0 ? <EmptyState title="No category budgets yet">
-        {isAdmin ? 'Add a category limit to enable scheduled budget checks.' : 'An admin can set category limits for this group.'}
-      </EmptyState> : <div className="table-wrap"><table className="table">
-        <caption>Monthly category limits</caption>
-        <thead><tr><th scope="col">Category</th><th scope="col">Monthly limit</th>{isAdmin && <th scope="col">Action</th>}</tr></thead>
-        <tbody>{budgets.map((budget) => <tr key={budget.id}>
-          <th scope="row">{categoryName(budget.category)}</th><td>{money(budget.monthlyLimit)}</td>
-          {isAdmin && <td><button className="button secondary" type="button" disabled={saving}
-            aria-label={`Edit ${categoryName(budget.category)} budget`}
-            onClick={() => { chooseCategory(budget.category); amountInput.current?.focus(); }}>Edit</button></td>}
-        </tr>)}</tbody>
-      </table></div>}
-
-      <h3>Budget alerts</h3>
-      {alerts.length === 0 ? <EmptyState title="No budget alerts yet">An alert appears after a scheduled check finds spending strictly above a category limit.</EmptyState>
-        : <div className="table-wrap"><table className="table">
-          <caption>Recorded budget alert snapshots</caption>
-          <thead><tr><th scope="col">Month</th><th scope="col">Category</th><th scope="col">Spent at detection</th><th scope="col">Limit at detection</th><th scope="col">Detected</th></tr></thead>
-          <tbody>{alerts.map((alert) => <tr key={alert.id}><td>{shortDate(alert.month)}</td>
-            <th scope="row">{categoryName(alert.category)}</th><td>{money(alert.spent)}</td>
-            <td>{money(alert.monthlyLimit)}</td><td>{shortDate(alert.createdAt)}</td></tr>)}</tbody>
-        </table></div>}
+      <section className="panel stack" aria-labelledby="budget-alerts-heading">
+        <div><h3 id="budget-alerts-heading">Budget alerts</h3>
+          <p className="muted">Recorded snapshots from the daily check, not live spending totals. One alert per category per month.</p></div>
+        {alerts.length === 0 ? <EmptyState title="No budget alerts yet">An alert appears when a scheduled check finds spending above a category’s monthly limit.</EmptyState>
+          : <div className="table-wrap"><table className="table">
+            <caption className="sr-only">Recorded budget alert snapshots</caption>
+            <thead><tr><th scope="col">Month</th><th scope="col">Category</th><th scope="col" className="number">Spent at detection</th><th scope="col" className="number">Limit at detection</th><th scope="col">Detected</th></tr></thead>
+            <tbody>{alerts.map((alert) => <tr key={alert.id}><td>{shortDate(alert.month)}</td>
+              <th scope="row">{categoryName(alert.category)}</th><td className="number">{money(alert.spent)}</td>
+              <td className="number">{money(alert.monthlyLimit)}</td><td>{shortDate(alert.createdAt)}</td></tr>)}</tbody>
+          </table></div>}
+      </section>
     </>}
   </section>;
 }

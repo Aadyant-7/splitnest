@@ -14,6 +14,6 @@ public final class SpaRoutes {
 
     public static boolean resource(String path) {
         return path.equals("/index.html") || path.equals("/favicon.ico") || path.equals("/favicon.svg")
-                || path.startsWith("/assets/");
+                || path.equals("/examples/statement.csv") || path.startsWith("/assets/");
     }
 }

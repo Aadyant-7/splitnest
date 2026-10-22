@@ -2,12 +2,19 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSession } from '../../app/SessionContext';
 import { api, ApiError } from '../../shared/api/client';
 import type { ImportJob } from '../../shared/api/types';
-import { EmptyState, ErrorNotice } from '../../shared/ui/Feedback';
+import { ErrorNotice } from '../../shared/ui/Feedback';
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const POLL_INTERVAL_MS = 2_000;
 const AUTO_POLL_DURATION_MS = 2 * 60_000;
 const UUID_PATTERN = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
+
+const statusDescriptions: Record<ImportJob['status'], string> = {
+  PENDING: 'Your statement is queued. You can leave this tab while it processes.',
+  PROCESSING: 'Reading your statement and saving valid expenses. You can leave this tab.',
+  COMPLETED: 'The expenses are available in this group’s expense list.',
+  FAILED: 'Review the file format and upload a corrected statement.',
+};
 
 function rememberedJob(key: string): string | null {
   try {
@@ -51,10 +58,12 @@ function ImportWorkspace({ groupId, storageKey, onImported }: {
   const [now, setNow] = useState(Date.now());
   const mounted = useRef(true);
   const uploadRequest = useRef<AbortController | null>(null);
-  const completedJob = useRef<string | null>(null);
+  // Remember notification separately so revisiting a completed result does not refresh the group again.
+  const completedJob = useRef<string | null>(rememberedJob(`${storageKey}:notified`));
   const onImportedRef = useRef(onImported);
   const fileInput = useRef<HTMLInputElement>(null);
   const retrySeconds = Math.max(0, Math.ceil((retryAt - now) / 1_000));
+  const terminal = job?.status === 'COMPLETED' || job?.status === 'FAILED';
 
   useEffect(() => { onImportedRef.current = onImported; }, [onImported]);
 
@@ -102,9 +111,9 @@ function ImportWorkspace({ groupId, storageKey, onImported }: {
         if (updated.status === 'COMPLETED' || updated.status === 'FAILED') {
           window.clearTimeout(deadline);
           setPolling(false);
-          rememberJob(storageKey, null);
           if (updated.status === 'COMPLETED' && completedJob.current !== updated.id) {
             completedJob.current = updated.id;
+            rememberJob(`${storageKey}:notified`, updated.id);
             onImportedRef.current();
           }
           return;
@@ -120,6 +129,15 @@ function ImportWorkspace({ groupId, storageKey, onImported }: {
         setPollError(error);
         window.clearTimeout(deadline);
         setPolling(false);
+        if (error instanceof ApiError && [401, 403, 404].includes(error.status)) {
+          rememberJob(storageKey, null);
+          rememberJob(`${storageKey}:notified`, null);
+          completedJob.current = null;
+          setJobId(null);
+          setJob(null);
+          setPaused(false);
+          return;
+        }
         setPaused(true);
       }
     }
@@ -155,6 +173,8 @@ function ImportWorkspace({ groupId, storageKey, onImported }: {
       });
       if (!mounted.current || request.signal.aborted) return;
       setJob(accepted);
+      completedJob.current = null;
+      rememberJob(`${storageKey}:notified`, null);
       rememberJob(storageKey, accepted.id);
       setJobId(accepted.id);
       setFile(null);
@@ -172,44 +192,68 @@ function ImportWorkspace({ groupId, storageKey, onImported }: {
     }
   }
 
-  return <section className="panel stack" aria-labelledby="imports-heading">
-    <div>
-      <p className="eyebrow">Statements</p>
-      <h2 id="imports-heading">Import shared expenses</h2>
-      <p className="muted">Upload a CSV or XLSX statement, up to 5 MiB. Imported expenses are paid by you and split equally among the current members when saved.</p>
+  return <section className="stack" aria-labelledby="imports-heading">
+    <header className="section-header">
+      <div><h2 id="imports-heading">Import expenses</h2>
+        <p className="muted">Add several expenses from a statement instead of entering them individually.</p></div>
+    </header>
+    <div className="feature-layout">
+      <div className="panel stack feature-main">
+        <h3>Upload a statement</h3>
+        <form className="stack" onSubmit={upload} noValidate>
+          <div className="file-picker">
+            <label className="field" htmlFor="statement-file">
+              <span>Statement file</span>
+              <input ref={fileInput} id="statement-file" type="file" accept=".csv,.xlsx" disabled={uploading || polling}
+                aria-invalid={Boolean(validation)} aria-describedby={validation ? 'statement-help statement-validation' : 'statement-help'}
+                onChange={(event) => { setFile(event.target.files?.[0] ?? null); setValidation(''); setUploadError(null); }} />
+            </label>
+            <p id="statement-help" className="file-picker-meta muted">CSV or XLSX · Maximum 5 MiB</p>
+          </div>
+          <p className="info-note">Each imported expense is paid by you and split equally among the group’s members when saved.</p>
+          {validation && <p id="statement-validation" className="notice error" role="alert">{validation}</p>}
+          {uploadError != null && <ErrorNotice error={uploadError} />}
+          {retrySeconds > 0 && <p role="status">Upload limit reached. Try again in {retrySeconds} seconds.</p>}
+          <div><button className="button primary" type="submit" disabled={uploading || polling || retrySeconds > 0}>
+            {uploading ? 'Uploading…' : 'Upload statement'}
+          </button></div>
+          {polling && <p className="muted">Wait for this upload to finish before starting another.</p>}
+        </form>
+      </div>
+      <aside className="panel stack feature-aside" aria-labelledby="statement-format-heading">
+        <h3 id="statement-format-heading">Prepare your file</h3>
+        <p className="muted">Use these three column headings in the first row:</p>
+        <code className="format-preview">date,description,amount</code>
+        <ul className="format-rules">
+          <li>Dates: <code>YYYY-MM-DD</code></li>
+          <li>Amounts: positive INR values, such as <code>100.00</code></li>
+          <li>CSV files must use UTF-8 encoding.</li>
+        </ul>
+        <p className="muted">Invalid rows are skipped. An unreadable file or a file with no valid rows fails.</p>
+        <a className="text-link" href="/examples/statement.csv" download="splitnest-statement-example.csv">Download sample CSV</a>
+        <details className="format-details"><summary>View sample rows</summary>
+          <pre className="format-preview">{'date,description,amount\n2026-10-22,BIGBASKET groceries,1250.00\n2026-10-22,ZOMATO dinner,360.00'}</pre>
+        </details>
+      </aside>
     </div>
-    <form className="stack" onSubmit={upload} noValidate>
-      <label className="field" htmlFor="statement-file">
-        <span>Statement file</span>
-        <input ref={fileInput} id="statement-file" type="file" accept=".csv,.xlsx" disabled={uploading}
-          aria-invalid={Boolean(validation)} aria-describedby={validation ? 'statement-help statement-validation' : 'statement-help'}
-          onChange={(event) => { setFile(event.target.files?.[0] ?? null); setValidation(''); }} />
-      </label>
-      <p id="statement-help" className="muted">Required columns: date, description, amount. Use dates like 2026-10-19 and positive amounts like 100.00. Invalid rows are skipped; unreadable files or files with no valid rows fail.</p>
-      {validation && <p id="statement-validation" role="alert">{validation}</p>}
-      {uploadError != null && <ErrorNotice error={uploadError} />}
-      {retrySeconds > 0 && <p role="status">Upload limit reached. Try again in {retrySeconds} seconds.</p>}
-      <div><button className="button primary" type="submit" disabled={uploading || polling || retrySeconds > 0}>
-        {uploading ? 'Uploading…' : 'Upload statement'}
-      </button></div>
-    </form>
 
-    {!job && !jobId && <EmptyState title="No statement uploaded yet">Your latest upload and its actual processing result will appear here.</EmptyState>}
-    {jobId && <div className="stack" aria-live="polite" aria-atomic="true">
-      <h3>{job?.fileName ?? 'Checking your previous upload'}</h3>
-      <p><span className="tag">{job?.status ?? 'Checking status'}</span>{polling ? ' · Checking for updates…' : ''}</p>
-      {job && <dl className="form-grid">
+    {pollError != null && <ErrorNotice error={pollError} />}
+    {!job && !jobId && <div className="panel stack"><h3>No recent upload in this tab</h3><p className="muted">Choose a file above. This tab remembers the latest upload for this account and group.</p></div>}
+    {jobId && <section className="panel stack import-result" aria-live="polite" aria-atomic="true" aria-labelledby="import-result-heading">
+      <div className="section-header"><div><h3 id="import-result-heading">{job?.fileName ?? 'Checking your previous upload'}</h3>
+        <p className="muted">{job ? statusDescriptions[job.status] : 'Looking up the last upload for this group.'}</p></div>
+        <span className={`status-tag status-${job?.status.toLowerCase() ?? 'pending'}`}>{job?.status ?? 'Checking status'}</span></div>
+      {job && terminal && <dl className="import-counts">
         <div><dt>Rows read</dt><dd>{job.totalRows}</dd></div>
         <div><dt>Imported rows</dt><dd>{job.importedRows}</dd></div>
         <div><dt>Invalid rows</dt><dd>{job.invalidRows}</dd></div>
       </dl>}
-      {job?.status === 'COMPLETED' && <p role="status">Import complete. {job.importedRows} expense{job.importedRows === 1 ? '' : 's'} saved; {job.invalidRows} invalid row{job.invalidRows === 1 ? '' : 's'} skipped.</p>}
-      {job?.status === 'FAILED' && <p className="notice" role="alert">Import failed. {job.errorMessage || 'No expenses were saved. Check the statement and upload it again.'}</p>}
-      {pollError != null && <ErrorNotice error={pollError} />}
+      {job?.status === 'COMPLETED' && <p className="notice success" role="status">Import complete. {job.importedRows} expense{job.importedRows === 1 ? '' : 's'} saved; {job.invalidRows} invalid row{job.invalidRows === 1 ? '' : 's'} skipped.</p>}
+      {job?.status === 'FAILED' && <p className="notice error" role="alert">Import failed. {job.errorMessage || 'No expenses were saved. Check the statement and upload it again.'}</p>}
       {paused && <div className="stack">
-        <p className="muted">Automatic checks are paused. Processing may still continue in the background; this does not cancel the import.</p>
+        <p className="muted">Automatic checks are paused. The import may still be processing; this does not cancel it.</p>
         <div><button className="button secondary" type="button" onClick={() => setPollAttempt((attempt) => attempt + 1)}>Check status again</button></div>
       </div>}
-    </div>}
+    </section>}
   </section>;
 }

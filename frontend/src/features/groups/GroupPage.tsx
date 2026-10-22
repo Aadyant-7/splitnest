@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { useSession } from '../../app/SessionContext';
 import { api } from '../../shared/api/client';
@@ -18,6 +18,8 @@ type Tab = typeof tabs[number];
 export function GroupPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const { user } = useSession();
+  const tabsId = useId();
+  const tabButtons = useRef<(HTMLButtonElement | null)[]>([]);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [tab, setTab] = useState<Tab>('Overview');
   const [page, setPage] = useState(0);
@@ -25,6 +27,16 @@ export function GroupPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const refresh = () => setRevision((value) => value + 1);
+
+  function navigateTabs(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length
+      : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length
+      : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
+    if (next === null) return;
+    event.preventDefault();
+    setTab(tabs[next]);
+    tabButtons.current[next]?.focus();
+  }
 
   useEffect(() => { setPage(0); setTab('Overview'); }, [groupId]);
 
@@ -64,18 +76,18 @@ export function GroupPage() {
 
   return (
     <div className="stack">
-      <header className="page-heading">
-        <div><Link className="muted" to="/app/groups">← Your groups</Link><p className="eyebrow">YOUR SHARED SPACE</p><h1>{group.name}</h1><p className="muted">Every shared expense, everyone on the same page.</p></div>
-        <span className="tag">{isAdmin ? 'Admin' : 'Member'} · INR</span>
+      <header className="page-heading group-heading">
+        <div><Link className="muted" to="/app/groups">All groups</Link><h1>{group.name}</h1><p className="group-meta muted">{group.members.length} {group.members.length === 1 ? 'member' : 'members'} <span aria-hidden="true">·</span> {isAdmin ? 'Admin' : 'Member'} <span aria-hidden="true">·</span> INR</p></div>
       </header>
-      <nav className="section-heading" aria-label="Group sections">{tabs.map((item) => <button className={`button ${tab === item ? 'primary' : 'secondary'}`} key={item} type="button" aria-current={tab === item ? 'page' : undefined} onClick={() => setTab(item)}>{item}</button>)}</nav>
+      <div className="group-tabs" role="tablist" aria-label="Group sections">{tabs.map((item, index) => <button className={`group-tab${tab === item ? ' is-active' : ''}`} key={item} type="button" role="tab" id={`${tabsId}-tab-${item}`} aria-selected={tab === item} aria-controls={`${tabsId}-panel-${item}`} tabIndex={tab === item ? 0 : -1} ref={(element) => { tabButtons.current[index] = element; }} onClick={() => setTab(item)} onKeyDown={(event) => navigateTabs(event, index)}>{item}</button>)}</div>
       {loading && <p className="muted" role="status">Refreshing group details…</p>}
       <ErrorNotice error={error} />
+      {tabs.map((item) => <div key={item} className="group-tabpanel stack" role="tabpanel" id={`${tabsId}-panel-${item}`} aria-labelledby={`${tabsId}-tab-${item}`} hidden={tab !== item} tabIndex={0}>
+      {tab === item && <>
       {tab === 'Overview' && <>
-        <div className="form-grid">
-          <section className="panel stack"><p className="eyebrow">YOUR NET BALANCE</p><h2 className={ownSign > 0 ? 'balance-positive' : ownSign < 0 ? 'balance-negative' : ''}>{money(ownBalance?.netBalance ?? 0)}</h2><p className="muted">{ownSign > 0 ? 'Your group owes you.' : ownSign < 0 ? 'Your share is owed to the group.' : 'You’re all even.'}</p></section>
-          <section className="panel stack"><p className="eyebrow">IN THIS TOGETHER</p><h2>{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</h2><button className="button secondary" type="button" onClick={() => setTab('Members')}>See members</button></section>
-          <section className="panel stack"><p className="eyebrow">RECORDED & SHARED</p><h2>{expenses.totalElements} {expenses.totalElements === 1 ? 'expense' : 'expenses'}</h2><button className="button primary" type="button" onClick={() => setTab('Expenses')}>Manage expenses</button></section>
+        <div className="overview-grid">
+          <section className="panel balance-summary"><div><p className="summary-label">Your net balance</p><h2 className={`summary-value ${ownSign > 0 ? 'balance-positive' : ownSign < 0 ? 'balance-negative' : ''}`}>{money(ownBalance?.netBalance ?? 0)}</h2><p className="summary-copy muted">{ownSign > 0 ? 'You’re owed by this group.' : ownSign < 0 ? 'You owe the group.' : 'You have no amount owed.'}</p></div><div className="summary-actions"><button className="button primary" type="button" onClick={() => setTab('Expenses')}>Add expense</button></div></section>
+          <section className="panel expense-count"><p className="summary-label">Expense history</p><h2>{expenses.totalElements} {expenses.totalElements === 1 ? 'expense' : 'expenses'}</h2><button className="button secondary" type="button" onClick={() => setTab('Expenses')}>View expenses</button></section>
         </div>
         <BalancePanel balances={balances} currentUserId={user.id} />
       </>}
@@ -83,6 +95,8 @@ export function GroupPage() {
       {tab === 'Members' && <MembersPanel groupId={groupId} members={group.members} currentUserId={user.id} isAdmin={isAdmin} onChanged={refresh} />}
       {tab === 'Imports' && <ImportsPanel groupId={groupId} onImported={refresh} />}
       {tab === 'Budgets' && <BudgetsPanel groupId={groupId} isAdmin={isAdmin} />}
+      </>}
+      </div>)}
     </div>
   );
 }

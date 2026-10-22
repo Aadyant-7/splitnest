@@ -24,7 +24,8 @@ describe('BudgetsPanel', () => {
     expect(within(limits).getByText('Food')).toBeInTheDocument();
     const alerts = screen.getByRole('table', { name: 'Recorded budget alert snapshots' });
     expect(within(alerts).getByText('Spent at detection')).toBeInTheDocument();
-    expect(screen.getByText(/checked daily at 00:00 UTC/)).toHaveTextContent('not live spending totals');
+    expect(screen.getByText(/checked daily at 00:00 UTC/)).toHaveTextContent('does not run an immediate spending check');
+    expect(screen.getByText(/Recorded snapshots from the daily check/)).toHaveTextContent('not live spending totals');
     expect(screen.queryByRole('button', { name: 'Save monthly limit' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Edit Food/ })).not.toBeInTheDocument();
     expect(mockedApi.mock.calls.map(([path]) => path)).toEqual(['/groups/group-one/budgets', '/groups/group-one/alerts']);
@@ -41,6 +42,24 @@ describe('BudgetsPanel', () => {
     }));
     expect(screen.getByRole('table', { name: 'Monthly category limits' })).toBeInTheDocument();
     expect(screen.getByText('No budget alerts yet')).toBeInTheDocument();
+    expect(screen.getByLabelText('Monthly limit (INR)')).toHaveValue('5000.00');
+    expect(screen.getByRole('heading', { name: 'Edit monthly limit' })).toBeInTheDocument();
+  });
+
+  it('prefills saved limits exactly and focuses the amount when an edit action is selected', async () => {
+    const rent: Budget = { id: 'budget-two', groupId: 'group-one', category: 'RENT', monthlyLimit: '9999999999.99' };
+    mockedApi.mockResolvedValueOnce([budget, rent]).mockResolvedValueOnce([]);
+    render(<BudgetsPanel groupId="group-one" isAdmin />);
+    const amount = await screen.findByLabelText('Monthly limit (INR)');
+    expect(amount).toHaveValue('5000.00');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Rent budget' }));
+    expect(screen.getByLabelText('Category')).toHaveValue('RENT');
+    expect(amount).toHaveValue('9999999999.99');
+    expect(amount).toHaveFocus();
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'TRAVEL' } });
+    expect(amount).toHaveValue('');
+    expect(screen.getByRole('heading', { name: 'Set monthly limit' })).toBeInTheDocument();
+    expect(mockedApi).toHaveBeenCalledTimes(2);
   });
 
   it.each(['0.00', '-20', '1e3', '25.001', '10000000000.00'])('rejects invalid amount %s before mutation', async (value) => {

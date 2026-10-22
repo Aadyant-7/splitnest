@@ -45,7 +45,7 @@ export async function addApiMember(request: APIRequestContext, token: string, gr
 
 export async function signIn(page: Page, account: Account) {
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
   await page.getByLabel('Email address').fill(account.email);
   await page.locator('input[name="password"]').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -60,7 +60,7 @@ export async function createUiGroup(page: Page, name: string): Promise<string> {
 }
 
 export async function addUiExpense(page: Page, description: string, amount: string, payer?: string) {
-  await page.getByRole('button', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await page.getByLabel('Amount (INR)').fill(amount);
   await page.getByLabel('Description', { exact: true }).fill(description);
   if (payer) await page.getByLabel('Paid by').selectOption(payer);

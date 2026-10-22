@@ -45,7 +45,38 @@ describe('authentication forms', () => {
   it('does not show a login form while restoring the browser session', () => {
     session.loading = true;
     page();
-    expect(screen.getByRole('status')).toHaveTextContent('Opening your nest');
+    expect(screen.getByRole('status')).toHaveTextContent('Restoring your session');
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
+  });
+  it('connects server field errors to the corresponding inputs', async () => {
+    session.register.mockRejectedValueOnce(new ApiError(400, 'Check your details', { email: 'Email is invalid', password: 'Password is too short' }));
+    page('register');
+    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Alex' } });
+    fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'alex@example.test' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'SyntheticPassword123!' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Create account' }));
+    await waitFor(() => expect(screen.getByLabelText('Email address')).toHaveAttribute('aria-invalid', 'true'));
+    expect(screen.getByLabelText('Email address')).toHaveAccessibleDescription('Email is invalid');
+    expect(screen.getByLabelText('Password')).toHaveAccessibleDescription('Password is too short');
+  });
+  it('lets the user reveal and hide their password without submitting', () => {
+    page();
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'text');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password');
+    expect(session.login).not.toHaveBeenCalled();
+  });
+  it('keeps one authentication request in flight when a form is submitted twice', async () => {
+    let complete!: () => void;
+    session.login.mockReturnValueOnce(new Promise<void>((resolve) => { complete = resolve; }));
+    page();
+    const form = screen.getByRole('form', { name: 'Sign in' });
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    expect(session.login).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Signing in…' })).toBeDisabled();
+    complete();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled());
   });
 });

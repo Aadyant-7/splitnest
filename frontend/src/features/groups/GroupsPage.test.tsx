@@ -27,7 +27,7 @@ describe('GroupsPage', () => {
   it('creates a trimmed group and opens its real workspace', async () => {
     vi.mocked(api).mockResolvedValueOnce([]).mockResolvedValueOnce({ id: 'new-trip' });
     renderPage();
-    await screen.findByText('Good things start with a group');
+    await screen.findByText('No groups yet');
     fireEvent.change(screen.getByLabelText('Group name'), { target: { value: '  Our apartment  ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
     expect(await screen.findByRole('heading', { name: 'New group workspace' })).toBeInTheDocument();
@@ -39,17 +39,27 @@ describe('GroupsPage', () => {
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent('temporarily unavailable');
     fireEvent.click(screen.getByRole('button', { name: 'Try loading groups again' }));
-    expect(await screen.findByText('Good things start with a group')).toBeInTheDocument();
+    expect(await screen.findByText('No groups yet')).toBeInTheDocument();
     await waitFor(() => expect(api).toHaveBeenCalledTimes(2));
   });
 
   it('retains the group name when creation fails', async () => {
     vi.mocked(api).mockResolvedValueOnce([]).mockRejectedValueOnce(new ApiError(429, 'Please wait before creating another group.', {}, 30));
     renderPage();
-    await screen.findByText('Good things start with a group');
+    await screen.findByText('No groups yet');
     fireEvent.change(screen.getByLabelText('Group name'), { target: { value: 'Apartment' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('30 seconds');
     expect(screen.getByLabelText('Group name')).toHaveValue('Apartment');
+  });
+
+  it('rejects a whitespace-only group name without losing the creation form', async () => {
+    vi.mocked(api).mockResolvedValueOnce([]);
+    renderPage();
+    await screen.findByText('No groups yet');
+    fireEvent.change(screen.getByLabelText('Group name'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Give your group a name');
+    expect(api).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,6 +1,7 @@
 package com.splitnest.common;
 
 import com.splitnest.IntegrationTestSupport;
+import com.splitnest.common.config.SpaRoutes;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -48,5 +49,29 @@ class SpaRoutingIntegrationTest extends IntegrationTestSupport {
         var swagger = mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk()).andReturn().getResponse();
         assertThat(swagger.getHeader("Content-Security-Policy")).isNull();
         mvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
+    }
+
+    @Test
+    void onlyTheNamedStatementExampleIsPublicAndItNeverFallsBackToTheSpa() throws Exception {
+        assertThat(SpaRoutes.resource("/examples/statement.csv")).isTrue();
+        var example = mvc.perform(get("/examples/statement.csv")).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("date,description,amount")))
+                .andReturn().getResponse();
+        assertThat(example.getForwardedUrl()).isNull();
+        assertThat(example.getHeader("Content-Security-Policy"))
+                .contains("script-src 'self'", "object-src 'none'", "frame-ancestors 'none'")
+                .doesNotContain("unsafe-inline", "unsafe-eval");
+
+        for (String path : new String[] {"/examples", "/examples/private.csv", "/examples/statement.csv/extra",
+                "/examples/statement.csv.bak", "/api/v1/examples/statement.csv"}) {
+            assertThat(SpaRoutes.resource(path)).isFalse();
+            var response = mvc.perform(get(path)).andExpect(status().isUnauthorized())
+                    .andReturn().getResponse();
+            assertThat(response.getForwardedUrl()).isNull();
+            assertThat(response.getHeader("Content-Security-Policy")).isNull();
+        }
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/examples/statement.csv"))
+                .andExpect(status().isUnauthorized());
     }
 }
