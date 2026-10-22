@@ -164,9 +164,3 @@ tested commit/digest, dataset size, replica count, cache setting, VUs, duration,
 numeric k6 output and screenshots of both traffic and resource panels. Summaries
 must contain no credentials or bearer tokens. The k6 threshold of p95 under one
 second is a local test target, not a measured claim or a production SLA.
-
-## Questions to check understanding
-
-1. Why must cache comparison keep replica count fixed while HPA behavior is tested separately?
-2. Why can a mean import duration look healthy even when some imports are slow?
-3. Why does a dashboard counter reset on restart while the database alert history remains?

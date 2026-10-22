@@ -226,7 +226,7 @@ inspectable metadata; they do not contain credentials or change API behavior.
 
 GHCR packages can initially be private even when the repository is public.
 After the first successful publish, inspect the package's visibility settings.
-Use public visibility for anonymous portfolio/kind pulls, or provide an image
+Use public visibility for anonymous local-cluster pulls, or provide an image
 pull secret for a private package. Never commit a registry token.
 
 After publishing, the separate generation job validates and updates `deploy/local`
@@ -234,12 +234,3 @@ with immutable image digests and provenance. Only that job has `contents: write`
 It uses an isolated kind API server for client validation, then Argo CD in the
 actual deployment cluster reads the generated branch. A successful publication or
 branch push is not evidence that an actual application rollout succeeded.
-
-## Questions to explain before an interview
-
-1. Which files and tools exist in the build stage but not the runtime stage,
-   and which application dependencies still need to be inside the JAR?
-2. Why must `verify` run before publishing even though the Dockerfile executes
-   Maven, and why are tests not run inside this ordinary image build?
-3. Why do the database hostname and port differ between an IDE process and the
-   Compose app container, and what persists after `docker compose down`?

@@ -52,7 +52,7 @@ server, ingress or hosting service in the local deployment.
 ## Image visibility and authentication
 
 A public GitHub repository does not automatically make its GHCR package public.
-For the easiest public portfolio demonstration, explicitly set the **container
+For anonymous image pulls, explicitly set the **container
 package** visibility to public and verify an anonymous pull of the exact digest.
 
 For a private package, create an image pull Secret in `splitnest` using a local
@@ -169,9 +169,3 @@ The later [frontend-only release](evidence/frontend-gitops.json) changed actual
 React source with an unchanged backend tree. CI promoted a different image and
 normal Argo polling served a different JavaScript bundle; all nine browser
 scenarios passed against the local Kubernetes Service.
-
-## Questions to check understanding
-
-1. Why can Argo CD deploy to a laptop when a GitHub-hosted runner cannot reach its API server?
-2. Why does Argo CD ignore the replicas field, and what happens without that rule?
-3. Why is a Git revert durable while an unrecorded live rollout undo is temporary?

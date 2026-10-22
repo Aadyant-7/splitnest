@@ -1,7 +1,6 @@
 # How SplitNest works
 
-Navigation: [documentation index](README.md) · [project status](project-status.md) ·
-[approved frontend plan](frontend-extension-plan.md).
+Navigation: [documentation index](README.md) · [source map](implementation.md).
 
 SplitNest is one Java 21/Spring Boot application organized by feature. PostgreSQL
 stores the business records. Redis holds short-lived balance results and shared
@@ -10,16 +9,15 @@ group, expense, import and budget workflows. Swagger and HTTP clients retain the
 existing JSON-token API. All amounts represent INR; this version has no currency
 conversion.
 
-The project is a free, local academic and placement demonstration. The application,
-data stores, Kubernetes cluster and monitoring run on the owner's machine; paid
-hosting, public deployment and cloud infrastructure are outside the agreed scope.
+The application, data stores, Kubernetes cluster and monitoring run locally.
+The deployment uses no paid services or public hosting.
 
 Read [implementation.md](implementation.md) beside the code, then follow
 [demo.md](demo.md). The [decision records](decisions/0001-modular-monolith.md)
 explain the tradeoffs. Deployment files describe a reproducible local target;
 runtime and CI claims belong in the verification evidence, not this diagram.
-The diagram describes the implemented source. Combined-image deployment evidence
-is tracked separately in [project status](project-status.md).
+The diagram describes source responsibilities. Dated runtime and CI results are
+recorded in the [verification ledger](evidence/verification.md).
 
 ```mermaid
 flowchart LR
@@ -63,7 +61,7 @@ proves an automatic combined-image rollout after an actual frontend-only change.
 
 `SpaRoutes` and `SpaController` allow `/`, `/login`, `/register`, `/app`,
 `/app/groups` and `/app/groups/{UUID}`. Spring serves `/index.html`, `/assets/**`
-and the explicit favicon paths. An unknown API, actuator or asset path retains
+the explicit favicon paths and `/examples/statement.csv`. An unknown API, actuator or asset path retains
 its HTTP error; there is no catch-all HTML response. The UI's content security
 policy permits bundled same-origin scripts/styles and avoids inline script/eval.
 Swagger retains its own compatible response policy.
@@ -106,23 +104,19 @@ from an older account generation. The browser owns multipart boundaries.
 On confirmed refresh 401, the adapter clears the unusable cookie. A temporary
 server failure preserves it for retry. Logout clears after successful revocation
 or confirmed 401; a mismatched owner 403 leaves the real owner's cookie intact.
-No auth token is stored in localStorage or sessionStorage. Imports remember only
-a validated, non-secret job UUID in per-tab sessionStorage, keyed by user/group.
-The backend still checks membership on every status request. Panel lifecycles
-abort old requests when the account/group changes.
+No auth token is stored in localStorage or sessionStorage. Imports remember the
+latest validated job UUID and a completion-notification UUID in per-tab
+sessionStorage, keyed by user/group. Returning to the panel fetches the actual
+saved status, including completed/failed results; no status snapshot or import
+history list is fabricated. The second UUID prevents duplicate completion
+notifications after a panel remount. Confirmed access loss clears these local
+references. The backend checks membership on every status request, and panel
+lifecycles abort old requests when the account/group changes.
 
-Strict frontend builds, Java verification and browser workflows have passed.
-The temporary host test server was stopped to release its Windows JAR lock;
-complete Maven verification and packaging now succeed. Consult
-[project status](project-status.md) and the [verification ledger](evidence/verification.md)
-for current counts and image/deployment evidence. The guided learning phase
-begins after full-app verification, when the owner is ready.
+Browser-session regressions have dedicated Java, component and real-browser
+tests. See the [verification ledger](evidence/verification.md) for dated counts
+and image/deployment evidence.
 
-Understanding checks:
-
-1. Why does an HttpOnly refresh cookie require CSRF protection while the bearer API remains exempt?
-2. Why does a shared cookie require both a per-tab promise and a browser-wide lock?
-3. How does the generation check prevent a delayed response reviving the wrong account?
 
 ## Follow one request
 
@@ -156,11 +150,6 @@ validation messages. Security filter errors use the same response shape because
 they happen before MVC controller advice can handle them. Unexpected responses
 contain a generic explanation rather than a stack trace.
 
-Understanding checks:
-
-1. Why is checking membership only in a controller insufficient for imported expenses?
-2. Why does an authenticated outsider receive 404 while a member can receive 403?
-3. Which transaction prevents an expense being saved without all of its splits?
 
 ## Registration, JWTs and refresh families
 
@@ -213,11 +202,6 @@ Logout checks that the JWT user owns the supplied refresh token and revokes its
 family, including when an old family token is supplied. Other login families remain
 valid. Existing access JWTs remain usable until their fifteen-minute expiry.
 
-Understanding checks:
-
-1. Why use BCrypt for passwords and SHA-256 for random refresh tokens?
-2. Why must replay revocation commit before the API throws its 401 exception?
-3. Why can a request still succeed with its access JWT immediately after logout?
 
 ## Exact money, membership history and SQL balances
 
@@ -258,11 +242,6 @@ the JDBC statements inside `@Transactional` service calls commit or roll back
 together. Transaction rollback tests exercise this with real PostgreSQL; JDBC is
 not a separate database session merely because its repository uses a different API.
 
-Understanding checks:
-
-1. What goes wrong if raw payments and raw splits are joined before aggregation?
-2. Why should removing a member preserve their split rows?
-3. Why do membership changes and expense writes lock the same group row?
 
 ## Redis: authorization, caching and rate limiting
 
@@ -297,11 +276,6 @@ can recompute a value; allowing unlimited login attempts would change the securi
 policy. Fixed windows allow bursts around a boundary. A token bucket could smooth
 those bursts but is outside this implementation.
 
-Understanding checks:
-
-1. Why does a cache hit still need a database membership check?
-2. Can eviction after commit alone prevent every stale-cache race?
-3. Why are cache failures tolerated while limiter failures reject the operation?
 
 ## Durable background imports
 
@@ -354,11 +328,6 @@ bounded exact decimal text. Invalid rows are counted and skipped. Unreadable fil
 or files with no valid rows fail with a sanitized explanation. Keyword rules in
 configuration choose categories in deterministic enum order.
 
-Understanding checks:
-
-1. Why is `@Async` alone insufficient to guarantee a committed upload gets processed?
-2. Why does recovery check `started_at` and completion lock the job row?
-3. What prevents half of an imported statement being committed after a later row fails?
 
 ## Budgets, observability and deployment
 
@@ -401,9 +370,3 @@ HPA, while PostgreSQL uses a StatefulSet/PVC. GitHub Actions verifies and scans
 before publishing SHA-tagged images. The GitOps design uses a generated
 `deploy/local` branch watched by Argo CD; see [gitops.md](gitops.md) for promotion
 and rollback details and their current verification state.
-
-Understanding checks:
-
-1. Why have both ShedLock and a unique alert constraint?
-2. Why must database availability affect readiness rather than liveness?
-3. Why does reverting a container image not reverse a Flyway migration?

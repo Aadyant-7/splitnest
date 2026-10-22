@@ -1,17 +1,16 @@
 # Verification record
 
-Initial verification: 18 October 2026; runtime follow-up: 19 October 2026 (India).
+Initial verification: 18 October 2026; later releases: 19 and 22 October 2026 (India).
 Record observed results, not inferred completion.
 
-The original sections below preserve the backend/local delivery baseline. The
-owner subsequently approved the free local browser-app extension, now implemented
-and tested. New full-stack checks are recorded separately below and in
-[current project status](../project-status.md).
+The original sections below preserve the backend/local delivery baseline.
+Later sections record full-stack application checks against their source commits
+and image digests. These are dated observations, not continuous monitoring.
 
 ## Backend
 
-This section records the original 75-test backend release; the expanded 93-test
-full-stack verification is recorded in the final section below.
+This section records the original 75-test backend release. Subsequent sections
+record the expanded full-stack and interface-refinement verification.
 
 - Java: Temurin 21.0.12.1; Maven wrapper: 3.10.0; Spring Boot: 4.1.1.
 - `mvnw.cmd verify`: **75 tests, 0 failures, 0 errors, 0 skipped**.
@@ -61,7 +60,7 @@ is a separate check below.
 - Docker reports cgroup v1. Default cluster startup failed; the documented local
   `failCgroupV1: false` compatibility configuration produced a Ready node.
 - Base/local manifests accepted by server-side dry-run against the actual API.
-- Local app Secret created from ignored `.env` after the owner's explicit approval;
+- Local app Secret created from ignored `.env` without exposing its values;
   no secret manifest was committed or printed.
 - App/datastore rollout: PASS. Two patched app replicas, PostgreSQL and Redis Ready;
   image loaded locally for bootstrap before the first registry publication.
@@ -193,8 +192,7 @@ checks separately from the original release:
 
 ## Final full-stack delivery — 19 October 2026
 
-All six browser-extension acceptance milestones are complete. The application
-remains a free local academic/placement demonstration.
+This release combines the browser application and Java API in one local image.
 
 - **93 Java tests** pass with zero failures/errors/skips and `BUILD SUCCESS`.
   A final full verification also passes with inherited local
@@ -209,8 +207,7 @@ remains a free local academic/placement demonstration.
   **18.1 seconds**. Multi-tab access expiry alone is simulated with one401 per tab;
   cookie rotation, logout and subsequent requests are real.
 - **23 script scenarios** pass: six load-data, six manifest-context and eleven
-  GitOps promotion fixtures. The original twenty interview questions remain
-  unchanged and unanswered.
+  GitOps promotion fixtures.
 - Full-stack source `2cb1796`, encoded-path CSRF correction `51129c8`, and actual
   frontend-only source `6b67a01` each passed remote CI. Final release:
   [CI run39269576460](https://github.com/Aadyant-7/splitnest/actions/runs/39269576460).
@@ -235,4 +232,34 @@ remains a free local academic/placement demonstration.
   was preserved. [Machine-readable checks](frontend-verification.json).
 
 No cloud deployment, commercial-capacity claim or paid service was introduced.
-The detailed explanation phase follows the [learning roadmap](../learning-roadmap.md).
+
+## Interface refinement — 22 October 2026
+
+[Release checks](frontend-overhaul.json) distinguish local verification from the
+subsequent published-image and Kubernetes observations.
+
+- Maven `verify`: **94 tests**, zero failures/errors/skips, **BUILD SUCCESS**.
+  The additional routing test proves only the exact public CSV example is
+  permitted; adjacent paths and unauthenticated writes remain protected.
+- Frontend: **107 unit/component tests**, strict TypeScript and Vite build pass.
+  npm audit reports zero vulnerabilities at the recorded observation.
+- **10 Chromium scenarios** pass against the packaged Compose image. Nine use
+  actual API/database workflows; one supplies a deterministic large-decimal
+  response. Browser coverage includes the downloaded CSV's real import/category
+  results, completed-result restoration across tab changes, exact shares,
+  permissions, multi-tab sessions, accessible tabs and all workspace sections at
+  **320, 390, 768 and 1440 pixels**. The packaged run reports **20.0 seconds**.
+- The real-HTTP smoke script passes financial, import, access-isolation and
+  refresh-replay checks. App/PostgreSQL/Redis are healthy; the database volume
+  was preserved. All **23 delivery-helper fixture scenarios** pass.
+- Updated captures use synthetic accounts and real API data:
+  [sign-in](workspace-login.png), [groups](workspace-groups.png),
+  [expenses](workspace-expenses.png), [phone expenses](workspace-mobile.png),
+  [overview](workspace-overview.png), [members](workspace-members.png),
+  [phone members](workspace-members-mobile.png), [imports](workspace-imports.png)
+  and [budgets](workspace-budgets.png). The earlier `frontend-*.png` captures are
+  retained for the dated release above.
+
+The application source is `05941ee`. Published-image scan, CI and automatic
+GitOps reconciliation results are recorded separately in the release JSON after
+they are actually observed; the local checks alone do not establish those results.

@@ -39,8 +39,8 @@ running. IDE runs need the same environment configuration. Compose reads `.env`
 for containers; it does not automatically export it into an IDE.
 
 Run tests separately with `./mvnw.cmd verify` while Docker is available. For image
-and layer details see [docker.md](docker.md); for demonstration and the short
-interview explanation see [demo.md](demo.md#a-concise-interview-explanation).
+and layer details see [docker.md](docker.md); for a complete demonstration see
+[demo.md](demo.md).
 
 ## Kubernetes health and troubleshooting
 
@@ -222,9 +222,3 @@ after the rehearsal.
 No automated backup schedule, encrypted off-machine retention, point-in-time
 recovery, high-availability database or restore rehearsal is claimed here. PVC
 retention protects one narrow Pod-replacement case; it is not a backup strategy.
-
-## Questions to check understanding
-
-1. Why can a password rotation appear successful until a database connection reconnects?
-2. Why does reverting an image leave the migrated database schema in place?
-3. What must be checked beyond the existence of a dump file before calling recovery verified?

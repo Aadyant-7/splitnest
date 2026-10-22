@@ -32,6 +32,3 @@ is not a general queue with automatic retries/dead-letter handling. A broker wou
 be justified by independent consumers, much larger throughput or operationally
 required retry/delivery features. It would still require idempotent persistence;
 introducing a broker alone would not create exactly-once expense writes.
-
-Understanding check: which job-row check protects against a worker finishing
-parsing after recovery already marked the job failed?

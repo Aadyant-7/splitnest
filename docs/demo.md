@@ -1,13 +1,10 @@
-# Demonstrate and explain SplitNest
+# Demonstrate SplitNest
 
-Navigation: [documentation index](README.md) · [project status](project-status.md) ·
-[approved frontend plan](frontend-extension-plan.md).
+Navigation: [documentation index](README.md) · [user guide](user-guide.md).
 
-This guide demonstrates the implemented React interface and the preserved Swagger
-and HTTP workflows. Strict frontend builds, Java tests and browser journeys have
-passed. Check the dated [verification record](evidence/verification.md) and [project status](project-status.md)
-for its latest result. This project runs locally for academic and placement use;
-public hosting and paid services are outside scope.
+This guide demonstrates the browser interface and Swagger/HTTP workflows using
+synthetic data. The [verification record](evidence/verification.md) identifies
+observed test and deployment results. The application runs locally.
 
 Use disposable local accounts and data. Start Docker Desktop, then follow
 [setup.md](setup.md) and [docker.md](docker.md) to run either the JVM app with
@@ -83,7 +80,9 @@ and kind demonstrations. Never run two app processes on 8080.
     the shared Web Lock and generation guard rather than exposing token values.
 11. Try the layout at a narrow viewport and navigate with Tab/Enter. Inspect form
     labels, validation messages, loading/empty/error states and the skip link.
-    Delete a disposable expense after accepting its confirmation dialog.
+    Use Left/Right arrows to switch group tabs and Home/End to reach the first
+    or last tab. Delete a disposable expense after accepting its confirmation
+    dialog. In Imports, **Download sample CSV** provides a compatible starter file.
 
 The automated browser scenarios create synthetic data and exercise real HTTP
 requests. Run from `frontend/` after starting the API:
@@ -105,7 +104,7 @@ screenshots, never browser storage/network dumps containing credentials.
 
 Open [Swagger UI](http://localhost:8080/swagger-ui/index.html).
 Access JWTs expire after fifteen minutes; log in again and update **Authorize**
-if a learning session takes longer. Serialize refresh calls rather than issuing
+if a demo takes longer. Serialize refresh calls rather than issuing
 them in parallel tabs.
 
 1. Register three users through `POST /api/v1/auth/register`, using distinct
@@ -186,7 +185,7 @@ function Expect-DemoStatus {
 $demoAdmin = New-DemoActor 'admin'
 $demoSecond = New-DemoActor 'member-two'
 $demoThird = New-DemoActor 'member-three'
-$demoGroup = Invoke-DemoApi POST '/groups' @{ name = 'Resume demo' } $demoAdmin.tokens.accessToken
+$demoGroup = Invoke-DemoApi POST '/groups' @{ name = 'Shared apartment' } $demoAdmin.tokens.accessToken
 $demoGroupPath = "/groups/$($demoGroup.id)"
 Invoke-DemoApi POST "$demoGroupPath/members" @{ email = $demoSecond.user.email } $demoAdmin.tokens.accessToken | Out-Null
 Invoke-DemoApi POST "$demoGroupPath/members" @{ email = $demoThird.user.email } $demoAdmin.tokens.accessToken | Out-Null
@@ -305,47 +304,20 @@ Prometheus/Grafana setup and controlled cache comparisons follow
 demonstrating multi-replica traffic. A Service port-forward selects a backing Pod
 and cannot prove that load was distributed.
 
-## Delivery evidence and the learning phase
+## System behavior demonstrated
 
-The browser source and real-backend development workflows are implemented and
-tested. The combined image, its scan, Compose/kind browser operation and a
-frontend-only GitOps promotion need their own execution evidence; source files
-or a Vite run alone cannot establish those results. Use
-[project status](project-status.md) and the [verification ledger](evidence/verification.md)
-for the latest delivery state. The original API walkthrough remains a useful
-developer/debugging path. The detailed code/interview walkthrough starts after
-the full local app is verified, when the owner is ready.
+The browser and API use the same Java modular monolith. PostgreSQL transactions
+save an expense and its exact split snapshots together. SQL computes balances
+from stored history; removing a member removes access without erasing old shares.
+JWTs authenticate requests, rotating refresh families detect replay, and Redis
+supplies shared rate limits and a short-lived balance cache.
 
-## A concise interview explanation
+Statement imports use persisted job rows, atomic claims and bounded workers.
+The periodic dispatcher/recovery paths handle missed events and interrupted
+processing. Browser sessions add HttpOnly refresh cookies, CSRF checks and
+coordinated rotation across tabs.
 
-This describes the implemented source and its demonstrated browser/API behavior.
-Attach deployment claims only to the corresponding evidence record.
-
-> SplitNest is a full-stack expense-sharing application with a React interface
-> and a Java modular monolith. I focused
-> on exact financial arithmetic and access isolation: PostgreSQL transactions
-> save expenses with immutable split snapshots, and SQL aggregates calculate net
-> balances. JWTs authenticate requests, rotating refresh families detect replay,
-> and Redis supplies shared limiting and bounded-staleness caching. Background
-> imports use persisted jobs, atomic claims and recovery rather than depending on
-> an in-memory event alone. The repository includes container, Kubernetes,
-> GitOps delivery and monitoring, verified against a local Kubernetes cluster,
-> with tests and operating documentation. Browser sessions use HttpOnly refresh
-> cookies, CSRF checks and coordinated rotation across tabs.
-
-The verification ledger links the successful CI run and exact registry image
-reconciled by Argo CD. Describe the controlled performance results with their
-dataset and limits; do not treat one local run as a capacity guarantee. The local single PostgreSQL instance and PVC
-are a deployment learning setup, not a highly available database or a backup plan.
-The original delivery evidence identifies the backend release it tested; the
-combined frontend image requires a new record. A source/browser result does not
-prove a registry publication or Kubernetes rollout.
-
-After demonstrating, explain without reading:
-
-1. Which exact row receives the extra paisa, and why does the outcome stay deterministic?
-2. Which failure can occur between upload commit and async dispatch, and how is it recovered?
-3. Which assertions prove API correctness, and which deployment/performance claims need separate evidence?
-
-The twenty broader interview questions remain unanswered in
-[interview-prep.md](interview-prep.md).
+The [verification ledger](evidence/verification.md) links dated CI runs and exact
+registry images reconciled by Argo CD. [Performance observations](performance.md)
+record their dataset and limits. Local PostgreSQL/PVC persistence is not a
+high-availability database or a tested backup strategy.

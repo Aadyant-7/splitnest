@@ -47,6 +47,3 @@ refresh. Those images differ in OCI repository labels with the same API code;
 the observation proves image deployment reversal rather than business/schema
 rollback. See [gitops.md](../gitops.md) and the verification ledger for release
 identities and explicitly excluded recovery/deployment claims.
-
-Understanding check: why would ignoring every `deploy/**` change at workflow
-trigger level interfere with required checks or manifest-only delivery?

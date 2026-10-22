@@ -193,12 +193,3 @@ path with an actual React source change, two different registry digests and
 JavaScript assets, automatic Argo reconciliation and packaged browser checks.
 The shell fixtures separately cover frontend lockfile promotion and README-only
 preservation after rollback.
-
-## Questions to explain before an interview
-
-1. Why can Argo CD deploy to a laptop cluster that GitHub Actions cannot reach,
-   and what exactly remains on the generated branch?
-2. Why must manifest synchronization and image promotion be separate commits,
-   and why does the source watermark survive an image rollback?
-3. Which failures are caught by mock shell tests, client validation, registry
-   scanning and an actual rollout respectively?

@@ -1,72 +1,49 @@
-# SplitNest documentation
+# Documentation
 
-Start with [project status](project-status.md). All six full-stack milestones
-are verified, including the browser app, backend, combined image, CI and automatic
-local Kubernetes delivery.
-Functional verification is complete; the owner's review identified frontend
-design/UX issues, with revision deferred until later.
-The project is a free local academic and placement demo. The detailed learning
-phase follows completion and verification of the full app.
+Start with the [user guide](user-guide.md) to use SplitNest, or [setup](setup.md)
+to run it. The application and its supporting services run locally; no public
+hosting, paid API or managed database is required.
 
-## Current work and repository navigation
+## Use and run
 
-| Document | Read it for |
+| Guide | Contents |
 |---|---|
-| [Project README](../README.md) | Overview, repository map and current run/test commands |
-| [Project status](project-status.md) | Completion by scope, next milestones and evidence rules |
-| [Repository instructions](../agents.md) | Approved stack, scope and autonomous working agreement |
-| [Frontend execution plan](frontend-extension-plan.md) | Accepted design, screens, authentication changes and acceptance gates |
-| [Frontend directory](../frontend/README.md) | Actual source organization, commands and build/runtime boundary |
-| [Development plan](development-plan.md) | Original review, implemented backend milestones and current execution order |
+| [Project overview](../README.md) | Features, quick start, architecture and repository map |
+| [User guide](user-guide.md) | Plain-language manual for accounts, groups, expenses, imports and budgets |
+| [Setup](setup.md) | Requirements, fresh checkout, host development and tests |
+| [Demo](demo.md) | A reproducible browser/API scenario with synthetic data |
+| [Frontend](../frontend/README.md) | UI structure, build tools, development and browser checks |
 
-## Run and demonstrate the application
+## Develop and operate
 
-| Document | Read it for |
+| Guide | Contents |
 |---|---|
-| [User guide](user-guide.md) | A plain-language manual for accounts, groups, expenses, balances, imports, budgets and common problems |
-| [Setup](setup.md) | Installed baseline, Windows prerequisites and repository setup |
-| [Demo](demo.md) | Browser and Swagger/API walkthroughs using synthetic data |
-| [Docker](docker.md) | Image stages, runtime settings, Compose and verification |
-| [Kubernetes](kubernetes.md) | kind setup, objects, secrets, probes, autoscaling and failure exercises |
-| [GitOps](gitops.md) | Argo CD setup and local pull-based delivery |
-| [Promotion and rollback](gitops-promotion.md) | Generated deployment branch, provenance, safeguards and rollback |
-| [Operations](operations.md) | Health, migrations, credential handling and recovery limits |
-| [Monitoring](monitoring.md) | Prometheus/Grafana configuration and repeatable experiments |
-| [Performance observations](performance.md) | Measured cache comparison and HPA results with their limits |
+| [Architecture](architecture.md) | Request/session flows, exact money, transactions, jobs and delivery |
+| [Implementation map](implementation.md) | Source files, migrations, tests and responsibilities |
+| [Repository conventions](../agents.md) | Scope, coding, testing and credential-handling rules |
+| [Docker](docker.md) | Image stages, Compose, runtime settings and CI publication |
+| [Kubernetes](kubernetes.md) | kind, Secrets, probes, persistent storage, HPA and failure experiments |
+| [GitOps](gitops.md) | Argo CD setup and pull-based local delivery |
+| [Promotion and rollback](gitops-promotion.md) | Generated branch, provenance and rollback safeguards |
+| [Operations](operations.md) | Health, migrations, secrets, job recovery and backup limitations |
+| [Monitoring](monitoring.md) | Prometheus/Grafana setup and repeatable workloads |
+| [Performance](performance.md) | Controlled cache comparison and autoscaling observations |
 
-The frontend guide now includes real build/test commands, and the demo uses the
-actual interface. Verify the recorded source/image and delivery status before
-claiming a packaged deployment. A runbook describing an experiment does not prove
-it was executed.
-
-## Understand the completed system
-
-| Document | Read it for |
-|---|---|
-| [Learning roadmap](learning-roadmap.md) | The later guided sequence from requirements through code and deployment |
-| [Architecture](architecture.md) | Implemented request, background, browser and delivery flows |
-| [Implementation map](implementation.md) | Feature-by-feature code and test reading order |
-| [Learning guide](learning-guide.md) | Beginner-to-advanced explanations of the implemented concepts |
-| [Interview preparation](interview-prep.md) | Unanswered questions and evidence-based resume/demo framing |
-
-Architecture decision records capture context, alternatives and consequences:
+## Architecture decisions
 
 1. [Modular monolith](decisions/0001-modular-monolith.md)
-2. [JWTs and refresh tokens](decisions/0002-jwt-refresh.md)
+2. [JWTs and rotating refresh tokens](decisions/0002-jwt-refresh.md)
 3. [Redis limiting and caching](decisions/0003-redis-limiting-and-cache.md)
 4. [Async processing with persisted jobs](decisions/0004-async-database-dispatch.md)
 5. [ShedLock coordination](decisions/0005-shedlock.md)
 6. [Generated GitOps deployment branch](decisions/0006-gitops-deployment-branch.md)
-7. [Browser frontend in the Spring Boot application](decisions/0007-browser-frontend.md)
-   — browser integration and combined delivery verified with dated evidence.
+7. [Browser frontend in Spring Boot](decisions/0007-browser-frontend.md)
 
-## Inspect evidence
+## Verification evidence
 
-[Verification record](evidence/verification.md) indexes actual tests, image scans,
-CI runs, local deployment checks, rollout/rollback observations and Grafana
-captures. JSON and image artifacts stay in `evidence/`. They document observed
-results at a point in time. New browser/image results are recorded separately
-from the original backend verification so neither is mistaken for the other.
-
-Keep plans, runbooks and evidence distinct. Update the status page and relevant
-feature/decision documentation after each verified implementation milestone.
+The [verification record](evidence/verification.md) links observed test results,
+image scans, CI runs, local deployment checks, rollback and monitoring captures.
+JSON and screenshot artifacts in `evidence/` identify a specific source/image
+and observation time. A runbook explains how to perform a check; the evidence
+records whether it was actually performed. Older results remain dated to the
+release they measured.

@@ -231,18 +231,9 @@ The overview dashboard's API p95 covers every `/api/` endpoint, including BCrypt
 registration/login, over a rolling histogram window. The k6 table measures only
 balance requests in its stated scenario and excludes setup/warm-up. Different
 request populations, windows and histogram buckets mean those p95 values need
-not match; do not substitute one for the other in an interview.
+not match; do not substitute one for the other when reporting results.
 
 For a repeat experiment, observe desired/current replicas and per-Pod CPU rather
 than assuming this transition will recur on another machine. A cached balances
 workload may not exceed the CPU target with a different dataset, request rate,
 resource request or hardware configuration.
-
-## Questions to check understanding
-
-1. Why must both modes use the same dataset and fixed replica count, and why
-   should builds stop during the measurement?
-2. Why is calling a port-forward insufficient proof that both replicas handled
-   traffic, even if the port-forward targets a Service?
-3. Which k6 metrics exclude warm-up, and why might Redis add overhead for a small
-   dataset despite preventing repeated aggregate queries?

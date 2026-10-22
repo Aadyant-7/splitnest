@@ -1,23 +1,13 @@
-# Implementation reading guide
+# Source and test map
 
-Navigation: [documentation index](README.md) · [project status](project-status.md) ·
-[approved frontend plan](frontend-extension-plan.md).
+This reference maps the Java backend, React frontend, database migrations, tests
+and delivery sources. Use [architecture](architecture.md) for request and job
+flows, and the [verification record](evidence/verification.md) for dated results.
 
-This inventory maps the implemented Java backend, React frontend, tests and
-delivery sources. Strict builds, unit/integration tests and browser workflows
-are verified; current counts and combined-image delivery results live in
-[project status](project-status.md) and the [verification record](evidence/verification.md).
-The project remains a free local academic and placement app; public/cloud hosting
-and paid services are excluded.
-
-Finish the full local app first, then use this guide for the detailed learning
-walkthrough. Runbooks remain available now through the
-[documentation index](README.md).
-
-Use this as a map from behavior to files. Start with [architecture.md](architecture.md),
-then read a controller, its service and its repository together. Java records are
-immutable API messages; entities represent database-managed state. Constructor
-injection makes each class's collaborators explicit without Lombok.
+Read a controller, its service and repository together. Controllers translate
+HTTP, services enforce permissions/transactions, and repositories contain data
+access. Java records carry API messages; entities represent managed database
+state. The frontend displays results and submits actions to the same API.
 
 ## Application and shared infrastructure
 
@@ -154,15 +144,16 @@ the actual DTOs; runtime HTTP validation and backend permissions remain decisive
 |---|---|
 | [package.json](../frontend/package.json), [package-lock.json](../frontend/package-lock.json), [.npmrc](../frontend/.npmrc), [.nvmrc](../frontend/.nvmrc) | Exact dependency lock, npm11.19.1 package manager, Node24.22.0 pin, engine enforcement and installations without lifecycle scripts. Type-only `@types/node`24.19.2 is distinct from the runtime. |
 | [index.html](../frontend/index.html), [main.tsx](../frontend/src/main.tsx), [favicon.svg](../frontend/public/favicon.svg) | Vite HTML entry, React mount and bundled local branding. |
+| [Brand.tsx](../frontend/src/shared/ui/Brand.tsx), [statement.csv](../frontend/public/examples/statement.csv) | Shared wordmark/icon and downloadable statement-format example; all assets are local. |
 | [vite.config.ts](../frontend/vite.config.ts), [tsconfig.json](../frontend/tsconfig.json), [playwright.config.ts](../frontend/playwright.config.ts) | Loopback development/API proxy, strict no-emit typecheck, Vitest environment and real Chromium execution against Vite or `SPLITNEST_WEB_URL`. |
 | [App.tsx](../frontend/src/app/App.tsx), [SessionContext.tsx](../frontend/src/app/SessionContext.tsx) | Browser routes, protected shell/account-keyed workspace, and React subscription to the session store. |
 | [session.ts](../frontend/src/app/session.ts) | Memory-only access token, single-flight refresh, shared Web Lock, non-secret BroadcastChannel events, generation guards and raw logout refresh inside one lock. |
 | [client.ts](../frontend/src/shared/api/client.ts), [types.ts](../frontend/src/shared/api/types.ts) | Typed DTOs, same-origin/no-store requests, ProblemDetail/Retry-After parsing, one401 retry and cancellation of responses from an older account. FormData retains its browser-generated boundary. |
 | [json.ts](../frontend/src/shared/api/json.ts) | Preserves original monetary JSON tokens as decimal strings, including large aggregates; numeric counts retain their normal types. Older parsers reject unsafe large values. |
 | [AuthPage.tsx](../frontend/src/features/auth/AuthPage.tsx) | Registration/login forms, password visibility, pending/failure states and safe local post-login navigation. |
-| [GroupsPage.tsx](../frontend/src/features/groups/GroupsPage.tsx), [GroupPage.tsx](../frontend/src/features/groups/GroupPage.tsx) | Group list/create, concurrent workspace reads, request cleanup and paginated expense refresh after mutations. |
+| [GroupsPage.tsx](../frontend/src/features/groups/GroupsPage.tsx), [GroupPage.tsx](../frontend/src/features/groups/GroupPage.tsx) | Group list/create, keyboard-navigable section tabs, concurrent workspace reads, request cleanup and paginated expense refresh after mutations. |
 | [MembersPanel.tsx](../frontend/src/features/groups/MembersPanel.tsx) | Registered-user membership forms, admin controls and explicit removal confirmation; the server enforces permissions. |
-| [ExpenseForm.tsx](../frontend/src/features/expenses/ExpenseForm.tsx), [ExpensesPanel.tsx](../frontend/src/features/expenses/ExpensesPanel.tsx), [BalancePanel.tsx](../frontend/src/features/expenses/BalancePanel.tsx) | Decimal-text validation, payer/category/date fields, pagination, stored split details, creator/admin deletion and current/former-member balance display. |
+| [ExpenseForm.tsx](../frontend/src/features/expenses/ExpenseForm.tsx), [ExpensesPanel.tsx](../frontend/src/features/expenses/ExpensesPanel.tsx), [BalancePanel.tsx](../frontend/src/features/expenses/BalancePanel.tsx) | Decimal-text validation, local-calendar default expense date, payer/category fields, pagination, stored split details, creator/admin deletion and current/former-member balance display. Expense records retain labeled controls on phone layouts. |
 | [ImportsPanel.tsx](../frontend/src/features/imports/ImportsPanel.tsx) | Bounded upload validation, real status polling every2seconds for up to2minutes, manual recheck, upload Retry-After and account/group-keyed non-secret job UUID persistence. |
 | [BudgetsPanel.tsx](../frontend/src/features/budgets/BudgetsPanel.tsx) | Admin category-limit upsert, member reads and actual immutable alert snapshots; no invented live monthly-spending calculation. |
 | [Feedback.tsx](../frontend/src/shared/ui/Feedback.tsx), [format.ts](../frontend/src/shared/ui/format.ts) | Accessible loading/empty/error announcements, field errors and INR/UTC-date presentation. |
@@ -173,34 +164,24 @@ the actual DTOs; runtime HTTP validation and backend permissions remain decisive
 | Files | Evidence provided when the test passes |
 |---|---|
 | [setup.ts](../frontend/src/test/setup.ts) | DOM matchers and cleanup between React tests. |
-| [json.test.ts](../frontend/src/shared/api/json.test.ts), [format.test.ts](../frontend/src/shared/ui/format.test.ts) | Eight cases for exact positive/negative large decimals, exponent notation, nested shares, unchanged non-monetary data, older-browser safety and exact budget-edit text. |
-| [session.test.ts](../frontend/src/app/session.test.ts), [client.test.ts](../frontend/src/shared/api/client.test.ts) |31 focused cases for refresh single flight/cross-tab locking, CSRF under lock, no persistent credentials, failure cleanup, profile races, logout lock safety, JSON/multipart retry and stale-account responses. |
+| [json.test.ts](../frontend/src/shared/api/json.test.ts), [format.test.ts](../frontend/src/shared/ui/format.test.ts) | Exact positive/negative large decimals, exponent notation, nested shares, unchanged non-monetary data, older-browser safety and exact budget-edit text. |
+| [session.test.ts](../frontend/src/app/session.test.ts), [client.test.ts](../frontend/src/shared/api/client.test.ts) | Refresh single flight/cross-tab locking, CSRF under lock, no persistent credentials, failure cleanup, profile races, logout lock safety, JSON/multipart retry and stale-account responses. |
 | [AuthPage.test.tsx](../frontend/src/features/auth/AuthPage.test.tsx) | Registration/login interactions, validation, pending/error states and navigation. |
+| [App.test.tsx](../frontend/src/app/App.test.tsx) | Protected navigation, preserving the requested group URL, and retaining a retryable session after a failed logout. |
 | [GroupsPage.test.tsx](../frontend/src/features/groups/GroupsPage.test.tsx), [GroupPage.test.tsx](../frontend/src/features/groups/GroupPage.test.tsx), [MembersPanel.test.tsx](../frontend/src/features/groups/MembersPanel.test.tsx) | Group list/create/retry, workspace refresh/pagination, member roles and rejected actions. |
 | [ExpenseForm.test.tsx](../frontend/src/features/expenses/ExpenseForm.test.tsx), [ExpensesPanel.test.tsx](../frontend/src/features/expenses/ExpensesPanel.test.tsx) | Exact decimal input boundaries, server-owned splits, stored history and permission-aware confirmed deletion. |
 | [ImportsPanel.test.tsx](../frontend/src/features/imports/ImportsPanel.test.tsx), [BudgetsPanel.test.tsx](../frontend/src/features/budgets/BudgetsPanel.test.tsx) | Poll/deadline/cleanup/storage guards, real-job response states, rate-limit waiting, budget permissions and snapshot semantics. |
-| [helpers.ts](../frontend/e2e/helpers.ts), [workflows.spec.ts](../frontend/e2e/workflows.spec.ts) | Synthetic users and real backend Chromium journeys: registration/restoration, three-user exact splits, permissions, imports/budgets, two-tab rotation/logout, mobile validation and accessible rate-limit messages. Current execution totals belong in project status. |
+| [helpers.ts](../frontend/e2e/helpers.ts), [workflows.spec.ts](../frontend/e2e/workflows.spec.ts) | Synthetic users and real backend Chromium journeys: registration/restoration, three-user exact splits, permissions, imports/budgets, two-tab rotation/logout, mobile validation and accessible rate-limit messages. Execution totals are recorded in the verification ledger. |
 
-Unit/component tests use controlled responses to isolate interface states. Eight
-Chromium journeys use the real API/database; a ninth supplies one deterministic
-large balance payload to verify display without inserting a huge ledger. Java tests separately verify transactions and
-security. No one layer substitutes for image, Compose/kind or remote CI evidence.
+Unit/component tests use controlled responses to isolate interface states. Nine
+Chromium journeys use the real API/database; one additional case supplies a
+deterministic large balance payload to verify display without inserting a huge
+ledger. Java tests separately verify transactions and security. No one layer
+substitutes for image, Compose/kind or remote CI evidence.
 
-## Reading and interview practice
+## Related references
 
-The practical [operations runbook](operations.md) ties startup, health checks,
-secrets, Flyway, job recovery and binary-safe backup procedures together. Backup
-and restore commands are documented procedures; their execution is not implied
-by this file inventory.
-
-Read [demo.md](demo.md) while calling the API. Then explain one expense's journey
-using [architecture.md](architecture.md) without reading the source. Consult the
-six backend [ADRs](decisions/0001-modular-monolith.md) to discuss consequences
-rather than listing technologies. The seventh
-[frontend ADR](decisions/0007-browser-frontend.md) records the implementation and
-verified delivery evidence. The original twenty interview questions remain
-unanswered in [interview-prep.md](interview-prep.md).
-
-1. Which repository APIs use JPA, and why do the JDBC writes still share one service transaction?
-2. Which tests would you read before changing member removal or refresh-token rotation?
-3. Which files describe deployment intent, and what additional evidence proves that intent worked?
+The [operations runbook](operations.md) connects startup, health checks, secrets,
+Flyway, job recovery and backup limitations. [Architecture decisions](README.md#architecture-decisions)
+record the main tradeoffs. Use the [demo](demo.md) for a reproducible end-to-end
+scenario; file existence alone does not establish a successful runtime check.

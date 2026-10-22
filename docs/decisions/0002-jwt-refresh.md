@@ -33,6 +33,3 @@ life is bounded by fifteen minutes. A client must serialize refresh calls, since
 concurrent use of one token triggers the replay policy. The same symmetric signing
 key must reach every replica securely. The user lock favors clear correctness
 over parallel refresh processing for one account's separate sessions.
-
-Understanding check: why would throwing the rejection inside the rotation
-transaction change the security outcome?

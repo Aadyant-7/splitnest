@@ -25,7 +25,8 @@ On **Your groups**, enter a **Group name** under **Create a group**, then choose
 **Create group**. For example, create a group called *Apartment expenses*.
 
 You become the group's **Admin**. Open a group by selecting its name. You only
-see groups you belong to. **My groups** takes you back to the list.
+see groups you belong to. **My groups** in the top navigation or **All groups**
+above a group's name takes you back to the list.
 
 Inside a group, use these tabs:
 
@@ -36,6 +37,10 @@ Inside a group, use these tabs:
 | Members | See the group members; admins can add or remove people |
 | Imports | Upload a statement and check its processing result |
 | Budgets | View category limits and alerts; admins can change limits |
+
+With a keyboard, Tab to the section tabs, then use the arrow keys to move between
+them. Home and End select the first and last section. Tab again to enter the
+selected section's controls.
 
 ## 3. Add and remove members
 
@@ -64,6 +69,9 @@ cannot be removed.
 5. Under **Paid by**, choose the current member who paid.
 6. Choose **Add expense**.
 
+**Expense date** starts with today's date on your device. Change it when recording
+an earlier purchase; it does not have to be the day you enter the record.
+
 Amounts must be positive and have no more than two decimal places. Categories
 are Food, Groceries, Rent, Utilities, Travel, Entertainment, Shopping and Other.
 
@@ -80,6 +88,8 @@ Deletion permission follows who **created** the record, rather than who paid.
 The list shows newly entered records first, with page controls for older entries.
 Expand **Stored shares** on an expense to see each person's saved amount.
 Adding or removing a member later does not rewrite an old split.
+On a phone, expenses and members appear as labeled cards with the same information
+and available actions as the wider layout.
 
 If you are allowed to delete an expense, choose **Delete** and accept the
 confirmation. The expense is removed and balances are updated. There is no
@@ -104,6 +114,8 @@ not make payments, record a repayment or calculate a person-to-person payment pl
 
 Open **Imports**, choose a CSV or XLSX file up to **5 MiB** (about 5.2 MB), and upload it.
 The file needs the columns `date`, `description` and `amount`.
+Choose **Download sample CSV** for a small file with the required columns. Open
+or edit a copy before uploading; uploading it creates real expense records.
 
 A small CSV example:
 
@@ -133,8 +145,9 @@ matches Food, UBER matches Travel, and unmatched descriptions become Other.
 
 The screen checks progress automatically for up to two minutes. If it stops
 checking, choose **Check status again**. The background job can continue while
-the screen is waiting. The screen tracks the latest upload for that account and
-group in the current browser tab; there is no full import-history list.
+the screen is waiting. Returning to Imports in the same browser tab restores the
+latest upload's actual result, including completed or failed uploads. This is
+tracked separately for each account and group; there is no full import-history list.
 
 Check the result before uploading again: **uploading the same file again can
 create duplicate expenses**. Uploads are limited to ten requests per user in an

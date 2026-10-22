@@ -29,6 +29,3 @@ schema's `TIMESTAMPTZ`: a session interpreting an unzoned value in a local timez
 would shift the recorded instant. Integration tests use independent providers
 against real PostgreSQL to verify contention and release. They do not alone
 prove that a live two-replica cluster ran only one scheduled invocation.
-
-Understanding check: why are database uniqueness and a scheduler lease useful
-even though both help prevent duplicate alerts?

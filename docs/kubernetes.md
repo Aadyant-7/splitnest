@@ -163,9 +163,3 @@ Namespace, StatefulSet and PVC retention settings prevent ordinary Argo pruning
 from silently deleting the database. They are safeguards, not backups. Never use
 namespace deletion as an ordinary restart. Export a backup before deleting the
 cluster; PVC survival across Pod deletion does not prove disaster recovery.
-
-## Questions to check understanding
-
-1. Why should a PostgreSQL outage fail readiness without failing app liveness?
-2. Why can two app replicas run duplicate scheduled work despite a single Service?
-3. What survives Pod deletion, and what can disappear when the kind cluster is deleted?

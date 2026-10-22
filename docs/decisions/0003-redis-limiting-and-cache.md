@@ -32,6 +32,3 @@ an eviction. Its entry expires thirty seconds after insertion unless another
 mutation evicts it earlier. Financial writes remain transactional in PostgreSQL;
 the cache does not promise linearizable reads. Fresh membership checks prevent
 cached results from restoring a removed user's access.
-
-Understanding check: why is returning uncached balances acceptable during an
-outage while silently accepting unlimited login requests is not?

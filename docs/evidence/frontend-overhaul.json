@@ -1,0 +1,101 @@
+{
+  "observedAt": "2026-10-22T12:49:32.7028098Z",
+  "applicationSourceCommit": "05941eefd6cfe83e05f67da3ddcfb2b2506a53fd",
+  "scope": "Responsive interface refinement, sample CSV delivery and latest import-result restoration",
+  "java": {
+    "tests": 94,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS",
+    "failures": 0,
+    "command": "mvnw.cmd -B -ntp verify"
+  },
+  "frontend": {
+    "npmAuditVulnerabilities": 0,
+    "npm": "11.19.1",
+    "node": "24.22.0",
+    "build": "Strict TypeScript and Vite PASS",
+    "testFiles": 13,
+    "unitAndComponentTests": 107
+  },
+  "browser": {
+    "composeTestSeconds": 20.0,
+    "composeResult": "PASS",
+    "realApiJourneys": 9,
+    "note": "Access expiry in the multi-tab case is simulated by one 401 per tab. Cookie rotation, database writes and business requests are real.",
+    "coverage": [
+      "real registration, cookies and CSRF",
+      "exact shares, balances and former-member history",
+      "server permissions and outsider isolation",
+      "downloaded sample CSV and actual category results",
+      "completed import result after leaving and returning",
+      "multi-tab refresh and logout",
+      "mobile amounts/actions and all workspace sections",
+      "actual login rate limit",
+      "keyboard tabs, password visibility and skip link"
+    ],
+    "scenarios": 10,
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "baseUrl": "http://127.0.0.1:8080",
+    "deterministicDecimalFixtures": 1
+  },
+  "apiSmoke": "PASS: exact shares, zero-sum balances, valid/invalid import rows, outsider404, refresh replay401",
+  "scriptFixtures": {
+    "loadData": 6,
+    "gitops": 11,
+    "result": "PASS",
+    "manifestContext": 6,
+    "total": 23
+  },
+  "localImage": {
+    "imageId": "sha256:3a1da81f2083e7068511e234b6071a20d21275aacd6bb739c4d5f73d4073c266",
+    "imageSizeBytes": 474148726,
+    "runtimeUser": "10001:10001",
+    "observedAt": "2026-10-22T12:46:26.8173119Z"
+  },
+  "compose": {
+    "sampleRoute": "/examples/statement.csv",
+    "databaseVolume": "preserved",
+    "sampleDownload": "PASS",
+    "health": "app,postgres,redis healthy"
+  },
+  "screenshots": {
+    "runtime": "Packaged Docker Compose application",
+    "data": "Synthetic accounts and actual API records; no passwords or tokens visible",
+    "additionalFiles": [
+      "workspace-overview.png",
+      "workspace-members.png",
+      "workspace-imports.png",
+      "workspace-budgets.png",
+      "workspace-members-mobile.png"
+    ],
+    "baseUrl": "http://127.0.0.1:8080",
+    "capturedAt": "2026-10-22T12:46:23.019Z",
+    "mobileFits": true,
+    "primaryFiles": [
+      "workspace-login.png",
+      "workspace-groups.png",
+      "workspace-expenses.png",
+      "workspace-mobile.png"
+    ],
+    "desktopFits": true
+  },
+  "documentation": {
+    "publicLinks": 346,
+    "publicMarkdownFiles": 24,
+    "brokenLinks": 0,
+    "fencedBlockCheck": "PASS",
+    "secretValueScan": "PASS",
+    "localCredentialsAndGeneratedFiles": "Git-ignored and excluded from Docker context"
+  },
+  "delivery": {
+    "publishedImageScan": "Pending remote CI",
+    "ci": "Not yet observed for this source release",
+    "kubernetes": "Pending source push and automatic reconciliation"
+  }
+}

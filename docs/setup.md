@@ -1,322 +1,206 @@
-# Windows setup and GitHub handoff
+# Setup and development
 
-Navigation: [documentation index](README.md) · [project status](project-status.md) ·
-[approved frontend plan](frontend-extension-plan.md).
+SplitNest can run entirely in Docker Compose, or with Java and Vite running
+on the host while PostgreSQL/Redis run in containers. Kubernetes is an optional
+local delivery environment. Start with Compose unless changing source code.
 
-These instructions support a fresh Windows setup. The original host has now
-verified Java 21, Docker Desktop, Git, the generated wrapper and a kind cluster.
-The backend/local delivery baseline is verified. The frontend and browser-auth
-adapter are now implemented with passing source/browser tests; combined-image
-deployment verification is tracked in [project status](project-status.md).
-See [verification evidence](evidence/verification.md) for dated execution results.
-Do not paste credentials into chat.
+## Requirements
 
-This is a local academic and placement project. These instructions require no
-paid hosting, domain, managed database or cloud deployment. GitHub remains the
-existing source-control and CI service; the application itself runs locally.
-Node/npm are needed when developing or testing the frontend. A Docker image build
-provides its own pinned Node build stage; the final runtime needs only Java.
+| Tool | Required for | Verify |
+|---|---|---|
+| Git | Cloning and source changes | `git --version` |
+| Docker with Linux containers and Compose | Compose, Java integration tests, kind | `docker info`, `docker compose version` |
+| JDK 21 | Host Java development and Maven verification | `java -version`, `javac -version` |
+| Node 24.22.0 and npm 11.19.1 | Frontend development/tests | `node --version`, `npm --version` |
 
-## 1. Prerequisites for a fresh checkout
+Docker image builds supply their own pinned Java/Node toolchains. The Maven
+wrapper supplies Maven; a global Maven installation is unnecessary. Exact
+dependency/tool versions are pinned in `pom.xml`, `.mvn/`, `frontend/` and
+the Dockerfile. Upgrade pins through a reviewed change and run the tests.
 
-### JDK 21
-
-Temurin Java 21.0.12.1 is now verified for SplitNest. Keep the older Java 23
-installation if other projects need it; use JDK 21 for this project's IDE and
-Maven runner. Installation instructions below apply to a new machine.
-
-Install Temurin 21 using the official
-[Adoptium instructions](https://adoptium.net/installation/), or run:
+On Windows, install a JDK 21 such as [Eclipse Temurin](https://adoptium.net/installation/),
+[Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/)
+with the WSL 2/Linux container backend, and the matching
+[Node LTS release](https://nodejs.org/en/download). For example:
 
 ```powershell
 winget install --exact --id EclipseAdoptium.Temurin.21.JDK
 ```
 
-Open a new terminal after installation. Use terminal-session JAVA_HOME/PATH and
-the IDE's project SDK settings so other projects can retain Java 23. JAVA_HOME
-must point to the JDK directory, not its bin folder. For the usual Temurin
-installation location, select an installed JDK 21 for this terminal:
+Open a new terminal afterward. `JAVA_HOME` must point to the JDK directory,
+not its `bin` directory. The IDE's project SDK and Maven runner should also
+select Java 21. Docker's CLI version alone is insufficient: `docker info`
+must connect to a running engine.
 
-```powershell
-$taskJdk21 = Get-ChildItem -LiteralPath 'C:\Program Files\Eclipse Adoptium' -Directory -Filter 'jdk-21*' |
-    Select-Object -First 1
-if (-not $taskJdk21) { throw 'Locate your installed JDK 21 directory before continuing.' }
-$env:JAVA_HOME = $taskJdk21.FullName
-$env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:Path
-```
-
-These settings last only for the current terminal and its child processes.
-Configure the IDE project SDK separately. If you instead choose to change Windows
-environment settings, that can affect other projects and new terminals.
-
-Verify in PowerShell:
-
-```powershell
-$env:JAVA_HOME
-java -version
-javac -version
-Get-Command java | Select-Object Source
-& (Join-Path $env:JAVA_HOME 'bin\java.exe') -version
-```
-
-Both Java and javac should report 21. If JAVA_HOME's executable and PATH resolve
-different JDKs, correct that before running Maven. The original default Oracle
-java launcher did not finish during inspection; the direct JDK 23 executable
-did. Prefer checking the actual executable selected by JAVA_HOME.
-
-### Docker Desktop
-
-Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
-Use the WSL 2 backend and Linux containers. Follow its Windows/virtualization
-requirements and restart Windows if the installer or WSL setup requests it.
-Start Docker Desktop and wait until the engine is running.
-
-Check WSL first; if it needs enabling or updating, follow the linked Docker/WSL
-instructions rather than changing unrelated Windows features blindly:
-
-```powershell
-wsl --version
-wsl --status
-```
-
-After Docker Desktop is running:
-
-```powershell
-docker --version
-docker compose version
-docker info
-docker run --rm hello-world
-```
-
-A CLI version alone is insufficient: docker info must connect to the engine.
-The hello-world command downloads a small test image and exits. Docker is needed
-for real PostgreSQL/Redis integration tests as well as Compose and kind.
-
-### Git and IDE
-
-Git and VS Code were found; there is no need to install another IDE.
-
-```powershell
-git --version
-code --version
-```
-
-Configure the IDE to use JDK 21 when opening the project. Confirm an existing
-Git author identity before making commits:
-
-```powershell
-git config --get user.name
-git config --get user.email
-```
-
-If these are empty, choose your author name and GitHub-verified email or GitHub
-noreply address. Set them repository-locally if you need to make commits;
-there is no need to overwrite settings used by other projects.
-
-### Maven
-
-Do not install global Maven just for this project. The repository already includes
-`mvnw`, `mvnw.cmd`, and the `.mvn/wrapper` configuration, pinned to Maven 3.10.0:
-
-```powershell
-Set-Location E:\SplitNest
-.\mvnw.cmd -version
-.\mvnw.cmd verify
-```
-
-The first invocation downloads the pinned Maven distribution and dependencies.
-Docker must be available for the full verification suite. On Linux/CI the
-equivalent command is `./mvnw verify`. The repository's Git attributes preserve
-Linux wrapper/script line endings and its wrapper is executable in Git.
-
-### Node.js and npm for frontend development
-
-Use Node 24.22.0 and npm 11.19.1, matching
-[frontend/.nvmrc](../frontend/.nvmrc) and `packageManager` in
-[frontend/package.json](../frontend/package.json). The declared engine ranges are
-Node `>=24.22.0 <25` and npm `>=11.19.1 <12`; exact CI/image versions are pinned.
-On a fresh machine, install the compatible Node 24 LTS distribution from
-[Node.js](https://nodejs.org/en/download), then verify both commands. An older
-Node 24.14 installation does not satisfy this project's engine constraint.
-
-The current workspace also has an ignored portable installation. If it exists,
-select it for this PowerShell session without replacing your global installation:
-
-```powershell
-Set-Location E:\SplitNest
-$taskNodeDirectory = Join-Path (Get-Location) '.work\node\node-v24.22.0-win-x64'
-if (Test-Path -LiteralPath (Join-Path $taskNodeDirectory 'node.exe')) {
-    $env:Path = $taskNodeDirectory + ';' + $env:Path
-}
-node --version
-npm.cmd --version
-```
-
-Expected pinned versions are `v24.22.0` and `11.19.1`. The portable directory is
-not committed and will not exist after a fresh clone. A compatible installation
-must supply these tools before npm commands run. No global Vite or TypeScript
-installation is required. `@types/node` 24.19.2 supplies compile-time declarations;
-its version is separate from the Node executable.
-
-## 2. GitHub repository and authentication
-
-The owner has already created
-[Aadyant-7/splitnest](https://github.com/Aadyant-7/splitnest). Do not create another
-empty repository for this checkout. On a new machine, clone the existing one:
+## Clone and initialize
 
 ```powershell
 git clone https://github.com/Aadyant-7/splitnest.git
-Set-Location splitnest
-git remote -v
+cd splitnest
+.\scripts\Initialize-Local.ps1
 ```
 
-The original project configuration recommendations are:
+The PowerShell initializer creates an ignored `.env` with random `DB_PASSWORD`
+and `JWT_SECRET` values, preserving any existing file. It does not change an
+already initialized PostgreSQL password. Never share `.env` or real tokens.
 
-| Setting | Recommendation |
-|---|---|
-| Name | splitnest |
-| Description | Expense-sharing REST API built with Java, Spring Boot, PostgreSQL and Redis, with Docker, Kubernetes, GitOps and observability. |
-| Visibility | Public for portfolio access, if you are comfortable sharing the source |
-| Initialize README | Existing repository already contains one |
-| Add .gitignore | Existing repository already contains project rules |
-| License | None initially; select a license deliberately later if desired |
+Without PowerShell, copy `.env.example` to `.env` and replace the placeholders:
 
-Suggested topics: java, spring-boot, postgresql, redis, rest-api, docker,
-kubernetes, github-actions, gitops, argocd, prometheus, grafana.
+```bash
+cp .env.example .env
+```
 
-Authenticate pushes using your normal Git Credential Manager browser flow or an
-existing SSH setup. No token needs to be shared in chat or written into a remote
-URL. Read-only cloning of the public repository needs no publishing credential.
+Use a random database password and a Base64-encoded cryptographically random
+JWT key of at least 32 bytes. For example, `openssl rand -base64 32` generates
+a suitable key when OpenSSL is installed. Keep generated values private.
 
-Git history and the remote are initialized, and the backend milestone is pushed.
-The repository includes `.gitignore`, `.gitattributes`, CI, Dependabot configuration
-and a PR template. Branch protection is a separate GitHub setting; do not assume
-that a workflow file enables it. Set required check names after their first
-successful runs. The deployment branch decision is documented in
-[development-plan.md](development-plan.md).
+## Run the complete application
 
-GHCR image publication uses GitHub Actions' scoped token. Check package public
-visibility after its first publication; repository visibility alone is not
-sufficient. If keeping the package private, create an image pull secret outside
-committed manifests.
-
-## 3. Deployment and performance tools
-
-Backend/Compose work needs Java and Docker, while the full deployment lab uses
-the tools below. The deployment guides record pinned versions and commands;
-install only the tools needed for the run you intend to perform.
-
-| Tool | When needed | Verification command |
-|---|---|---|
-| kubectl, including Kustomize support | Local cluster/manifests | kubectl version --client; kubectl kustomize --help |
-| kind | Kubernetes milestone | kind version |
-| Helm | Monitoring installation | helm version --short |
-| metrics-server | HPA demonstration | kubectl top pods -n splitnest |
-| Argo CD server | GitOps milestone; installed in cluster | kubectl get pods -n argocd |
-| k6 | Performance milestone; can run as a container/cluster Job | k6 version, or the pinned image's version command |
-| Trivy | CI image scanning; no required global installation | Scanner version in CI output |
-
-The gh CLI and Argo CD CLI are optional conveniences, not prerequisites. Check
-available laptop memory, CPU, and disk before running kind plus monitoring; use a
-modest local resource profile and avoid running a duplicate full Compose stack
-at the same time as the cluster unless needed.
-
-## 4. Run and verify the application
-
-From the repository directory:
+From the repository root:
 
 ```powershell
-.\scripts\Initialize-Local.ps1
-.\mvnw.cmd verify
 docker compose up --build -d --wait --wait-timeout 300
+docker compose ps
 .\scripts\Smoke-Test.ps1
 ```
 
-`Initialize-Local.ps1` creates random ignored credentials and preserves an
-existing `.env`. `Smoke-Test.ps1` creates synthetic demonstration users and data;
-it verifies the real API without printing credentials. The combined Dockerfile
-builds the frontend into the Java image. Its intended browser URL is
-[SplitNest](http://localhost:8080/); Swagger remains at
-[Swagger UI](http://localhost:8080/swagger-ui/index.html). Check
-[project status](project-status.md) for the combined-image execution result;
-the earlier backend deployment evidence alone does not verify this new image.
+- [Browser app](http://127.0.0.1:8080/)
+- [Swagger UI](http://127.0.0.1:8080/swagger-ui/index.html)
+- [Readiness](http://127.0.0.1:9090/actuator/health/readiness)
 
-### Edit the frontend with Vite
+Create an account in the app. The [user guide](user-guide.md) explains each
+feature; the [demo](demo.md) gives a multi-user scenario. The smoke test creates
+synthetic users/records and verifies the real API without printing credentials.
+It is a PowerShell script; Compose itself works on Windows, Linux and macOS.
 
-Use two terminals. From the repository root, start the Java API and its local
-data stores:
+Compose binds exposed ports to loopback: app 8080, management 9090,
+PostgreSQL 5433 and Redis 6379. Check for other processes using these ports.
 
 ```powershell
-.\scripts\Initialize-Local.ps1
+docker compose logs -f app
+docker compose stop
+docker compose start
+docker compose down
+```
+
+`stop`/`start` reuse containers. `down` removes containers/network and preserves
+the named database volume. Removing volumes destroys the saved data. Persistent
+storage is not a backup; see [operations](operations.md).
+
+## Develop the Java backend
+
+Use a running Docker engine, JDK 21 and the Maven wrapper:
+
+```powershell
+.\mvnw.cmd -version
+.\mvnw.cmd verify
+docker compose stop app
 .\scripts\Start-Local.ps1
 ```
 
-That launcher selects explicit loopback HTTP cookie settings. In the other
-terminal, with the Node version selected above:
+The launcher starts PostgreSQL/Redis, reads the ignored local credentials and
+starts Java. Ctrl+C stops Java while the data containers remain running.
+An IDE process needs the same environment variables. Compose does not export
+`.env` into an IDE automatically. The host app connects to PostgreSQL on 5433;
+the container app connects to `postgres:5432` on the Compose network.
 
-```powershell
-Set-Location E:\SplitNest\frontend
-npm.cmd ci --ignore-scripts
-npm.cmd test
-npm.cmd run build
-npm.cmd run dev
+On Linux/macOS, use `./mvnw verify`. For host development, load only your own
+trusted `.env`, which must use shell-compatible `NAME=value` lines:
+
+```bash
+docker compose stop app
+docker compose up -d --wait postgres redis
+set -a
+. ./.env
+set +a
+export DB_URL="jdbc:postgresql://localhost:${POSTGRES_PORT:-5433}/splitnest"
+export BROWSER_COOKIE_SECURE=false
+./mvnw spring-boot:run
 ```
 
-Open [Vite development UI](http://127.0.0.1:5173/). Its `/api` proxy targets
-`http://127.0.0.1:8080` by default, keeping browser requests on one origin. Start
-the API and Vite rather than a second Compose app on 8080. To target a deliberately
-different local API, set `SPLITNEST_API_TARGET` before starting Vite. Internal
-verification ports in ignored `.work` logs are not required user defaults.
+These variables stay in the current shell and its child processes. The cookie
+override is for local HTTP only. The committed Windows launcher is optional.
 
-### Frontend checks and browser workflows
+Never run a second app process on port 8080. On Windows, stop a JVM using
+`target/splitnest-*.jar` before packaging again: the open JAR can block rename.
 
-From `frontend/`, with a real API/data stores running on the proxy target:
+## Develop the frontend
+
+With the backend running on 8080, use another terminal:
 
 ```powershell
-npm.cmd ci --ignore-scripts
-npm.cmd test
-npm.cmd run build
-npx.cmd playwright install chromium
-npm.cmd run test:e2e
+cd frontend
+node --version
+npm --version
+npm ci --ignore-scripts
+npm test
+npm run build
+npm run dev
 ```
 
-Playwright starts Vite if `SPLITNEST_WEB_URL` is unset. To test an already-running
-packaged application instead, set the URL before the last command:
+Open [Vite on 5173](http://127.0.0.1:5173/). It proxies `/api` to the backend
+on 8080. Set `SPLITNEST_API_TARGET` before starting Vite to deliberately select
+a different local API. Never put server credentials in frontend variables.
+
+Use one UI environment per browser profile. Cookies are scoped by host/path,
+rather than port: the Vite, Compose and kind URLs can share a refresh cookie
+even when they represent different databases. Use separate browser profiles
+when comparing those environments.
+
+## Browser and integration checks
+
+Java integration tests use real temporary PostgreSQL/Redis containers:
+
+```powershell
+.\mvnw.cmd verify
+```
+
+Frontend checks from `frontend/`:
+
+```powershell
+npm ci --ignore-scripts
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+With no `SPLITNEST_WEB_URL`, Playwright starts Vite and uses the local backend.
+To test the already-running packaged application instead:
 
 ```powershell
 $env:SPLITNEST_WEB_URL = 'http://127.0.0.1:8080'
-npm.cmd run test:e2e
+npm run test:e2e
 Remove-Item Env:SPLITNEST_WEB_URL
 ```
 
-The tests create synthetic accounts and financial records. Browser auth needs a
-current browser with Web Locks on localhost/loopback; access tokens stay in memory.
-Secure cookies default to true in Java. The local launch script, Compose and kind
-configuration deliberately select `BROWSER_COOKIE_SECURE=false` for local HTTP.
-Keep the default for an HTTPS environment.
+On Linux, use `npx playwright install --with-deps chromium` to install browser
+system dependencies. Browser tests create synthetic records in the selected
+local database. Traces/video are disabled to avoid recording authentication
+traffic. Use a current browser with Web Locks on localhost/loopback.
 
-Before `mvnw verify` or repackaging on Windows, stop any process running the same
-`target/splitnest-*.jar`; a running JVM can prevent the package rename. A stopped
-package step does not invalidate passing test results, but it is not a successful
-complete build. Source tests and packaged browser/deployment checks are separate.
+Secure cookies default to true in Java. Local launchers, Compose and kind
+explicitly set `BROWSER_COOKIE_SECURE=false` for local HTTP. Retain the secure
+default for HTTPS environments. Swagger's JSON-token contract is unchanged.
 
-For installation, commands and explanations beyond Compose, follow:
+## Optional delivery tools
 
-- [Docker and host development](docker.md).
-- [Kubernetes, the context-scoped Secret helper and cgroup compatibility](kubernetes.md).
-- [Argo CD and GitOps](gitops.md).
-- [Monitoring, synthetic load-data preparation and controlled experiments](monitoring.md).
-- [Current verification evidence](evidence/verification.md).
+| Tool | Purpose | Verify |
+|---|---|---|
+| kind | Local Kubernetes cluster | `kind version` |
+| kubectl | Resources and Kustomize | `kubectl version --client` |
+| Helm | Monitoring chart installation | `helm version --short` |
+| k6 | Load testing, alternatively a container/cluster Job | `k6 version` |
 
-All real secrets stay in ignored local environment files, environment variables,
-GitHub secrets where needed, or manually created Kubernetes Secrets. Committed
-examples contain placeholders and require the user to set real values.
+Follow [Kubernetes](kubernetes.md), [GitOps](gitops.md) and
+[monitoring](monitoring.md) for pinned versions, setup and validation. Argo CD
+and Metrics Server run in the cluster; their CLIs are not required. Trivy runs
+in CI without a global installation. Use explicit `kind-splitnest` contexts.
 
-The initial handoff is complete: Java 21 and Docker work, and the GitHub remote
-is https://github.com/Aadyant-7/splitnest.git. The owner explicitly approved the
-local Kubernetes Secret creation from ignored .env values. No per-feature
-approvals are required by the execution plan. Frontend source, security and
-browser workflows and packaged delivery are verified; follow current status for
-dated results. The next phase is the owner's detailed learning walkthrough when
-they are ready; the
-[documentation index](README.md) separates runbooks from that later reading path.
+Git pushes use normal Git Credential Manager or SSH authentication. GHCR
+publication uses a scoped GitHub Actions token. Public repositories and public
+container packages have separate visibility settings; private packages need
+an image pull Secret. Never put publishing tokens in Git URLs or documents.
+
+[Dated verification evidence](evidence/verification.md) distinguishes actual
+observed runs from the setup procedures in this guide.

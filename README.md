@@ -1,134 +1,83 @@
 # SplitNest
 
-An academic expense-sharing project for flatmates, families, and travel groups.
-Its Java 21/Spring Boot backend combines exact financial arithmetic and group
-access isolation with background processing and a local Kubernetes delivery lab.
-A React/TypeScript interface provides real registration, sign-in and shared-expense workflows.
+A full-stack expense-sharing application for households and travel groups.
+Record expenses, split costs exactly, import statement files and see what
+each person owes. React and TypeScript provide the interface; Java 21 and
+Spring Boot handle authentication, permissions and financial records.
 
-**Functional status: 6/6 milestones verified (100%).** The browser app, backend,
-Compose image and automatic local Kubernetes delivery are implemented and verified.
-**Frontend design/UX revision is pending**, deferred at the owner's request after
-review of its copy, layout, repeated content and logo. Passing workflow tests
-does not establish visual design quality. See the [user manual](docs/user-guide.md).
-The project is a free local demo
-for learning and placement interviews. Public hosting and commercial operation
-are outside this project's scope. See the [project status](docs/project-status.md),
-[documentation index](docs/README.md), and [approved frontend plan](docs/frontend-extension-plan.md).
+[User guide](docs/user-guide.md) · [Setup](docs/setup.md) ·
+[Architecture](docs/architecture.md) · [Documentation](docs/README.md) ·
+[CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
 
-**Locally tested:** 93 Java tests with real PostgreSQL/Redis containers,
-90 frontend unit/component tests, 9 Chromium scenarios (8 real API journeys and
-1 large-decimal display fixture), and 23 script scenarios.
-The original backend evidence also includes Compose/kind API smoke tests, Pod
-recovery, Git rollback/restoration and separate cache/autoscaling experiments.
-[GitHub CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
-includes packaged browser checks. A frontend-only release automatically reached
-Healthy/Synced in kind with two ready replicas and all nine browser scenarios passing.
-See the [verification record](docs/evidence/verification.md) for evidence.
-
-![SplitNest expense workspace with exact stored shares](docs/evidence/frontend-expenses.png)
+![SplitNest group workspace](docs/evidence/workspace-expenses.png)
 
 ## Features
 
-- Responsive browser UI with registration, sign-in, groups, role-aware membership,
-  paginated expenses, stored shares, balances, statement imports and budgets.
-- Memory-only access tokens, HttpOnly refresh cookies, browser CSRF protection,
-  coordinated refresh/logout across tabs and stale-response cancellation.
-- Registration, BCrypt passwords, 15-minute HS256 access JWTs, rotating refresh
-  token families with replay detection, and ownership-checked logout.
-- Group administration and reusable membership checks. Outsiders receive 404;
-  current members without admin privileges receive 403.
-- INR expenses split in integer paise with deterministic remainder allocation.
-  Expense/split writes are atomic; SQL aggregates retain former members' history.
-- Redis fixed-window login/upload limits and a thirty-second balance cache,
-  with authorization before cache lookup and invalidation after commit.
-- Bounded CSV/XLSX imports with keyword categorization, invalid-row counts,
-  persistent job state, atomic claims and crash/rejection recovery.
-- Monthly category budgets, conflict-safe daily alerts, and database-backed
-  ShedLock coordination across replicas.
-- Structured logs, Prometheus metrics, a Grafana dashboard and k6 workloads.
-  The GitOps promotion/rollback generator has eleven passing local Git fixtures;
-  those fixtures do not establish a successful remote deployment.
+- Register and sign in; secure browser sessions use memory-only access tokens,
+  rotating HttpOnly refresh cookies and CSRF protection.
+- Create groups, add registered members and enforce admin/member permissions.
+- Record INR expenses with exact equal splits, saved individual shares and
+  balances that retain former members' financial history.
+- Import CSV/XLSX statements with background processing, keyword categories,
+  validation counts and durable job status.
+- Set monthly category budgets and view scheduled overspending alerts.
+- Shared Redis login/upload limits and balance caching; PostgreSQL remains
+  authoritative for accounts and financial records.
+- Docker Compose, local Kubernetes, automated CI/GitOps delivery and a
+  Prometheus/Grafana dashboard with reproducible load-test scripts.
 
-## Current architecture
+SplitNest records shared expenses; it does not transfer money or synchronize
+bank accounts. It runs locally without paid services. Supported workflows and
+limits are explained in the [user guide](docs/user-guide.md).
 
-```mermaid
-flowchart LR
-    Browser[React browser interface] --> Session[Cookie + CSRF browser auth adapter]
-    Session --> Security[JWT validation]
-    Browser --> Security
-    Client[Swagger / API client] --> Security
-    Security --> API[Feature controllers and services]
-    API --> DB[(PostgreSQL + Flyway)]
-    API --> Redis[(Redis: limiting and cache)]
-    API --> Jobs[Persisted jobs + bounded async workers]
-    Jobs --> DB
-    API --> Metrics[Actuator metrics and JSON logs]
-    Metrics --> Monitoring[Prometheus + Grafana]
-```
+## Run locally
 
-One application, organized by feature: Controller -> Service -> Repository.
-JPA manages user/token entities; explicit Spring JDBC repositories handle
-financial aggregates and atomic job operations within the same transaction
-manager. [Architecture and flows](docs/architecture.md).
-
-React source is organized by feature in `frontend/`. A locked Node build produces
-static assets that the existing Spring Boot image serves alongside the API.
-Node is a build/test tool; the final container runs the JRE. Browser authentication
-reuses the existing token services; Swagger retains its JSON-token contract.
-The Maven root, deployment topology and financial rules stay in place.
-
-## Repository map
-
-| Location | Responsibility |
-|---|---|
-| `src/main/` | Java features, configuration and Flyway migrations |
-| `src/test/` | Java unit/integration tests and statement fixtures |
-| [frontend/](frontend/README.md) | React app, typed API client, styles, component and browser tests |
-| `deploy/` | Local kind, Kustomize, Argo CD and monitoring configuration |
-| `scripts/` | Setup, smoke checks, manifest validation and GitOps helpers |
-| `loadtest/` | k6 workloads and local-cluster job definitions |
-| [docs/](docs/README.md) | Plans, explanations, runbooks, decisions and verification evidence |
-
-## Run with Docker Compose
-
-Requirements: Docker Desktop using Linux containers. Java 21 is also needed
-for host-side Maven verification or IDE development. PostgreSQL uses host port
-5433 to avoid colliding with an existing local installation.
-
-From PowerShell in the project directory:
+Requirements: Docker with Linux containers and Docker Compose. The commands
+below use PowerShell; [setup](docs/setup.md) also covers other environments.
 
 ```powershell
+git clone https://github.com/Aadyant-7/splitnest.git
+cd splitnest
 .\scripts\Initialize-Local.ps1
 docker compose up --build -d --wait --wait-timeout 300
 .\scripts\Smoke-Test.ps1
 ```
 
-Initialize-Local creates an ignored `.env` with random credentials; it preserves
-an existing file. Alternatively fill `.env.example` and save it as `.env`.
-Never commit that file or real tokens.
+The initializer creates an ignored `.env` with random local credentials and
+preserves an existing file. Alternatively copy `.env.example` to `.env` and
+replace its placeholders before starting Compose.
 
-- App: [127.0.0.1:8080](http://127.0.0.1:8080)
-- Swagger: [127.0.0.1:8080/swagger-ui/index.html](http://127.0.0.1:8080/swagger-ui/index.html)
-- Readiness: [127.0.0.1:9090/actuator/health/readiness](http://127.0.0.1:9090/actuator/health/readiness)
-- Metrics: [127.0.0.1:9090/actuator/prometheus](http://127.0.0.1:9090/actuator/prometheus)
+- [Application](http://127.0.0.1:8080/)
+- [Swagger UI](http://127.0.0.1:8080/swagger-ui/index.html)
+- [Readiness](http://127.0.0.1:9090/actuator/health/readiness)
 
-Register and sign in through the app, create a group, and add other registered
-users by email. The [demo guide](docs/demo.md) covers the complete workflow.
-For API exploration, Swagger still accepts an access token from its JSON login
-endpoint. All exposed Compose ports bind to loopback.
+Create an account in the app, create a group and add other registered users.
+[The demo walkthrough](docs/demo.md) covers a complete three-person scenario.
+All Compose ports bind to loopback. `docker compose down` preserves the named
+PostgreSQL volume; removing that volume deletes local data.
 
-```powershell
-docker compose logs -f app
-docker compose down
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[React browser app] --> API[Spring Boot controllers and services]
+    Client[Swagger / API client] --> API
+    API --> DB[(PostgreSQL)]
+    API --> Redis[(Redis: cache and rate limits)]
+    API --> Jobs[Persisted jobs + bounded workers]
+    Jobs --> DB
+    API --> Metrics[Actuator / structured logs]
+    Metrics --> Monitoring[Prometheus + Grafana]
 ```
 
-The named PostgreSQL volume is preserved by `down`. Deleting volumes destroys
-local data; volume persistence is not a backup strategy.
+One deployable application, organized by feature. Controllers handle HTTP;
+services enforce permissions and transactions; repositories access the data.
+The frontend is compiled into the Spring Boot image, so Node is needed only
+for development/builds. [Architecture and decisions](docs/architecture.md).
 
 ## Develop and test
 
-The committed Maven wrapper downloads the selected Maven distribution; no global
-Maven installation is required. Docker must be running for integration tests.
+Use JDK 21 and a running Docker engine. The Maven wrapper supplies Maven.
 
 ```powershell
 .\mvnw.cmd verify
@@ -136,12 +85,7 @@ docker compose stop app
 .\scripts\Start-Local.ps1
 ```
 
-On Linux/CI: `./mvnw verify`. Tests cover monetary invariants, cross-group access,
-refresh replay/concurrency, rollback, caching, limiter races, parser resource
-limits, import recovery, scheduler locking, metrics and browser cookie/CSRF rules.
-
-Frontend development uses Node **24.22.0** and npm **11.19.1**. With the backend
-running on port 8080, open a second terminal:
+In another terminal, with Node 24.22.0 and npm 11.19.1:
 
 ```powershell
 cd frontend
@@ -151,86 +95,44 @@ npm run build
 npm run dev
 ```
 
-Open [127.0.0.1:5173](http://127.0.0.1:5173) for development. Vite proxies API
-requests to Spring Boot. The [frontend guide](frontend/README.md) explains browser
-testing against the development server or packaged app. Run one browser UI origin
-at a time when comparing local environments; cookies are scoped to hosts/paths.
+Vite serves [127.0.0.1:5173](http://127.0.0.1:5173/) and proxies API requests
+to port 8080. [Frontend instructions](frontend/README.md) cover browser tests,
+session behavior and the source layout. On Linux, use `./mvnw verify`.
 
-The separate GitOps fixture suite uses Bash and temporary local Git repositories:
-
-```bash
-bash scripts/test-promotion.sh
-```
-
-Load-data preparation has its own PowerShell fixture suite, which contacts no
-real API or cluster:
-
-```powershell
-.\scripts\Test-PrepareLoadTest.ps1
-```
+Tests cover authentication and refresh replay, group isolation, monetary
+invariants, transactions, imports/recovery, Redis behavior, scheduler locking,
+browser sessions and real API workflows. Dated counts, image scans, CI and
+rollout results are in the [verification record](docs/evidence/verification.md).
 
 ## Delivery and operations
 
-The configured GitHub Actions workflow verifies every pull request and main
-push. Its publication job builds a non-root Java 21 image, rejects CRITICAL
-vulnerabilities with Trivy, and publishes the scanned image with a source-SHA
-tag. A separate job validates generated manifests and fast-forwards `deploy/local`;
-the Argo Application is configured to watch that branch. Image promotion commits
-can be reverted separately from manifest changes. Successful remote runs and
-reconciliation are tracked in the verification record.
+GitHub Actions verifies the app, builds a non-root Java image, rejects CRITICAL
+findings with Trivy and publishes to GHCR. The promotion job updates generated
+manifests on `deploy/local`; Argo CD reconciles that branch into the local
+kind cluster. Images are selected by immutable digest with source provenance.
 
-The initial image scan rejected Boot's Tomcat 11.0.24 dependency. The POM now
-uses Tomcat 11.0.27 within the same major version, and the expanded tests pass with that
-override. The rebuilt local image also passed Trivy with zero CRITICAL findings.
-The remote CI gate also passed. A passing scan or tests alone do not establish
-a successful deployment; the verification record tracks runtime reconciliation.
+- [Docker/Compose](docs/docker.md)
+- [Kubernetes and local cluster](docs/kubernetes.md)
+- [GitOps and rollback](docs/gitops.md)
+- [Operations, persistence and recovery](docs/operations.md)
+- [Monitoring](docs/monitoring.md) and [measured performance](docs/performance.md)
 
-- [Dockerfile, layers, Compose and image verification](docs/docker.md)
-- [Operations: health, secrets, migrations, recovery and backup limitations](docs/operations.md)
-- [kind, Kubernetes objects, secrets, probes, HPA and failure exercises](docs/kubernetes.md)
-- [Argo CD setup and GitOps workflow](docs/gitops.md)
-- [Promotion safeguards, tests and rollback](docs/gitops-promotion.md)
-- [Prometheus/Grafana setup and controlled k6 experiments](docs/monitoring.md)
-- [Measured cache comparison and autoscaling results](docs/performance.md)
+The local deployment has a single PostgreSQL instance. Persistent storage
+survives ordinary Pod/container replacement but is not a backup or high
+availability strategy. Performance observations are bounded local measurements.
 
-During the separate 50-user local load test, the HPA moved from two to five ready
-replicas. The fixed-replica cache comparison measured p95 of 7.26 ms cached and
-9.94 ms uncached; these are bounded local observations, not production capacity.
+## Repository map
 
-![Grafana during the local load and autoscaling demonstration](docs/evidence/grafana-load.png)
+| Path | Contents |
+|---|---|
+| `src/main/` | Java features, application configuration and Flyway migrations |
+| `src/test/` | Unit/integration tests and statement fixtures |
+| [frontend/](frontend/README.md) | React source, styles, component and browser tests |
+| `deploy/` | kind, Kubernetes/Kustomize, Argo CD and monitoring configuration |
+| `scripts/` | Setup, smoke tests, manifest validation and GitOps helpers |
+| `loadtest/` | k6 workloads and cluster Job templates |
+| [docs/](docs/README.md) | User/developer guides, decisions, runbooks and evidence |
 
-The default kind configuration prefers cgroup v2. Docker engines reporting
-cgroup v1 need the explicitly documented local compatibility configuration.
-Database credentials and JWT keys are created outside Git. GHCR packages must
-be publicly pullable or use an image pull secret.
-
-## Learn and explain the project
-
-- [Learning sequence after the full app is complete](docs/learning-roadmap.md)
-- [Implementation: file-by-file reading guide](docs/implementation.md)
-- [Concepts from beginner to advanced](docs/learning-guide.md)
-- [Architecture decisions](docs/decisions/0001-modular-monolith.md)
-- [Twenty interview questions](docs/interview-prep.md)
-- [Development plan and acceptance gates](docs/development-plan.md)
-- [Windows setup](docs/setup.md)
-
-Scope is deliberately one currency and one application. Cached balances have
-bounded eventual consistency; logout does not immediately invalidate access JWTs.
-The local cluster uses a single PostgreSQL instance and is not a highly available
-production environment. Current limits and measured evidence are documented
-alongside the implementation.
-
-Implementation comes first, followed by verification of the complete browser app,
-then a guided explanation from requirements and data design through each major
-implementation and deployment decision. Documentation is maintained throughout;
-the detailed learning phase does not interrupt each build milestone.
-
-## Resume summary
-
-Built an expense-sharing application with React/TypeScript and Java 21/Spring
-Boot, secure browser authentication, transactional equal splits, PostgreSQL,
-Redis caching/rate limiting and asynchronous imports; automated testing and
-container delivery with Docker, GitHub Actions, Kubernetes, Argo CD and Grafana.
-
-The [delivery evidence](docs/evidence/frontend-gitops.json) supports this local
-full-stack claim. The next phase follows the [learning roadmap](docs/learning-roadmap.md).
+See the [source map](docs/implementation.md) for the main files and their
+responsibilities. Credentials, generated artifacts and private notes are
+excluded from Git and the Docker build context.

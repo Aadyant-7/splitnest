@@ -26,3 +26,6 @@ frontend/playwright-report/
 frontend/test-results/
 frontend/.vite/
 frontend/*.tsbuildinfo
+
+# Private study notes and archived personal planning documents
+/local-notes/
