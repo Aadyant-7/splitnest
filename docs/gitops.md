@@ -165,7 +165,9 @@ no manual Argo refresh or rollout undo was used. The two scanned images differ
 in OCI repository metadata, with the same API implementation. This verifies the
 deployment mechanism, not reversal of a business-data or schema change.
 
-The later [frontend-only release](evidence/frontend-gitops.json) changed actual
-React source with an unchanged backend tree. CI promoted a different image and
-normal Argo polling served a different JavaScript bundle; all nine browser
-scenarios passed against the local Kubernetes Service.
+The [frontend-only release on 19 October 2026](evidence/frontend-gitops.json)
+changed actual React source with an unchanged backend tree. CI promoted a
+different image and normal Argo polling served a different JavaScript bundle;
+all nine browser scenarios present in that release passed against the local
+Kubernetes Service. Later interface/delivery checks are recorded separately in
+the [refined release record](evidence/frontend-overhaul.json).

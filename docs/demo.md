@@ -69,8 +69,10 @@ and kind demonstrations. Never run two app processes on 8080.
    Observe the real job status and final imported/invalid counts. The interface
    refreshes expenses/balances after completion. It polls every two seconds for
    up to two minutes, then offers **Check status again**; pausing the browser's
-   checks does not cancel the server job. Only the latest pending job ID is
-   remembered for that account/group in this tab, not an import-history list.
+   checks does not cancel the server job. Return to Imports in the same browser
+   tab to fetch the latest upload's result, including completed/failed jobs.
+   Only account/group-scoped job identifiers are remembered, not statement rows
+   or a full import-history list.
 9. Open **Budgets** and save an admin category limit. Explain the schedule shown
    on screen: daily at 00:00 UTC, strict overspending, one persisted snapshot per
    category/month. Saving a limit does not run a check or display a fabricated

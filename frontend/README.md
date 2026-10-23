@@ -105,7 +105,8 @@ Imports retain the latest account/group-scoped job UUID and a notification UUID
 in sessionStorage. Revisiting the panel reads the actual result from the API,
 including completed/failed jobs. These identifiers contain no credentials or
 statement rows; there is no client-generated history list. Confirmed access loss
-forgets them, while transient failures keep a retry path.
+forgets them, while transient failures keep a retry path. Polling is abortable
+and pauses after two minutes, with a manual status recheck available.
 New expense dates default to the browser's local calendar day; backend timestamp
 and budget-schedule rules remain in UTC.
 
@@ -129,9 +130,7 @@ than silently rounding it. References:
 [JSON source preservation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse),
 [exact decimal-string formatting](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/format).
 
-Import polling is abortable and pauses after two minutes; only a non-secret
-user/group-scoped job ID enters sessionStorage. Budget alerts are scheduled
-snapshots rather than live spending charts.
+Budget alerts are scheduled snapshots rather than live spending charts.
 
 See the [architecture](../docs/architecture.md) and
 [source map](../docs/implementation.md) for the session and data-flow details.

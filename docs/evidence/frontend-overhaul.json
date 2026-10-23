@@ -86,7 +86,7 @@
     "desktopFits": true
   },
   "documentation": {
-    "publicLinks": 346,
+    "publicLinks": 358,
     "publicMarkdownFiles": 24,
     "brokenLinks": 0,
     "fencedBlockCheck": "PASS",
@@ -94,8 +94,54 @@
     "localCredentialsAndGeneratedFiles": "Git-ignored and excluded from Docker context"
   },
   "delivery": {
-    "publishedImageScan": "Pending remote CI",
-    "ci": "Not yet observed for this source release",
-    "kubernetes": "Pending source push and automatic reconciliation"
+    "observedAt": "2026-10-23T15:55:04.7348767Z",
+    "releaseSourceCommit": "23bb368d5143d4ff6e9f0ee1d58cf7a987893ee4",
+    "ci": {
+      "run": 39781563124,
+      "url": "https://github.com/Aadyant-7/splitnest/actions/runs/39781563124",
+      "verify": "success",
+      "publishImage": "success",
+      "promoteDeployment": "success"
+    },
+    "publishedImage": {
+      "image": "ghcr.io/aadyant-7/splitnest@sha256:b1fe109e47e9ca15d5ca99544d1cf4028e028789a93911a0cea45a6404da03a7",
+      "sizeBytes": 474148982,
+      "runtimeUser": "10001:10001",
+      "trivyCriticalGate": "PASS",
+      "includeUnfixedVulnerabilities": true,
+      "scanLimit": "Dated CRITICAL policy result, not a claim that every severity is zero. Trivy warned that vulnerability details were unavailable for CVE-2026-107891; the scan step completed successfully."
+    },
+    "compose": {
+      "image": "Exact published digest, tagged locally as splitnest:local",
+      "browserScenarios": 10,
+      "browserResult": "PASS",
+      "browserSeconds": 20.9,
+      "servicesHealthy": ["app", "postgres", "redis"],
+      "databaseVolume": "preserved",
+      "baseUrl": "http://127.0.0.1:8080"
+    },
+    "kubernetes": {
+      "context": "kind-splitnest",
+      "namespace": "splitnest",
+      "argoApplication": "splitnest-local",
+      "argoHealth": "Healthy",
+      "argoSync": "Synced",
+      "argoRevision": "b4cc7aabf69c643ce242b5823829307becf5d1f6",
+      "automaticReconciliation": true,
+      "manualRefreshOrApply": false,
+      "readyReplicasBeforeBrowserSuite": 2,
+      "readyReplicasAfterBrowserSuite": 5,
+      "updatedReplicasAfterBrowserSuite": 5,
+      "configuredHpaRange": [2, 5],
+      "replicaNote": "Observed count after browser traffic; this is not a repeat of the separate controlled HPA/load experiment.",
+      "readiness": "UP",
+      "servedJavaScript": "/assets/index-wmKhVMwo.js",
+      "browserScenarios": 10,
+      "browserResult": "PASS",
+      "browserSeconds": 23.3,
+      "baseUrl": "http://127.0.0.1:18085",
+      "prometheusAppTargets": 5,
+      "prometheusAppTargetsUp": 5
+    }
   }
 }

@@ -233,7 +233,7 @@ This release combines the browser application and Java API in one local image.
 
 No cloud deployment, commercial-capacity claim or paid service was introduced.
 
-## Interface refinement — 22 October 2026
+## Interface refinement — 22–23 October 2026
 
 [Release checks](frontend-overhaul.json) distinguish local verification from the
 subsequent published-image and Kubernetes observations.
@@ -260,6 +260,26 @@ subsequent published-image and Kubernetes observations.
   and [budgets](workspace-budgets.png). The earlier `frontend-*.png` captures are
   retained for the dated release above.
 
-The application source is `05941ee`. Published-image scan, CI and automatic
-GitOps reconciliation results are recorded separately in the release JSON after
-they are actually observed; the local checks alone do not establish those results.
+The application change is `05941ee`; the published release source is `23bb368`.
+[CI run39781563124](https://github.com/Aadyant-7/splitnest/actions/runs/39781563124)
+passed verification, image publication and deployment promotion. Its Trivy
+CRITICAL gate includes unfixed vulnerabilities and passed. This is a dated
+policy result, not an all-severity guarantee: the scanner also warned that
+details were unavailable for CVE-2026-107891.
+
+- Exact published image:
+  `ghcr.io/aadyant-7/splitnest@sha256:b1fe109e47e9ca15d5ca99544d1cf4028e028789a93911a0cea45a6404da03a7`.
+  Pulled size: **474,148,982 bytes**; runtime UID **10001:10001**.
+- On23October, all **10 Chromium scenarios** passed again against that image in
+  Compose (**20.9 seconds**) and kind (**23.3 seconds**). The distinction between
+  nine real API journeys and one decimal-display fixture still applies.
+  Compose app/PostgreSQL/Redis remain healthy, with the original database volume.
+- Normal Argo CD reconciliation reached **Healthy/Synced**, revision `b4cc7aa`,
+  without a manual refresh, apply or rollout restart. The served JavaScript is
+  `/assets/index-wmKhVMwo.js`. Two app replicas were ready before browser testing;
+  five updated replicas were ready afterward, within the configured HPA range
+  of two to five. This observation is separate from the earlier controlled
+  load/HPA experiment.
+- All **five Prometheus app scrape targets were UP** after the browser run.
+  The [release JSON](frontend-overhaul.json) records the runtime observations
+  separately from the initial local build and screenshots.
