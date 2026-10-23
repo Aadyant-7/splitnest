@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class SpaController {
-    @GetMapping({"/", "/login", "/register", "/app", "/app/groups", "/app/groups/{groupId}"})
+    @GetMapping({"/", "/login", "/register", "/app", "/app/home", "/app/guide",
+            "/app/groups", "/app/groups/{groupId}"})
     public String index(HttpServletRequest request) {
         // Enumerated UI routes keep missing API/static resources from becoming HTML successes.
         if (!SpaRoutes.page(request.getRequestURI())) {

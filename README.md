@@ -9,12 +9,14 @@ Spring Boot handle authentication, permissions and financial records.
 [Architecture](docs/architecture.md) · [Documentation](docs/README.md) ·
 [CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
 
-![SplitNest group workspace](docs/evidence/workspace-expenses.png)
+![SplitNest workspace home](docs/evidence/navigation-home.png)
 
 ## Features
 
 - Register and sign in; secure browser sessions use memory-only access tokens,
   rotating HttpOnly refresh cookies and CSRF protection.
+- A public introduction, personal Home, group directory and in-app Guide make
+  the workflows discoverable. Group sections support direct links and refresh.
 - Create groups, add registered members and enforce admin/member permissions.
 - Record INR expenses with exact equal splits, saved individual shares and
   balances that retain former members' financial history.
@@ -115,6 +117,7 @@ kind cluster. Images are selected by immutable digest with source provenance.
 - [Kubernetes and local cluster](docs/kubernetes.md)
 - [GitOps and rollback](docs/gitops.md)
 - [Operations, persistence and recovery](docs/operations.md)
+- [Interface design and wireframes](docs/interface-design.md)
 - [Monitoring](docs/monitoring.md) and [measured performance](docs/performance.md)
 
 The local deployment has a single PostgreSQL instance. Persistent storage

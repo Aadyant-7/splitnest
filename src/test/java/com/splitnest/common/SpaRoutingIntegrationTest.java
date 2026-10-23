@@ -15,7 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SpaRoutingIntegrationTest extends IntegrationTestSupport {
     @Test
     void onlyExplicitBrowserPagesForwardToTheStaticIndexWithoutAuthentication() throws Exception {
-        for (String route : new String[] {"/", "/login", "/register", "/app", "/app/groups", "/app/groups/" + UUID.randomUUID()}) {
+        for (String route : new String[] {"/", "/login", "/register", "/app", "/app/home", "/app/guide",
+                "/app/groups", "/app/groups/" + UUID.randomUUID()}) {
             var result = mvc.perform(get(route)).andExpect(status().isOk())
                     .andExpect(forwardedUrl("/index.html")).andReturn();
             assertThat(result.getResponse().getHeader("Content-Security-Policy"))
@@ -31,7 +32,8 @@ class SpaRoutingIntegrationTest extends IntegrationTestSupport {
     @Test
     void missingStaticApiAndActuatorPathsNeverReturnTheSpaIndex() throws Exception {
         String token = registerAndLogin(UUID.randomUUID() + "@example.com");
-        for (String path : new String[] {"/assets/missing.js", "/api/v1/missing", "/actuator/missing", "/app/groups/not-a-uuid", "/app/unknown"}) {
+        for (String path : new String[] {"/assets/missing.js", "/api/v1/missing", "/actuator/missing",
+                "/app/groups/not-a-uuid", "/app/unknown", "/app/home/extra", "/app/guide/extra"}) {
             var response = mvc.perform(get(path).header("Authorization", "Bearer " + token))
                     .andExpect(status().isNotFound()).andReturn().getResponse();
             assertThat(response.getForwardedUrl()).isNull();

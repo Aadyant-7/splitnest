@@ -1,0 +1,49 @@
+{
+  "observedAt": "2026-10-23T16:31:02.585Z",
+  "scope": "Local packaged-app verification of introduction, Home, Guide, onboarding and URL-owned group sections",
+  "sourceBasis": "Application source committed together with this evidence record",
+  "java": { "tests": 94, "failures": 0, "errors": 0, "skipped": 0, "result": "BUILD SUCCESS" },
+  "frontend": { "componentAndUnitTests": 141, "testFiles": 16, "result": "PASS", "strictTypeScriptAndViteBuild": "PASS" },
+  "browser": {
+    "scenarios": 13,
+    "realApiAndDatabaseJourneys": 11,
+    "publicIntroductionAndResponsiveScenarios": 1,
+    "deterministicDecimalDisplayFixtures": 1,
+    "vite": { "result": "PASS", "seconds": 26.3 },
+    "packagedCompose": { "result": "PASS", "seconds": 23.9, "baseUrl": "http://127.0.0.1:8080" },
+    "responsiveWidths": [320, 390, 768, 1440],
+    "newCoverage": [
+      "public introduction and real account-entry links",
+      "empty Home to actual persisted group creation",
+      "actual membership and admin counts",
+      "Guide task anchors and create-form focus",
+      "Home and Guide on phone, tablet and desktop",
+      "requested group section retained through authentication",
+      "section reload and browser Back/Forward"
+    ],
+    "fixtureLimit": "One balance response is a controlled large-decimal display fixture; multi-tab access expiry alone is simulated with one401 per tab. Other session and business requests use the real API."
+  },
+  "localImage": {
+    "id": "sha256:01b6afdb9328d098848fc547f2009dc21ef87a140a3e2824b3186cbe8697bb38",
+    "sizeBytes": 474171055,
+    "runtimeUser": "10001:10001",
+    "services": "app, postgres and redis healthy",
+    "databaseVolume": "preserved",
+    "directHtmlRoutes": ["/", "/app/home", "/app/guide"],
+    "directHtmlRouteStatus": 200
+  },
+  "screenshots": {
+    "capturedAt": "2026-10-23T16:31:02.585Z",
+    "source": "Packaged Compose app on port8080, synthetic accounts and actual API memberships",
+    "widths": [1440, 390],
+    "horizontalPageOverflow": false,
+    "files": [
+      "navigation-landing.png", "navigation-landing-mobile.png",
+      "navigation-home-empty.png", "navigation-home.png", "navigation-home-mobile.png",
+      "navigation-groups-empty.png", "navigation-groups.png",
+      "navigation-guide.png", "navigation-guide-mobile.png"
+    ]
+  },
+  "wireframes": "../design-wireframes.svg",
+  "deliveryBoundary": "This is the local verification snapshot. The GitHub Actions run for its containing commit and deploy/local provenance identify the independently verified published release. Earlier image and Kubernetes observations remain dated in separate records."
+}

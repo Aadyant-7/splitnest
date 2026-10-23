@@ -7,7 +7,7 @@ it does not transfer money or connect to your bank account.
 ## 1. Open the app and create an account
 
 1. Open [SplitNest](http://127.0.0.1:8080/) while the local application is running.
-2. Choose **Create an account**.
+2. The introduction explains what the app does. Choose **Create your account**.
 3. Enter your name, email address and a password with at least eight characters.
 4. Choose **Create account**. The app signs you in after registration.
 
@@ -19,7 +19,32 @@ For a demo with several people, each person needs an account. Use separate
 browser profiles or separate browser contexts to act as different people.
 Ordinary tabs in one browser profile share the same signed-in account.
 
-## 2. Create or open a group
+## 2. Find your way around
+
+After registration or sign-in, **Home** is the starting page. It shows your real
+groups and useful next actions, with a diagram explaining the expense-sharing
+workflow. A new account starts with no groups; the page explains how to create
+one or be added to someone else's group.
+
+**Groups you belong to** counts your saved memberships. **Groups you manage**
+counts those where you are admin. Choose **Create a group** to go directly to
+the group-name form, or open one of the group cards. **View all groups** opens
+the complete list.
+
+Use the top navigation:
+
+| Page | When to use it |
+|---|---|
+| Home | Choose a group, see where to start and follow the workflow |
+| My groups | Browse your groups or create a new one |
+| Guide | Read instructions and examples without leaving the app |
+
+The SplitNest name returns to Home. The public introduction at `/` is shown
+when signed out; opening that address while signed in takes you to Home.
+Group counts come from your saved memberships. The home diagram explains the
+workflow; it is not a record of your spending or payments.
+
+## 3. Create or open a group
 
 On **Your groups**, enter a **Group name** under **Create a group**, then choose
 **Create group**. For example, create a group called *Apartment expenses*.
@@ -42,7 +67,12 @@ With a keyboard, Tab to the section tabs, then use the arrow keys to move betwee
 them. Home and End select the first and last section. Tab again to enter the
 selected section's controls.
 
-## 3. Add and remove members
+You can bookmark or copy the address of a section. For example, a group address
+ending in `?tab=expenses` opens its Expenses section. Refresh, Back and Forward
+preserve the section. The person opening a link must sign in and belong to that
+group; copying a link does not give someone access.
+
+## 4. Add and remove members
 
 As the admin, open **Members**, enter another registered user's email, and add
 them. They immediately become a **Member** and can see the group when they sign
@@ -60,7 +90,7 @@ cannot be removed.
 | Change category budgets | Yes | No |
 | Delete an expense | Any expense in the group | Only an expense they created |
 
-## 4. Add an expense
+## 5. Add an expense
 
 1. Open **Expenses**.
 2. Enter the **Amount (INR)**, such as `100.00`.
@@ -95,7 +125,7 @@ If you are allowed to delete an expense, choose **Delete** and accept the
 confirmation. The expense is removed and balances are updated. There is no
 expense-edit form; to correct an entry, delete it if permitted and add it again.
 
-## 5. Understand the balances
+## 6. Understand the balances
 
 Open **Overview** to see:
 
@@ -110,7 +140,7 @@ A's net balance is `+600.00`; B's and C's are `-300.00` each.
 Former members can still appear when they have financial history. Balances do
 not make payments, record a repayment or calculate a person-to-person payment plan.
 
-## 6. Import several expenses from a statement
+## 7. Import several expenses from a statement
 
 Open **Imports**, choose a CSV or XLSX file up to **5 MiB** (about 5.2 MB), and upload it.
 The file needs the columns `date`, `description` and `amount`.
@@ -153,7 +183,7 @@ Check the result before uploading again: **uploading the same file again can
 create duplicate expenses**. Uploads are limited to ten requests per user in an
 hourly window.
 
-## 7. Set budgets and read alerts
+## 8. Set budgets and read alerts
 
 As admin, open **Budgets**, select a **Category**, enter **Monthly limit (INR)**,
 and choose **Save monthly limit**. Saving the same category again changes
@@ -169,7 +199,7 @@ there are no email or push notifications. An alert is a saved record of an
 earlier check: later budget changes or expense deletions do not rewrite it.
 The screen does not show a live spending-progress total.
 
-## 8. Sign out and return later
+## 9. Sign out and return later
 
 Choose **Sign out** in the top bar. Other open tabs in the same browser profile
 also sign out. Signing out does not delete your account or expenses.
@@ -178,7 +208,7 @@ Your groups and records are saved in the local database. They survive normal
 app/container restarts as long as its database volume is kept. This copy of the
 app runs on your computer; the local services must be running to use it.
 
-## 9. Common problems
+## 10. Common problems
 
 | What you see | What to do |
 |---|---|

@@ -65,7 +65,8 @@ svg { display: block; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: #153e4a; font-weight: 750; font-size: 23px; line-height: 1; letter-spacing: -.65px; white-space: nowrap; }
 .brand svg { width: 36px; height: 36px; flex-shrink: 0; }
 .brand-link { text-decoration: none; display: inline-flex; align-items: center; }
-.app-header { background: #fff; border-bottom: 1px solid var(--line); }
+.app-header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); }
+.header-inner > nav { display: flex; gap: 26px; min-width: 0; }
 .header-inner { display: flex; align-items: center; gap: 36px; max-width: 1328px; min-height: 76px; padding: 0 32px; margin: 0 auto; }
 .header-nav { display: inline-flex; align-items: center; min-height: 76px; padding: 0 4px; border-bottom: 3px solid transparent; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 13px; }
 .header-nav.active { color: #153e4a; border-bottom-color: var(--forest); }
@@ -189,11 +190,12 @@ svg { display: block; }
 @media (max-width: 540px) {
   .header-inner { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; padding: 16px 20px 0; min-height: 0; }
   .header-inner > nav { grid-row: 2; grid-column: 1; }
+  .header-inner > nav { gap: 14px; }
   .header-nav { min-height: 47px; padding-top: 10px; }
   .brand { font-size: 21px; gap: 8px; }
   .brand svg { width: 32px; height: 32px; }
   .profile { display: contents; }
-  .profile-name { display: block; grid-row: 2; grid-column: 2; justify-self: end; align-self: center; max-width: 120px; font-size: 12px; }
+  .profile-name { display: block; grid-row: 2; grid-column: 2; justify-self: end; align-self: center; max-width: 78px; font-size: 12px; }
   .profile .avatar { display: none; }
   .signout { margin-left: 0; min-height: 38px; grid-row: 1; grid-column: 2; justify-self: end; }
   .main-content { padding: 24px 18px 40px; }

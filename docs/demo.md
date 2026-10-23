@@ -45,11 +45,15 @@ application serves the same screens on `http://127.0.0.1:8080/`; its runtime
 verification is recorded separately. Use separate browser profiles for Compose
 and kind demonstrations. Never run two app processes on 8080.
 
-1. Choose **Create an account**. Register three disposable users with names,
+1. Start signed out at `/`. Explain the public introduction and workflow
+   illustration, then choose **Create your account**. Register three disposable users with names,
    distinct example emails and locally chosen passwords. Use separate browser
    profiles/private contexts for different users: ordinary tabs share one login.
-2. Sign in as the first user. On **Your groups**, enter a name and choose
-   **Create group**. The workspace shows that user as **Admin**.
+2. Sign in as the first user. On **Home**, inspect the first-use guidance and
+   actual group count. Open **Guide** to see the in-app instructions, then
+   **My groups**. Enter a group name and choose **Create group**. The workspace
+   shows that user as **Admin**. Return Home to see the saved group appear;
+   this is actual membership data, while the workflow diagram is explanatory.
 3. Open **Members**, add the other two registered emails, and explain why this
    adds an existing account rather than sending an invitation.
 4. Open **Expenses**. Record a `100.00` FOOD expense with today's date and the
@@ -85,6 +89,10 @@ and kind demonstrations. Never run two app processes on 8080.
     Use Left/Right arrows to switch group tabs and Home/End to reach the first
     or last tab. Delete a disposable expense after accepting its confirmation
     dialog. In Imports, **Download sample CSV** provides a compatible starter file.
+12. Select Expenses and inspect the `?tab=expenses` address. Refresh, switch to
+    Members, and use browser Back/Forward to restore each section. Copy the link
+    into the member's separate profile to show that navigation still requires
+    group access. An unsupported tab value falls back to Overview.
 
 The automated browser scenarios create synthetic data and exercise real HTTP
 requests. Run from `frontend/` after starting the API:

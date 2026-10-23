@@ -10,6 +10,7 @@ hosting, paid API or managed database is required.
 |---|---|
 | [Project overview](../README.md) | Features, quick start, architecture and repository map |
 | [User guide](user-guide.md) | Plain-language manual for accounts, groups, expenses, imports and budgets |
+| [Interface design](interface-design.md) | Page map, desktop/mobile wireframes and useful empty states |
 | [Setup](setup.md) | Requirements, fresh checkout, host development and tests |
 | [Demo](demo.md) | A reproducible browser/API scenario with synthetic data |
 | [Frontend](../frontend/README.md) | UI structure, build tools, development and browser checks |

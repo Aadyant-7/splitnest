@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../../shared/api/client';
 import type { Balance, Expense, ExpensePage, Group, Member } from '../../shared/api/types';
 import { GroupPage } from './GroupPage';
@@ -27,8 +27,13 @@ const page: ExpensePage = { content: [expense], number: 0, size: 20, totalElemen
 function installApi(handler: (path: string, init?: RequestInit) => unknown) {
   vi.mocked(api).mockImplementation(async <T,>(path: string, init?: RequestInit): Promise<T> => handler(path, init) as T);
 }
-function renderPage() {
-  render(<MemoryRouter initialEntries={['/app/groups/trip']}><Routes><Route path="/app/groups/:groupId" element={<GroupPage />} /></Routes></MemoryRouter>);
+function NavigationProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return <><output aria-label="Current location">{location.pathname}{location.search}</output><button onClick={() => navigate(-1)}>Browser back</button><button onClick={() => navigate(1)}>Browser forward</button><button onClick={() => navigate('/app/groups/second?tab=budgets')}>Open second group</button></>;
+}
+function renderPage(initialEntry = '/app/groups/trip') {
+  return render(<MemoryRouter initialEntries={[initialEntry]}><NavigationProbe /><Routes><Route path="/app/groups/:groupId" element={<GroupPage />} /></Routes></MemoryRouter>);
 }
 function ordinaryResponse(path: string) {
   if (path === '/groups/trip') return group;
@@ -141,5 +146,74 @@ describe('GroupPage', () => {
     fireEvent.keyDown(budgets, { key: 'Home' });
     expect(overview).toHaveFocus();
     expect(screen.getByRole('tabpanel', { name: 'Overview' })).toBeInTheDocument();
+  });
+
+  it.each(['overview', 'expenses', 'members', 'imports', 'budgets'])('opens the %s section directly from a copied URL', async (section) => {
+    installApi(ordinaryResponse);
+    renderPage(`/app/groups/trip?tab=${section}`);
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    const selected = screen.getByRole('tab', { name: new RegExp(`^${section}$`, 'i') });
+    expect(selected).toHaveAttribute('aria-selected', 'true');
+    expect(selected).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', selected.id);
+    expect(api).toHaveBeenCalledTimes(3);
+  });
+
+  it('falls back to Overview for an unsupported section without losing other query parameters', async () => {
+    installApi(ordinaryResponse);
+    renderPage('/app/groups/trip?tab=unknown&from=home');
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Add expense' }));
+    expect(screen.getByRole('tab', { name: 'Expenses' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByLabelText('Current location')).toHaveTextContent('/app/groups/trip?tab=expenses&from=home');
+    expect(api).toHaveBeenCalledTimes(3);
+  });
+
+  it('keeps section navigation synchronized with browser Back and Forward', async () => {
+    installApi(ordinaryResponse);
+    renderPage('/app/groups/trip?tab=members&from=home');
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    fireEvent.click(screen.getByRole('tab', { name: 'Expenses' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Budgets' }));
+    expect(screen.getByLabelText('Current location')).toHaveTextContent('?tab=budgets&from=home');
+    fireEvent.click(screen.getByRole('button', { name: 'Browser back' }));
+    expect(screen.getByRole('tab', { name: 'Expenses' })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Browser back' }));
+    expect(screen.getByRole('tab', { name: 'Members' })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Browser forward' }));
+    expect(screen.getByRole('tab', { name: 'Expenses' })).toHaveAttribute('aria-selected', 'true');
+    expect(api).toHaveBeenCalledTimes(3);
+  });
+
+  it('restores the selected section on remount and lets overview actions update its URL', async () => {
+    installApi(ordinaryResponse);
+    const mounted = renderPage();
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    fireEvent.click(screen.getByRole('button', { name: 'View expenses' }));
+    const savedLocation = screen.getByLabelText('Current location').textContent!;
+    expect(savedLocation).toBe('/app/groups/trip?tab=expenses');
+    mounted.unmount();
+    renderPage(savedLocation);
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    expect(screen.getByRole('tab', { name: 'Expenses' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('heading', { name: 'Add an expense' })).toBeInTheDocument();
+  });
+
+  it('uses the destination group URL and resets expense pagination when switching groups', async () => {
+    installApi((path) => {
+      if (path === '/groups/second') return { ...group, id: 'second', name: 'Apartment' };
+      if (path.includes('/expenses?page=1')) return { ...page, number: 1, totalElements: 21, totalPages: 2, first: false, last: true };
+      if (path.includes('/expenses?page=0')) return { ...page, totalElements: 21, totalPages: 2, last: false };
+      return ordinaryResponse(path);
+    });
+    renderPage('/app/groups/trip?tab=expenses');
+    await screen.findByRole('heading', { name: 'Goa weekend' });
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Previous' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Open second group' }));
+    await screen.findByRole('heading', { name: 'Apartment' });
+    expect(screen.getByRole('tab', { name: 'Budgets' })).toHaveAttribute('aria-selected', 'true');
+    expect(vi.mocked(api).mock.calls.filter(([path]) => path.startsWith('/groups/second/expenses?')).at(-1)?.[0]).toContain('page=0');
   });
 });

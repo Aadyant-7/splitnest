@@ -2,6 +2,71 @@ import { expect, test } from '@playwright/test';
 import type { Balance, ExpensePage } from '../src/shared/api/types';
 import { DEMO_PASSWORD, addApiMember, addUiExpense, apiToken, bearer, createApiGroup, createUiGroup, expectNoPersistentCredentials, registerAccount, signIn, uniqueEmail } from './helpers';
 
+test('public introduction explains the product and fits narrow screens', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('shared expenses');
+  await expect(page.getByText('Illustration only. Your account starts with your own records.')).toBeVisible();
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Public introduction must fit ${width}px`).toBe(true);
+  }
+  await page.getByRole('link', { name: 'See how it works', exact: true }).click();
+  await expect(page.locator('#how-it-works')).toBeInViewport();
+  await page.getByRole('link', { name: 'Create your account', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Create account', exact: true })).toBeVisible();
+});
+
+test('home guides a new account into a real group and keeps help accessible', async ({ page, request }) => {
+  const account = await registerAccount(request, 'Home Journey');
+  await signIn(page, account);
+  await expect(page.getByRole('heading', { name: 'Your first group starts here', exact: true })).toBeVisible();
+  await expect(page.getByRole('definition')).toHaveText(['0', '0']);
+  await page.getByRole('link', { name: 'New here? Take a quick tour', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'A quick guide to SplitNest', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Create a group', exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/groups#create-group$/);
+  await expect(page.getByLabel('Group name')).toBeFocused();
+  await page.getByLabel('Group name').fill('A home with friends');
+  await page.getByRole('button', { name: 'Create group', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'A home with friends', exact: true })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Home', exact: true }).click();
+  await expect(page.getByRole('definition')).toHaveText(['1', '1']);
+  await expect(page.getByRole('link', { name: /A home with friends/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your first group starts here', exact: true })).toHaveCount(0);
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Home must fit ${width}px`).toBe(true);
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Guide', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('A quick guide to SplitNest');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Guide must fit ${width}px`).toBe(true);
+    await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Home', exact: true }).click();
+  }
+  await page.getByRole('link', { name: /Skip the repeated typing/ }).click();
+  await expect(page.locator('#imports')).toBeInViewport();
+  await expectNoPersistentCredentials(page);
+});
+
+test('a requested group section survives login, reload and browser history', async ({ page, request }) => {
+  const account = await registerAccount(request, 'Section Links');
+  const token = await apiToken(request, account);
+  const group = await createApiGroup(request, token, 'Linked sections');
+  await page.goto(`/app/groups/${group.id}?tab=imports`);
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('next')).toBe(`/app/groups/${group.id}?tab=imports`);
+  await page.getByLabel('Email address').fill(account.email);
+  await page.locator('input[name="password"]').fill(account.password);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('tab', { name: 'Imports', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('tab', { name: 'Budgets', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/app/groups/${group.id}\\?tab=budgets$`));
+  await page.reload();
+  await expect(page.getByRole('tab', { name: 'Budgets', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await page.goBack();
+  await expect(page.getByRole('tab', { name: 'Imports', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await page.goForward();
+  await expect(page.getByRole('tab', { name: 'Budgets', exact: true })).toHaveAttribute('aria-selected', 'true');
+});
+
 test('decimal display boundary retains every paise from a large numeric JSON response', async ({ page, request }) => {
   const account = await registerAccount(request, 'Precision Demo');
   const token = await apiToken(request, account);
@@ -23,7 +88,8 @@ test('registration, HttpOnly-cookie session restoration, logout and sign-in use 
   await page.getByLabel('Email address').fill(email);
   await page.locator('input[name="password"]').fill(DEMO_PASSWORD);
   await page.getByRole('button', { name: 'Create account', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/home$/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome, Avery Demo');
 
   const refresh = (await context.cookies()).find((cookie) => cookie.name === 'splitnest_refresh');
   expect(Boolean(refresh), 'A browser refresh cookie exists').toBe(true);
@@ -42,7 +108,7 @@ test('registration, HttpOnly-cookie session restoration, logout and sign-in use 
     expect(encoded.status(), 'Encoded route segments must retain CSRF protection').toBe(403);
   }
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome, Avery Demo');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
   expect((await context.cookies()).some((cookie) => cookie.name === 'splitnest_refresh')).toBe(false);
@@ -296,7 +362,7 @@ test('keyboard navigation supports password visibility, sign-in, skip link and g
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome, Keyboard Demo');
 
   await page.goto('/app/groups');
   await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();

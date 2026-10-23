@@ -12,7 +12,8 @@ vi.mock('../../app/SessionContext', () => ({ useSession: () => session }));
 function page(mode: 'login' | 'register' = 'login', path = '/login') {
   return render(<MemoryRouter initialEntries={[path]}><Routes>
     <Route path="/login" element={<AuthPage mode={mode} />} />
-    <Route path="/app/groups" element={<p>My groups destination</p>} />
+    <Route path="/app/home" element={<p>Home destination</p>} />
+    <Route path="/app/groups/:groupId" element={<p>Requested group destination</p>} />
   </Routes></MemoryRouter>);
 }
 beforeEach(() => { vi.clearAllMocks(); session.user = null; session.loading = false; session.error = null; });
@@ -40,7 +41,7 @@ describe('authentication forms', () => {
   it('never redirects a signed-in user to an external next URL', () => {
     session.user = { id: 'alex' };
     page('login', '/login?next=https%3A%2F%2Fexample.com');
-    expect(screen.getByText('My groups destination')).toBeInTheDocument();
+    expect(screen.getByText('Home destination')).toBeInTheDocument();
   });
   it('does not show a login form while restoring the browser session', () => {
     session.loading = true;
@@ -78,5 +79,20 @@ describe('authentication forms', () => {
     expect(screen.getByRole('button', { name: 'Signing in…' })).toBeDisabled();
     complete();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled());
+  });
+  it('opens the home dashboard by default after session restoration', () => {
+    session.user = { id: 'alex' };
+    page();
+    expect(screen.getByText('Home destination')).toBeInTheDocument();
+  });
+  it('retains a requested group section when switching between authentication forms', () => {
+    const destination = '/app/groups/group-1?tab=imports';
+    page('login', '/login?next=' + encodeURIComponent(destination));
+    expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/register?next=' + encodeURIComponent(destination));
+  });
+  it('returns a signed-in account to the requested group route', () => {
+    session.user = { id: 'alex' };
+    page('login', '/login?next=' + encodeURIComponent('/app/groups/group-1?tab=imports'));
+    expect(screen.getByText('Requested group destination')).toBeInTheDocument();
   });
 });

@@ -1,0 +1,89 @@
+.guide-page { display: flex; flex-direction: column; gap: 32px; }
+.guide-heading { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 6px 0 27px; border-bottom: 1px solid #d6e1de; }
+.guide-heading > div { max-width: 620px; }
+.guide-eyebrow, .guide-section-label, .guide-nav-label { color: #5e7776; font-size: 10px; font-weight: 700; line-height: 1.4; letter-spacing: 1.1px; text-transform: uppercase; }
+.guide-heading h1 { margin: 11px 0 13px; font-size: clamp(29px, 3.4vw, 40px); letter-spacing: -1.1px; }
+.guide-heading > div > p:last-child { color: var(--muted); font-size: 14px; line-height: 1.8; max-width: 565px; }
+.guide-heading > .button { flex-shrink: 0; }
+.guide-layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 40px; align-items: start; }
+.guide-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 25px; }
+.guide-sidebar nav { padding: 22px; background: #fff; border: 1px solid #dce5e2; border-radius: 12px; }
+.guide-sidebar nav ol { display: flex; flex-direction: column; gap: 4px; margin: 15px -8px -6px; padding: 0; list-style: none; }
+.guide-sidebar nav a { display: flex; align-items: center; gap: 12px; padding: 8px; color: #365953; text-decoration: none; border-radius: 5px; font-size: 12px; }
+.guide-sidebar nav a:hover { background: #edf4ee; }
+.guide-sidebar nav a span { color: #91a59e; font-size: 10px; font-variant-numeric: tabular-nums; }
+.guide-workflow { padding: 22px 16px; background: #f0f5ec; border: 1px solid #d9e4d7; border-radius: 12px; }
+.guide-workflow .workflow-label { font-size: 9px; }
+.guide-workflow .workflow-steps { gap: 8px; margin: 18px 0; }
+.guide-workflow .workflow-steps > li:not(:last-child)::after { right: -9px; width: 10px; top: 21px; font-size: 13px; }
+.guide-workflow .workflow-steps span { font-size: 10px; }
+.guide-workflow .workflow-steps strong { font-size: 12px; }
+.guide-workflow .workflow-figure figcaption { font-size: 11px; }
+.guide-local-note { padding: 0 6px; color: #657a75; font-size: 11px; line-height: 1.8; }
+.guide-local-note strong { display: block; margin-bottom: 6px; color: #425e58; font-size: 12px; }
+.guide-sections { min-width: 0; }
+.guide-section { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 18px; padding: 6px 0 31px; margin-bottom: 28px; border-bottom: 1px solid #dce5e2; scroll-margin-top: 100px; }
+.guide-step { display: grid; place-items: center; width: 34px; height: 34px; margin-top: 2px; background: #e2eee7; color: #4c7769; border: 1px solid #d3e2d9; border-radius: 50%; font-size: 11px; font-weight: 650; }
+.guide-section-label { color: #7d8f86; font-size: 9px; }
+.guide-section h2 { margin: 5px 0 13px; color: #25453e; font-size: 23px; letter-spacing: -.5px; }
+.guide-section > div > p:not(.guide-section-label) { color: #526a64; font-size: 13px; line-height: 1.85; max-width: 700px; }
+.guide-section > div > p + p { margin-top: 12px; }
+.guide-section strong { color: #2e5147; font-weight: 650; }
+.guide-section > div > .text-link { display: inline-block; margin-top: 15px; }
+.guide-role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 18px 0; padding: 18px 20px; background: #fff; border: 1px solid #dce5e2; border-radius: 8px; }
+.guide-role-grid h3 { color: #365e50; font-size: 13px; }
+.guide-role-grid p { margin-top: 5px; color: #63776f; font-size: 12px; line-height: 1.8; }
+.guide-section .guide-note { padding: 12px 15px; margin-top: 16px; color: #6f7159; background: #f4f0e4; border-left: 2px solid #cbbb88; border-radius: 0 6px 6px 0; font-size: 12px; }
+.guide-example { padding: 18px 20px; margin: 18px 0; background: #eaf2eb; border: 1px solid #d7e4d9; border-radius: 8px; }
+.guide-example > span { color: #6c8977; font-size: 10px; font-weight: 650; letter-spacing: .4px; text-transform: uppercase; }
+.guide-example p { margin-top: 8px; color: #416951; font-size: 13px; line-height: 1.8; }
+.guide-balance-key { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; padding: 18px 20px; background: #fff; border: 1px solid #dce5e2; border-radius: 8px; }
+.guide-balance-key > div { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 16px; }
+.guide-balance-key dt { color: #416951; font-size: 12px; font-weight: 650; }
+.guide-balance-key dd { margin: 0; color: #63776f; font-size: 12px; line-height: 1.8; }
+.guide-file-format { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; margin: 18px 0; background: #fff; border: 1px solid #dce5e2; border-radius: 8px; }
+.guide-file-format code { color: #2d6157; font-size: 13px; overflow-wrap: anywhere; }
+.guide-file-format span { color: #6d8078; font-size: 11px; }
+.guide-section > div > .button { margin-top: 18px; }
+.guide-end { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 27px; color: #2d4f46; background: #e8f0e7; border: 1px solid #d4e2d2; border-radius: 12px; }
+.guide-end h2 { font-size: 20px; }
+.guide-end p { margin-top: 7px; color: #64796d; font-size: 12px; }
+.guide-end > .button { flex-shrink: 0; }
+@media (max-width: 1000px) {
+  .guide-layout { grid-template-columns: 245px minmax(0, 1fr); gap: 25px; }
+  .guide-sidebar nav { padding: 20px; }
+  .guide-workflow { padding: 20px 12px; }
+  .guide-workflow .workflow-label { letter-spacing: 0; }
+  .guide-section { gap: 13px; }
+  .guide-end { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 760px) {
+  .guide-layout { grid-template-columns: 1fr; gap: 30px; }
+  .guide-sidebar { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  .guide-local-note { grid-column: 1 / -1; max-width: 600px; }
+  .guide-workflow { display: flex; align-items: center; padding: 20px; }
+  .guide-heading { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .guide-workflow .workflow-steps > li:not(:last-child)::after { top: 26px; }
+}
+@media (max-width: 540px) {
+  .guide-page { gap: 23px; }
+  .guide-heading { padding: 0 0 23px; }
+  .guide-heading h1 { font-size: 30px; }
+  .guide-heading > div > p:last-child { font-size: 13px; }
+  .guide-sidebar { grid-template-columns: 1fr; gap: 16px; }
+  .guide-sidebar nav ol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7px; margin-top: 14px; }
+  .guide-sidebar nav a { align-items: flex-start; gap: 7px; font-size: 11px; line-height: 1.7; }
+  .guide-sidebar nav a span { padding-top: 2px; }
+  .guide-workflow { padding: 22px; }
+  .guide-workflow .workflow-figure { width: 100%; }
+  .guide-workflow .workflow-steps > li:not(:last-child)::after { top: 28px; }
+  .guide-section { grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding-bottom: 24px; margin-bottom: 23px; }
+  .guide-step { width: 27px; height: 27px; font-size: 9px; }
+  .guide-section h2 { font-size: 21px; }
+  .guide-section > div > p:not(.guide-section-label) { font-size: 12px; }
+  .guide-role-grid { grid-template-columns: 1fr; gap: 15px; padding: 16px; }
+  .guide-balance-key { padding: 16px; }
+  .guide-balance-key > div { grid-template-columns: 1fr; gap: 4px; }
+  .guide-example, .guide-file-format { padding: 16px; }
+  .guide-end { padding: 22px; }
+}

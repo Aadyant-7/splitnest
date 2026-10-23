@@ -22,6 +22,14 @@ Spring Boot image. The final runtime is the non-root Java container; Node is
 a build/test dependency. Vite proxies the API during local development. Serve
 only explicit browser routes so SPA fallback cannot hide API/static errors.
 
+Separate the public introduction, signed-in Home, group directory and in-app
+Guide. Home uses actual group summaries to provide orientation; it does not
+aggregate financial records across groups or invent dashboard activity. Keep
+financial actions inside the authorized group workspace. Encode the selected
+workspace section in a validated `tab` query value so direct links, refresh and
+browser history preserve that section. The [interface wireframes](../interface-design.md)
+document the page responsibilities and responsive reading order.
+
 Keep financial rules and permissions in Java. The interface submits actions,
 preserves exact monetary response text and displays authoritative stored
 splits, balances, import status and budget-alert snapshots. It does not imply

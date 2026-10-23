@@ -1,0 +1,15 @@
+.workflow-figure { margin: 0; min-width: 0; }
+.workflow-label { display: flex; align-items: center; gap: 7px; color: #56706f; font-size: 11px; font-weight: 650; letter-spacing: .4px; text-transform: uppercase; }
+.workflow-label > span { width: 6px; height: 6px; flex-shrink: 0; background: #68a792; border-radius: 50%; }
+.workflow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 0; margin: 23px 0 20px; list-style: none; }
+.workflow-steps > li { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.workflow-steps > li:not(:last-child)::after { content: '→'; position: absolute; top: 29px; right: -14px; width: 14px; color: #7d9e9a; font-size: 17px; }
+.workflow-steps svg { width: min(100%, 104px); height: auto; margin-bottom: 8px; }
+.workflow-steps strong { color: #24494d; font-size: 13px; }
+.workflow-steps span { color: #607775; font-size: 11px; line-height: 1.5; margin-top: 3px; }
+.workflow-figure figcaption { padding-top: 15px; border-top: 1px solid #d4e2db; color: #526d68; font-size: 12px; line-height: 1.6; }
+@media (max-width: 400px) {
+  .workflow-steps { gap: 8px; }
+  .workflow-steps > li:not(:last-child)::after { right: -9px; width: 10px; }
+  .workflow-steps span { max-width: 75px; }
+}

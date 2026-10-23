@@ -60,11 +60,19 @@ fixtures are verified; the [runtime record](evidence/frontend-gitops.json) also
 proves an automatic combined-image rollout after an actual frontend-only change.
 
 `SpaRoutes` and `SpaController` allow `/`, `/login`, `/register`, `/app`,
-`/app/groups` and `/app/groups/{UUID}`. Spring serves `/index.html`, `/assets/**`
+`/app/home`, `/app/guide`, `/app/groups` and `/app/groups/{UUID}`. Spring serves `/index.html`, `/assets/**`
 the explicit favicon paths and `/examples/statement.csv`. An unknown API, actuator or asset path retains
 its HTTP error; there is no catch-all HTML response. The UI's content security
 policy permits bundled same-origin scripts/styles and avoids inline script/eval.
 Swagger retains its own compatible response policy.
+
+The public root introduces the application; a restored signed-in session opens
+Home instead. Home reads the existing group-summary endpoint, showing membership
+and admin counts without requesting or inventing cross-group financial totals.
+My groups owns group creation, while the in-app Guide explains the workflows.
+Group tabs use a `tab` query parameter so deep links, reload and browser history
+agree. The selected section never changes API authorization. See the
+[interface design and wireframes](interface-design.md) for the page hierarchy.
 
 ### Browser authentication
 

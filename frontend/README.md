@@ -2,6 +2,8 @@
 
 React/TypeScript interface for the real Java expense-sharing API. Registration,
 browser sessions, groups, expenses, balances, uploads and budgets are implemented.
+The public introduction explains the app; signed-in Home, My groups and Guide
+provide separate entry points to the existing group workflows.
 See the [verification record](../docs/evidence/verification.md) for dated
 test and delivery evidence.
 
@@ -22,6 +24,9 @@ frontend/
 │   ├── app/                          # routes, shell, coordinated session state
 │   ├── features/
 │   │   ├── auth/                     # registration and sign-in
+│   │   ├── landing/                  # public introduction and product workflow
+│   │   ├── home/                     # actual group summaries and task guidance
+│   │   ├── guide/                    # in-app instructions and examples
 │   │   ├── groups/                   # group list, workspace and membership
 │   │   ├── expenses/                 # forms, history, stored shares, balances
 │   │   ├── imports/                  # uploads and bounded job polling
@@ -72,11 +77,11 @@ npm run test:e2e
 ```
 
 The unit/component tests cover forms, permissions, API errors, imports,
-cancellation, locking, stale-session races and exact monetary display. Nine browser
-scenarios use real synthetic accounts for sessions, exact money/history,
+cancellation, locking, stale-session races and exact monetary display. Browser
+journeys use real synthetic accounts for sessions, exact money/history,
 permissions, imports/budgets, concurrent tabs, mobile layout, rate limiting,
 keyboard navigation and every workspace section at phone/tablet/desktop widths.
-They create records in the selected local database. One additional browser case
+They create records in the selected local database. A separate browser case
 injects a large-decimal balance response to verify presentation without inserting
 a huge ledger; this fixture is not a database-capacity claim. Traces/video are
 disabled.
@@ -94,8 +99,20 @@ browser system dependencies. CI does this on its disposable runner.
 
 ## Authentication and data boundaries
 
-The interface uses a compact top navigation bar and feature tabs within each
-group. Shared CSS tokens define colors, spacing and focus states. Expense and
+The interface uses Home, My groups and Guide in the top navigation, with feature
+tabs within each group. Signed-out `/` explains the app; signed-in `/` and `/app`
+lead to `/app/home`. Group sections use the `tab` query parameter, for example
+`/app/groups/:groupId?tab=imports`. The validated values are `overview`,
+`expenses`, `members`, `imports` and `budgets`; unknown values use Overview.
+Refresh and browser history restore the selected section. A protected deep link
+also retains its section through the sign-in flow.
+
+Home reads the existing group summaries and roles; it does not fetch every
+group's financial ledger or synthesize spending totals. Workflow diagrams are
+explanatory. The public [wireframes and route map](../docs/interface-design.md)
+describe each page's job and responsive reading order.
+
+Shared CSS tokens define colors, spacing and focus states. Expense and
 member tables become labeled cards on phones; account identity and actions stay
 available. Group tabs support arrow keys, Home and End. Forms connect field errors
 to their inputs, preserve pending states and show the result of actual API calls.

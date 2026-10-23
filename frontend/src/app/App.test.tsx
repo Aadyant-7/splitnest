@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
 const session = vi.hoisted(() => ({
@@ -10,14 +10,18 @@ const session = vi.hoisted(() => ({
 vi.mock('./SessionContext', () => ({ useSession: () => session }));
 vi.mock('../features/groups/GroupsPage', () => ({ GroupsPage: () => <h1>Your groups</h1> }));
 vi.mock('../features/groups/GroupPage', () => ({ GroupPage: () => <h1>Group workspace</h1> }));
+vi.mock('../features/home/HomePage', () => ({ HomePage: () => <h1>Your home</h1> }));
+vi.mock('../features/guide/GuidePage', () => ({ GuidePage: () => <h1>Using SplitNest</h1> }));
 vi.mock('../features/auth/AuthPage', () => ({ AuthPage: () => <h1>Sign in</h1> }));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   session.user = { id: 'user-1', displayName: 'Alex Morgan' };
   session.loading = false;
   window.history.replaceState({}, '', '/app/groups');
 });
+afterEach(() => vi.restoreAllMocks());
 
 describe('application shell', () => {
   it('retains the current account and allows a logout retry after a server failure', async () => {
@@ -38,5 +42,36 @@ describe('application shell', () => {
     expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
     expect(window.location.pathname).toBe('/login');
     expect(new URLSearchParams(window.location.search).get('next')).toBe('/app/groups/11111111-1111-4111-8111-111111111111');
+  });
+  it('keeps a requested group section through the sign-in redirect', () => {
+    session.user = null;
+    window.history.replaceState({}, '', '/app/groups/11111111-1111-4111-8111-111111111111?tab=imports#latest');
+    render(<App />);
+    expect(new URLSearchParams(window.location.search).get('next')).toBe('/app/groups/11111111-1111-4111-8111-111111111111?tab=imports#latest');
+  });
+  it('provides separate signed-in home, groups and guide destinations', () => {
+    window.history.replaceState({}, '', '/app/home');
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Your home' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+    fireEvent.click(screen.getByRole('link', { name: 'Guide' }));
+    expect(screen.getByRole('heading', { name: 'Using SplitNest' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Guide' })).toHaveAttribute('aria-current', 'page');
+    expect(window.scrollTo).toHaveBeenLastCalledWith({ top: 0, left: 0, behavior: 'auto' });
+    fireEvent.click(screen.getByRole('link', { name: 'My groups' }));
+    expect(screen.getByRole('heading', { name: 'Your groups' })).toBeInTheDocument();
+  });
+  it.each(['/', '/app'])('opens the home dashboard for a signed-in visitor at %s', (path) => {
+    window.history.replaceState({}, '', path);
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Your home' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/app/home');
+  });
+  it('shows the public introduction without requiring an account', () => {
+    session.user = null;
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('shared expenses');
+    expect(screen.getByRole('link', { name: 'Get started' })).toHaveAttribute('href', '/register');
   });
 });

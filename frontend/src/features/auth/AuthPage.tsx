@@ -12,8 +12,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [pending, setPending] = useState(false);
   const [visible, setVisible] = useState(false);
   const isRegister = mode === 'register';
-  const requested = search.get('next') ?? '/app/groups';
-  const next = /^\/app(?:\/|$)/.test(requested) ? requested : '/app/groups';
+  const requested = search.get('next') ?? '/app/home';
+  const next = /^\/app(?:\/|$)/.test(requested) ? requested : '/app/home';
   const fields = error instanceof ApiError ? error.errors : {};
   if (session.loading) return <div className="initial-loading"><Loading label="Restoring your session…" /></div>;
   if (session.user) return <Navigate to={next} replace />;
@@ -36,7 +36,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   return <div className="auth-layout">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <main className="auth-main" id="main-content" tabIndex={-1}>
-      <Link to="/login" className="brand-link" aria-label="SplitNest home"><Brand /></Link>
+      <Link to="/" className="brand-link" aria-label="SplitNest home"><Brand /></Link>
       <section className="auth-card" aria-labelledby="auth-title">
         <header className="auth-heading">
           <h1 id="auth-title">{isRegister ? 'Create account' : 'Sign in'}</h1>
@@ -70,10 +70,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           </button>
         </form>
         <p className="auth-switch">{isRegister ? 'Already have an account?' : 'New to SplitNest?'}{' '}
-          <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Sign in' : 'Create an account'}</Link>
+            <Link to={(isRegister ? '/login' : '/register') + (search.has('next') ? '?next=' + encodeURIComponent(next) : '')}>{isRegister ? 'Sign in' : 'Create an account'}</Link>
         </p>
       </section>
-      <p className="auth-caption">Shared expenses, recorded in INR.</p>
+      <p className="auth-caption"><Link to="/">How SplitNest works</Link></p>
     </main>
   </div>;
 }

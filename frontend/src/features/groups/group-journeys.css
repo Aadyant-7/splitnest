@@ -1,0 +1,17 @@
+.first-group { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; background: linear-gradient(145deg, #f5faf7, #fff 65%); }
+.first-group-illustration { width: min(100%, 288px); height: auto; align-self: center; }
+.first-group-copy { display: flex; flex-direction: column; gap: 8px; max-width: 500px; }
+.first-group-copy h2 { font-size: 22px; }
+.group-setup-steps { display: flex; flex-direction: column; gap: 18px; list-style: none; padding: 0; margin: 0; }
+.group-setup-steps li { display: flex; align-items: flex-start; gap: 13px; }
+.group-step-number { display: inline-grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; color: #245e51; background: #e1eee7; font-size: 12px; font-weight: 700; }
+.group-setup-steps p { margin-top: 3px; color: var(--muted); font-size: 13px; }
+.group-card-open { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--forest); font-size: 13px; font-weight: 600; }
+.group-card-open > span { font-size: 17px; line-height: 1; }
+.group-create-tip { padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+#create-group { scroll-margin-top: 132px; }
+@media (max-width: 540px) {
+  .first-group { gap: 20px; }
+  .first-group-illustration { max-width: 230px; }
+  .first-group .inline-actions { align-items: flex-start; }
+}

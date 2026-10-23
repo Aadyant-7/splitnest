@@ -49,10 +49,12 @@ export async function signIn(page: Page, account: Account) {
   await page.getByLabel('Email address').fill(account.email);
   await page.locator('input[name="password"]').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your groups', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/home$/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome,');
 }
 
 export async function createUiGroup(page: Page, name: string): Promise<string> {
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'My groups', exact: true }).click();
   await page.getByLabel('Group name').fill(name);
   await page.getByRole('button', { name: 'Create group', exact: true }).click();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();

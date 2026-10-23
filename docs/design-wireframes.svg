@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1120" role="img" aria-labelledby="title description">
+  <title id="title">SplitNest interface wireframes</title>
+  <desc id="description">Low-fidelity page layouts for the public introduction, signed-in Home, Groups, a group workspace, the in-app Guide and a stacked mobile layout. Solid boxes show real content areas. No sample financial data is presented.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f4f5f7}.page{fill:white;stroke:#9aa3ad;stroke-width:1.5}.line{fill:none;stroke:#c4cad1;stroke-width:1.2}.box{fill:#f5f6f8;stroke:#b8c0c9;stroke-width:1}.action{fill:#e3e7ec;stroke:#8793a1;stroke-width:1}.label{fill:#27313d;font:600 17px Arial,sans-serif}.text{fill:#4c5867;font:14px Arial,sans-serif}.small{fill:#627080;font:12px Arial,sans-serif}.heading{fill:#202a36;font:700 27px Arial,sans-serif}.number{fill:#4c5867;font:700 15px Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="1120"/>
+  <text class="heading" x="36" y="44">SplitNest: page structure</text>
+  <text class="text" x="36" y="72">Wireframes show hierarchy and useful content. These are design sketches, not live account data.</text>
+
+  <g transform="translate(36 110)">
+    <text class="label" y="0">01  Public introduction  /</text>
+    <rect class="page" y="18" width="584" height="280" rx="5"/>
+    <text class="label" x="18" y="46">SplitNest</text><text class="small" x="398" y="45">Sign in   Create account</text>
+    <path class="line" d="M0 60H584"/>
+    <text class="label" x="20" y="92">What the app does</text>
+    <text class="text" x="20" y="117">Who it helps and how to begin</text>
+    <rect class="action" x="20" y="136" width="122" height="31" rx="3"/><text class="small" x="35" y="156">Create account</text>
+    <rect class="box" x="320" y="77" width="244" height="105" rx="3"/><text class="text" x="340" y="108">People → Expense</text><text class="text" x="340" y="132">→ Equal shares → Balances</text><text class="small" x="340" y="159">Illustration, clearly identified</text>
+    <path class="line" d="M20 201H564"/><text class="text" x="20" y="226">Create group → Add people → Record costs → Review</text>
+    <text class="small" x="20" y="267">Groups and balances    |    Statement imports    |    Category budgets</text>
+  </g>
+  <g transform="translate(660 110)">
+    <text class="label">02  Signed-in Home  /app/home</text>
+    <rect class="page" y="18" width="584" height="280" rx="5"/>
+    <text class="label" x="18" y="46">SplitNest</text><text class="small" x="140" y="45">Home    My groups    Guide</text><text class="small" x="425" y="45">Name   Sign out</text>
+    <path class="line" d="M0 60H584"/>
+    <text class="label" x="20" y="91">Welcome and next action</text>
+    <rect class="box" x="20" y="108" width="262" height="47" rx="3"/><text class="text" x="35" y="137">Actual group and role counts</text>
+    <rect class="box" x="20" y="172" width="262" height="102" rx="3"/><text class="label" x="35" y="198">Your groups</text><text class="text" x="35" y="223">Real group cards and links</text><text class="small" x="35" y="251">No groups? A visible first action</text>
+    <rect class="box" x="300" y="108" width="264" height="166" rx="3"/><text class="label" x="317" y="136">How it works</text><text class="text" x="317" y="164">1  Create a group</text><text class="text" x="317" y="190">2  Add registered people</text><text class="text" x="317" y="216">3  Record shared expenses</text><text class="text" x="317" y="242">4  Read group balances</text>
+  </g>
+  <g transform="translate(36 445)">
+    <text class="label">03  Groups  /app/groups</text>
+    <rect class="page" y="18" width="584" height="280" rx="5"/>
+    <text class="small" x="20" y="45">SplitNest     Home    My groups    Guide                Name   Sign out</text><path class="line" d="M0 60H584"/>
+    <text class="label" x="20" y="91">Your groups</text><text class="text" x="20" y="116">Choose a workspace or create one</text>
+    <rect class="box" x="20" y="138" width="170" height="130" rx="3"/><text class="label" x="35" y="165">Group name</text><text class="text" x="35" y="192">Admin or Member</text><text class="small" x="35" y="245">Created date</text>
+    <rect class="box" x="203" y="138" width="170" height="130" rx="3"/><text class="label" x="218" y="165">Group name</text><text class="text" x="218" y="192">Admin or Member</text><text class="small" x="218" y="245">Created date</text>
+    <rect class="box" x="389" y="138" width="175" height="130" rx="3"/><text class="label" x="404" y="165">Create a group</text><rect class="page" x="404" y="181" width="145" height="27" rx="2"/><rect class="action" x="404" y="221" width="115" height="29" rx="3"/><text class="small" x="415" y="241">Create group</text>
+  </g>
+  <g transform="translate(660 445)">
+    <text class="label">04  Group workspace  /app/groups/:id?tab=…</text>
+    <rect class="page" y="18" width="584" height="280" rx="5"/>
+    <text class="small" x="20" y="45">SplitNest     Home    My groups    Guide                Name   Sign out</text><path class="line" d="M0 60H584"/>
+    <text class="label" x="20" y="91">Group name</text><text class="small" x="20" y="112">Members · Your role · INR</text>
+    <rect class="box" x="20" y="128" width="544" height="34" rx="3"/><text class="small" x="31" y="150">Overview     Expenses     Members     Imports     Budgets</text>
+    <rect class="box" x="20" y="177" width="330" height="104" rx="3"/><text class="label" x="35" y="204">Actual records and balances</text><path class="line" d="M35 218H334M35 240H334M35 262H334"/>
+    <rect class="box" x="366" y="177" width="198" height="104" rx="3"/><text class="text" x="381" y="205">Relevant form</text><text class="text" x="381" y="231">or task guidance</text><text class="small" x="381" y="261">No fabricated totals</text>
+  </g>
+  <g transform="translate(36 780)">
+    <text class="label">05  In-app Guide  /app/guide</text>
+    <rect class="page" y="18" width="584" height="280" rx="5"/>
+    <text class="small" x="20" y="45">SplitNest     Home    My groups    Guide                Name   Sign out</text><path class="line" d="M0 60H584"/>
+    <text class="label" x="20" y="91">How to use SplitNest</text>
+    <text class="text" x="20" y="119">Create → Add people → Add expense → Review</text>
+    <rect class="box" x="20" y="141" width="170" height="110" rx="3"/><text class="text" x="34" y="167">Groups and roles</text><text class="small" x="34" y="194">Plain instructions</text><text class="small" x="34" y="218">Task links</text>
+    <rect class="box" x="203" y="141" width="170" height="110" rx="3"/><text class="text" x="217" y="167">Costs and balances</text><text class="small" x="217" y="194">Small examples</text><text class="small" x="217" y="218">What amounts mean</text>
+    <rect class="box" x="389" y="141" width="175" height="110" rx="3"/><text class="text" x="403" y="167">Imports and budgets</text><text class="small" x="403" y="194">Formats and limits</text><text class="small" x="403" y="218">Daily UTC schedule</text>
+    <text class="small" x="20" y="277">Limits, useful examples and task links</text>
+  </g>
+  <g transform="translate(660 780)">
+    <text class="label">06  Mobile: keep the next action visible</text>
+    <rect class="page" x="22" y="18" width="240" height="280" rx="9"/>
+    <text class="small" x="35" y="43">SplitNest      Name   Sign out</text><text class="small" x="35" y="68">Home    My groups    Guide</text><path class="line" d="M22 80H262"/>
+    <text class="label" x="35" y="108">Page title</text><rect class="action" x="35" y="124" width="150" height="28" rx="3"/><text class="small" x="47" y="143">Primary action</text>
+    <rect class="box" x="35" y="166" width="214" height="58" rx="3"/><text class="small" x="47" y="187">Real group or labeled record</text><text class="small" x="47" y="209">Value                    Action</text>
+    <rect class="box" x="35" y="237" width="214" height="46" rx="3"/><text class="small" x="47" y="265">Workflow / helpful context</text>
+    <text class="text" x="294" y="94">Columns stack.</text><text class="text" x="294" y="123">Labels remain visible.</text><text class="text" x="294" y="152">Text can wrap.</text><text class="text" x="294" y="181">Keyboard access stays.</text><text class="text" x="294" y="210">Errors offer a next step.</text>
+  </g>
+</svg>

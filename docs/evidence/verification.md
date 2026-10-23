@@ -283,3 +283,36 @@ details were unavailable for CVE-2026-107891.
 - All **five Prometheus app scrape targets were UP** after the browser run.
   The [release JSON](frontend-overhaul.json) records the runtime observations
   separately from the initial local build and screenshots.
+
+## Navigation and onboarding — 23 October 2026
+
+The [local navigation checks](frontend-navigation.json) cover the public
+introduction, signed-in Home, My groups, in-app Guide and shareable group-section
+URLs. The [wireframes](../interface-design.md) describe the page hierarchy.
+
+- **94 Java tests** pass, with no failures/errors/skips and `BUILD SUCCESS`.
+  Both the security allowlist and explicit Spring mappings serve the new pages;
+  unknown adjacent paths still return errors.
+- **141 frontend unit/component tests** in sixteen files pass, along with strict
+  TypeScript and the Vite build. Coverage includes account-scoped Home requests,
+  real group counts, failure/retry states, onboarding focus, task anchors and
+  URL-owned tabs with keyboard and browser-history behavior.
+- **13 Chromium scenarios** pass against Vite (**26.3 seconds**) and the packaged
+  Compose app (**23.9 seconds**): eleven real API/database journeys, one public
+  introduction/responsiveness scenario and one deterministic decimal-display
+  fixture. Home, Guide, introduction and existing group sections fit **320,
+  390, 768 and 1440 pixels**. Earlier scenario counts remain dated above.
+- The local non-root image is **474,171,055 bytes**, UID **10001:10001**.
+  Compose app/PostgreSQL/Redis are healthy; the existing database volume remains.
+  Direct `/`, `/app/home` and `/app/guide` requests return the HTML shell.
+- Reviewed synthetic-data captures: [introduction](navigation-landing.png),
+  [phone introduction](navigation-landing-mobile.png),
+  [empty Home](navigation-home-empty.png), [Home](navigation-home.png),
+  [phone Home](navigation-home-mobile.png),
+  [empty groups](navigation-groups-empty.png), [groups](navigation-groups.png),
+  [Guide](navigation-guide.png) and [phone Guide](navigation-guide-mobile.png).
+
+This snapshot records local checks. The CI run for its containing source commit
+records remote test/image-scan results, and generated `deploy/local` provenance
+identifies the selected registry image. These local browser results do not by
+themselves establish a newer published-image or Kubernetes check.
