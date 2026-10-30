@@ -9,8 +9,10 @@ and [architecture](docs/architecture.md).
 
 Keep the existing product scope: accounts, groups and roles, INR equal-split
 expenses, balances, CSV/XLSX imports, category budgets and scheduled alerts.
-Public hosting, payments, invitation email, unequal splits, microservices and
-new infrastructure services are outside the current scope.
+The approved public résumé demo uses only Render Free and Neon Free, with a
+provider URL and synthetic data. Keep the existing local Kubernetes/monitoring
+lab. Paid hosting, payments, invitation email, unequal splits, microservices and
+additional infrastructure services are outside the current scope.
 
 - Java 21, Maven wrapper, Spring Boot 4.1.1, Spring Security, JPA and JDBC.
 - PostgreSQL/Flyway, Redis/Spring Cache, Commons CSV, Apache POI and ShedLock.

@@ -126,6 +126,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(request -> (request.getMethod().equals("GET") || request.getMethod().equals("HEAD"))
                                 && (SpaRoutes.page(request.getRequestURI()) || SpaRoutes.resource(request.getRequestURI()))).permitAll()
+                        .requestMatchers(request -> (request.getMethod().equals("GET") || request.getMethod().equals("HEAD"))
+                                && request.getRequestURI().equals("/readyz")).permitAll()
                         .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
                                 "/api/v1/browser-auth/csrf", "/api/v1/browser-auth/login", "/api/v1/browser-auth/refresh",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health", "/actuator/health/**").permitAll()

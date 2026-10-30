@@ -316,3 +316,31 @@ This snapshot records local checks. The CI run for its containing source commit
 records remote test/image-scan results, and generated `deploy/local` provenance
 identifies the selected registry image. These local browser results do not by
 themselves establish a newer published-image or Kubernetes check.
+
+## Free public-demo preflight — 30 October 2026
+
+The [preflight record](public-demo-preflight.json) covers the opt-in public
+profile. These are local configuration/rehearsal results, not a live URL claim.
+
+- Maven verification: **107 tests**, zero failures/errors/skips, `BUILD SUCCESS`.
+  Thirteen new tests cover status-only public readiness, 503 readiness states,
+  controlled database-health failure, private management paths, Secure cookies,
+  native Tomcat proxy handling and bounded import-worker configuration.
+- **141 frontend tests**, TypeScript/Vite build and npm audit pass; the audit
+  reported zero vulnerabilities at this observation.
+- A separate non-root container enforced a **512 MiB memory/swap limit**, using
+  the public JVM settings and real Neon PostgreSQL over verified TLS. The API
+  smoke passed exact shares, zero-sum balances, outsider404, refresh-replay401,
+  and a CSV import with one valid/one invalid row. The repository's small XLSX
+  fixture completed with two stored rows and an even one-member balance.
+- Post-run memory observations were **347.5 MiB** after the API smoke and
+  **362.1 MiB** after XLSX. The container remained healthy with `OOMKilled=false`.
+  This run used one local CPU and local Redis; it does not measure Render's
+  0.1CPU performance, the private hosted cache, worst-case memory or capacity.
+- Provider metadata confirms the dedicated Neon organization/project and Render
+  cache use free plans. Render's dashboard showed Hobby with no card on file.
+  No local financial records were copied to the public database.
+
+The [public runbook](../public-demo.md) describes the remaining live HTTPS,
+cookie, isolation, rate-limit and deployment checks. Only a successful live
+check establishes the public deployment's result.

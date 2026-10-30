@@ -2,7 +2,8 @@
 
 Start with the [user guide](user-guide.md) to use SplitNest, or [setup](setup.md)
 to run it. The application and its supporting services run locally; no public
-hosting, paid API or managed database is required.
+hosting, paid API or managed database is required for the local lab. An optional
+[free public résumé demo](public-demo.md) uses Render and Neon.
 
 ## Use and run
 
@@ -12,6 +13,7 @@ hosting, paid API or managed database is required.
 | [User guide](user-guide.md) | Plain-language manual for accounts, groups, expenses, imports and budgets |
 | [Interface design](interface-design.md) | Page map, desktop/mobile wireframes and useful empty states |
 | [Setup](setup.md) | Requirements, fresh checkout, host development and tests |
+| [Public demo](public-demo.md) | Free hosting, HTTPS settings, quotas and deployment checks |
 | [Demo](demo.md) | A reproducible browser/API scenario with synthetic data |
 | [Frontend](../frontend/README.md) | UI structure, build tools, development and browser checks |
 

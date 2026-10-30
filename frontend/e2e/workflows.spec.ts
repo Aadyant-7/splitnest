@@ -304,9 +304,9 @@ test('real login rate limiting announces Retry-After accessibly', async ({ page,
   await page.goto('/login');
   await page.getByLabel('Email address').fill(account.email);
   await page.locator('input[name="password"]').fill('WrongSyntheticPassword!');
-  // Avoid crossing the fixed calendar-minute boundary during six deliberate attempts.
+  // Leave time for slower free-host password checks before the fixed minute rolls over.
   const seconds = new Date().getUTCSeconds();
-  if (seconds >= 55) await page.waitForTimeout((61 - seconds) * 1_000);
+  if (seconds >= 40) await page.waitForTimeout((61 - seconds) * 1_000);
   for (let attempt = 0; attempt < 6; attempt++) {
     const response = page.waitForResponse((candidate) => candidate.url().endsWith('/api/v1/browser-auth/login') && candidate.request().method() === 'POST');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();

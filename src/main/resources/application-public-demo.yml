@@ -1,0 +1,43 @@
+# Opt-in hosting profile. Local Compose/kind settings keep their existing defaults.
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+  forward-headers-strategy: native
+  tomcat:
+    threads:
+      max: 20
+      min-spare: 2
+    remoteip:
+      # Render's Cloudflare edge replaces this header; X-Forwarded-For may contain caller input.
+      remote-ip-header: CF-Connecting-IP
+      protocol-header: X-Forwarded-Proto
+
+management:
+  server:
+    port: 9090
+    address: 127.0.0.1
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      group:
+        readiness:
+          additional-path: server:/readyz
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 60000
+      connection-timeout: 30000
+
+splitnest:
+  browser:
+    # A local .env exception must never downgrade public HTTPS cookies.
+    cookie-secure: true
+  imports:
+    executor:
+      core-pool-size: 1
+      max-pool-size: 1
+      queue-capacity: 4

@@ -29,7 +29,9 @@ Spring Boot handle authentication, permissions and financial records.
   Prometheus/Grafana dashboard with reproducible load-test scripts.
 
 SplitNest records shared expenses; it does not transfer money or synchronize
-bank accounts. It runs locally without paid services. Supported workflows and
+bank accounts. It runs locally without paid services. An optional
+[free public demo deployment](docs/public-demo.md) uses the same application
+image with a separate database and HTTPS settings. Supported workflows and
 limits are explained in the [user guide](docs/user-guide.md).
 
 ## Run locally

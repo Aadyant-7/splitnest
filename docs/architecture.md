@@ -9,8 +9,11 @@ group, expense, import and budget workflows. Swagger and HTTP clients retain the
 existing JSON-token API. All amounts represent INR; this version has no currency
 conversion.
 
-The application, data stores, Kubernetes cluster and monitoring run locally.
-The deployment uses no paid services or public hosting.
+The local lab runs the application, data stores, Kubernetes cluster and
+monitoring on the developer's computer. The optional public résumé demo runs
+the same packaged application on Render Free, with Neon PostgreSQL and a
+private Render Redis-compatible cache. It uses no paid services. Kubernetes
+and the full monitoring lab remain local; see [public hosting](public-demo.md).
 
 Read [implementation.md](implementation.md) beside the code, then follow
 [demo.md](demo.md). The [decision records](decisions/0001-modular-monolith.md)

@@ -21,7 +21,7 @@ function clear(loading = false) {
 }
 function lock<T>(action: () => Promise<T>): Promise<T> {
   // The refresh cookie is shared by tabs. A process-local promise alone cannot prevent replay.
-  if (!navigator.locks) return Promise.reject(new Error('Please open SplitNest in a current browser on localhost. Browser session coordination is unavailable.'));
+  if (!navigator.locks) return Promise.reject(new Error('Use a current browser over HTTPS, or localhost for local development. Browser session coordination is unavailable.'));
   return navigator.locks.request('splitnest-browser-session', action);
 }
 async function browserAction<T>(action: string, body?: unknown, bearer?: string | null): Promise<T> {

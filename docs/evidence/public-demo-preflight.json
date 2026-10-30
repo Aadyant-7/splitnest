@@ -1,0 +1,37 @@
+{
+  "observedAt": "2026-10-30T15:12:18.803Z",
+  "scope": "Public-host configuration and small synthetic-data rehearsal; not a live deployment result",
+  "sourceBasis": "Source committed with this preflight record",
+  "java": { "tests": 107, "failures": 0, "errors": 0, "skipped": 0, "result": "BUILD SUCCESS" },
+  "frontend": { "tests": 141, "testFiles": 16, "result": "PASS", "build": "Strict TypeScript and Vite PASS", "npmAuditVulnerabilities": 0 },
+  "newServerTests": {
+    "total": 13,
+    "coverage": ["status-only main-port readiness GET and HEAD", "503 readiness state", "controlled DOWN database health contributor without diagnostic leakage", "private management endpoints", "Secure cookies despite local BROWSER_COOKIE_SECURE=false", "real embedded Tomcat trusted-proxy handling", "spoofed X-Forwarded-For ignored", "bounded import executor validation"]
+  },
+  "rehearsal": {
+    "image": "splitnest:public-demo-check",
+    "imageId": "sha256:62d4502dc0008a28028814bb6a61c8d4a1748683eb069b547034199b09c8cc1b",
+    "profile": "public-demo",
+    "memoryLimitBytes": 536870912,
+    "swapLimitBytes": 536870912,
+    "cpuLimit": 1,
+    "jvmOptions": "-XX:MaxRAMPercentage=50.0 -XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError",
+    "database": "Dedicated Neon Free PostgreSQL18, direct JDBC with certificate and hostname verification",
+    "cache": "Existing local Redis; private Render cache is not exercised by this local run",
+    "readiness": "UP",
+    "apiSmoke": { "result": "PASS", "syntheticUsers": 4, "shares": ["33.33", "33.33", "33.34"], "netSum": "0.00", "csvImportedRows": 1, "csvInvalidRows": 1, "outsiderStatus": 404, "refreshReplayStatus": 401 },
+    "xlsx": { "status": "COMPLETED", "totalRows": 2, "importedRows": 2, "oneMemberNetBalance": 0, "syntheticRepositoryFixture": true },
+    "memoryAfterApiSmokeMiB": 347.5,
+    "memoryAfterXlsxMiB": 362.1,
+    "oomKilled": false,
+    "health": "healthy",
+    "limit": "Small CSV/XLSX samples and post-run memory observations, not peak-memory guarantees or max-size/concurrent-upload capacity. Render Free CPU is0.1, so local timings are not public-host performance measurements."
+  },
+  "providerSetup": {
+    "renderWorkspacePlan": "Hobby, no card on file verified in dashboard",
+    "renderCache": "Free, Singapore, noeviction, persistence off, external access blocked",
+    "neonOrganizationPlan": "Free",
+    "neonDatabase": "PostgreSQL18 in Singapore, min/max0.25CU",
+    "liveWebService": "Not part of this preflight snapshot"
+  }
+}
