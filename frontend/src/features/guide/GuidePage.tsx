@@ -28,7 +28,7 @@ export function GuidePage() {
       <aside className="guide-sidebar">
         <nav aria-label="In this guide"><p className="guide-nav-label">In this guide</p><ol>{sections.map(([id, title], index) => <li key={id}><a href={`#${id}`}><span aria-hidden="true">0{index + 1}</span>{title}</a></li>)}</ol></nav>
         <div className="guide-workflow"><WorkflowIllustration /></div>
-        <p className="guide-local-note"><strong>Saved on your local stack</strong>Your account and records live in PostgreSQL, not just this browser. Signing out does not erase them. Keep your Docker data volume to keep your data.</p>
+        <p className="guide-local-note"><strong>Saved with your account</strong>Your account and records are saved in the app’s database, not just this browser. Signing out does not erase them. When running locally, keep your Docker data volume to keep your data.</p>
       </aside>
 
       <div className="guide-sections">

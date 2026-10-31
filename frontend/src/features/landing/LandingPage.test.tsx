@@ -21,5 +21,7 @@ describe('public introduction', () => {
     expect(example).toHaveTextContent('+₹600.00');
     expect(example).toHaveTextContent('−₹300.00');
     expect(screen.getByText(/No bank connection or payments/)).toBeVisible();
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Equal shares · Amounts in INR');
+    expect(screen.getByRole('contentinfo')).not.toHaveTextContent('Local application');
   });
 });

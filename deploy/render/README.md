@@ -1,5 +1,7 @@
 # Render public-demo adapter
 
+Last reviewed: **31 October 2026**.
+
 This directory is the public Render delivery target. The full architecture,
 free limits and live-verification checklist are in
 [docs/public-demo.md](../../docs/public-demo.md). Local Kubernetes manifests and
@@ -19,11 +21,26 @@ must not publish an unverified application. For each release:
 
 1. Verify the application's CI and image scan have succeeded.
 2. Set `SPLITNEST_IMAGE` to that tested `ghcr.io/...@sha256:...` value in Render.
-3. Save the environment change without scheduling a second deployment if the
-   API has already started one. Keep application source committed on `main`.
-4. Trigger one Render deploy when none has already been scheduled, and monitor its ID
-   until it becomes `live`.
+3. Apply the change using the appropriate method below. Keep application source
+   committed on `main` and identify the specific deployment that was created.
+4. Monitor that deployment until it becomes `live`; do not schedule a duplicate
+   just because automatic branch deployments are disabled.
 5. Check the public URL and `/readyz`, then run the browser/API demo checks.
+
+The update methods have different side effects:
+
+| Method | How the image update becomes active |
+|---|---|
+| Render MCP `update_environment_variables` | Merges supplied keys by default and requests a new deployment. Capture its returned deploy ID, or inspect `list_deploys` if the response says the deploy was accepted but not yet created. Do not follow it with another deploy request. |
+| Dashboard | Choose **Save, rebuild, and deploy**. **Save and deploy** reuses the previous build; changing a runtime value alone cannot replace that build's base image. **Save only** leaves the change pending until a later rebuild/deploy. |
+| Raw REST `PUT /services/{id}/env-vars` | Replaces the environment-variable collection and does not deploy automatically. Preserve all required keys, then explicitly request one new deployment. |
+
+The MCP operation wraps the REST update and then requests a deploy; these are
+not interchangeable interfaces. A service restart also reuses the running
+deployment's configuration, so it does not apply a newly saved image value.
+After service creation, inspect any returned deploy ID and the deploy list
+before manually starting one; an accepted creation response is not proof that
+an initial deployment is absent, complete or healthy.
 
 A successful deploy trigger or image pull does not establish a working service.
 Do not substitute a mutable `latest` tag for the selected digest. An application
@@ -71,8 +88,12 @@ credentials or identifiers.
 | `JAVA_TOOL_OPTIONS` | `-XX:MaxRAMPercentage=50.0 -XX:ActiveProcessorCount=2 -XX:+ExitOnOutOfMemoryError` |
 
 The public JVM flags reserve more memory outside the heap than the root image's
-local default. A 512 MB rehearsal and real service observation are still needed:
-heap size is only part of JVM memory, and XLSX processing also needs headroom.
+local default. The [bounded local preflight](../../docs/evidence/public-demo-preflight.json)
+records a completed 512 MiB rehearsal with small synthetic CSV/XLSX files.
+That run used one local CPU and local Redis; it does not establish Render's
+0.1 CPU performance, worst-case memory or a successful public deployment.
+Actual service observation is still required: heap size is only part of JVM
+memory, and XLSX processing also needs headroom.
 
 Example non-secret URL shape:
 
@@ -114,3 +135,10 @@ modify, replace or upgrade unrelated existing services. Keep no payment method,
 a zero build-pipeline spend limit, no extra disks/workers/cron services and no
 custom domain. See the [free-plan boundaries](../../docs/public-demo.md#free-plan-boundaries)
 before making resource changes.
+
+## Provider operation references
+
+- [Environment save/deploy options](https://render.com/docs/configure-environment-variables)
+- [Raw REST environment replacement and deployment behavior](https://api-docs.render.com/reference/update-env-vars-for-service)
+- [Official MCP environment-update implementation](https://github.com/render-oss/render-mcp-server/blob/main/pkg/service/tools.go)
+- [Deploy and restart lifecycle](https://render.com/docs/deploys)

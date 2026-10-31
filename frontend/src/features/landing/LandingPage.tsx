@@ -51,6 +51,6 @@ export function LandingPage() {
         <div className="landing-tool-list"><article><span aria-hidden="true">01 / Import</span><h3>Bring in a statement</h3><p>Upload CSV or XLSX rows. Check the actual imported and invalid counts when background processing finishes.</p></article><article><span aria-hidden="true">02 / Budget</span><h3>Keep category limits visible</h3><p>Admins save monthly limits. Daily checks create an alert when recorded spending goes over a limit.</p></article></div>
       </section>
     </main>
-    <footer className="landing-footer"><span>SplitNest · Shared expense records</span><span>Local application · Amounts in INR</span><Link to="/login">Sign in to your workspace</Link></footer>
+    <footer className="landing-footer"><span>SplitNest · Shared expense records</span><span>Equal shares · Amounts in INR</span><Link to="/login">Sign in to your workspace</Link></footer>
   </div>;
 }

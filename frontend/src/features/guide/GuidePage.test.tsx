@@ -57,7 +57,9 @@ describe('GuidePage', () => {
     expect(budgets).toHaveTextContent('while the app is running');
     expect(budgets).toHaveTextContent('does not trigger an immediate check');
     expect(budgets).toHaveTextContent('not a live spending total');
-    expect(screen.getByText(/Your account and records live in PostgreSQL/)).toHaveTextContent('Signing out does not erase them');
+    expect(screen.getByText(/Your account and records are saved in the app’s database/)).toHaveTextContent('Signing out does not erase them');
+    expect(screen.getByText('Saved with your account')).toBeInTheDocument();
+    expect(screen.getByText(/Your account and records are saved in the app’s database/)).toHaveTextContent('When running locally, keep your Docker data volume');
     expect(screen.getByRole('figure', { name: 'Illustration: from a group to an expense and equal shares' })).toBeInTheDocument();
   });
 

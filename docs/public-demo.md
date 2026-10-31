@@ -1,6 +1,6 @@
 # Free public demo
 
-Last reviewed: **30 October 2026**.
+Last reviewed: **31 October 2026**.
 
 SplitNest can be published as a small, public résumé demonstration using free
 hosting plans. This adds a public target alongside the existing local setup;
@@ -103,8 +103,15 @@ Dockerfile references the exact GHCR digest supplied in the non-secret
 Git-backed Docker build without rerunning Maven or Node on Render.
 
 Automatic Render deployments are disabled. After a tested application release,
-update that pinned image variable and explicitly deploy the selected
-revision. This is separate from the local `deploy/local`/Argo CD promotion loop.
+update that pinned image variable and rebuild the adapter for the selected
+revision. The Render MCP environment-update operation itself requests a new
+deploy; monitor that deployment instead of triggering a duplicate. In the
+Dashboard, select **Save, rebuild, and deploy** when changing the image variable:
+**Save and deploy** reuses the previous build and cannot change its `FROM` image.
+The raw REST environment-update endpoint saves values without deploying, so that
+access path requires a separate deploy request. See the
+[adapter runbook](../deploy/render/README.md#image-delivery) for the exact flow.
+This is separate from the local `deploy/local`/Argo CD promotion loop.
 Wait for Render's deploy to report `live`, then verify behavior at the public URL.
 
 Before calling the deployment complete:
