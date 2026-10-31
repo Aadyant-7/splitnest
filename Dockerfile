@@ -22,7 +22,8 @@ COPY --from=frontend /workspace/frontend/dist/ src/main/resources/static/
 # A normal image build has no Docker daemon for Testcontainers, so it only packages the application.
 RUN ./mvnw -B -ntp -Dmaven.test.skip=true package
 
-FROM eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555 AS runtime
+# Refreshed Alpine patch release includes brotli-libs 1.2.1-r0 (CVE-2026-111497).
+FROM eclipse-temurin:21-jre-alpine@sha256:82cf3d9ccbe1ed46252008d51b2f2329e6b9e8a2f4394c4bebefc3ea7f4b1372 AS runtime
 LABEL org.opencontainers.image.title="SplitNest" \
       org.opencontainers.image.description="Expense-sharing web app and REST API" \
       org.opencontainers.image.source="https://github.com/Aadyant-7/splitnest"

@@ -1,0 +1,44 @@
+{
+  "reviewedOn": "2026-10-31",
+  "failedSource": "e427e9a9a4a89d9621286952d970fcaefb4c7050",
+  "failedCiRun": 41079553670,
+  "finding": {
+    "package": "brotli-libs",
+    "cve": "CVE-2026-111497",
+    "severity": "CRITICAL",
+    "installedVersion": "1.2.0-r1",
+    "fixedVersion": "1.2.1-r0",
+    "criticalOsFindings": 1,
+    "criticalJarFindings": 0,
+    "publicationStopped": true
+  },
+  "runtimeRefresh": {
+    "image": "eclipse-temurin:21-jre-alpine",
+    "previousDigest": "sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555",
+    "replacementDigest": "sha256:82cf3d9ccbe1ed46252008d51b2f2329e6b9e8a2f4394c4bebefc3ea7f4b1372",
+    "installedBrotliCheck": "brotli-libs-1.2.1-r0",
+    "alpineRelease": "3.24.3",
+    "javaRuntime": "Temurin21.0.13+9 LTS",
+    "method": "Pinned official multi-platform runtime image, with installed package and official SBOM verification",
+    "scope": "Runtime OS refresh; Java21, Spring Boot and application dependencies unchanged",
+    "scanPolicyUnchanged": true
+  },
+  "primarySources": [
+    "https://secdb.alpinelinux.org/v3.24/main.json",
+    "https://security.alpinelinux.org/vuln/CVE-2026-111497",
+    "https://github.com/google/brotli/releases/tag/v1.2.1"
+  ],
+  "patchedRuntimeRehearsal": {
+    "date": "2026-10-31",
+    "localImageId": "sha256:515b3e3fb8fac0df953a27e2c86341735b0e21e6e662ce86f85d2d2a59f2c6e7",
+    "memoryLimitMiB": 512,
+    "localCpuLimit": 1,
+    "dataServices": "Public Neon direct verified-TLS endpoint and local Redis",
+    "xlsxFixtureRowsImported": 2,
+    "memoryMiBAtObservation": 357.3,
+    "oomKilled": false,
+    "containerHealth": "healthy",
+    "boundary": "Small synthetic rehearsal; local CPU allocation exceeds Render Free and does not establish peak memory or public-host performance."
+  },
+  "verificationBoundary": "This record identifies the failed gate and inspected replacement base. A final-image scan and runtime acceptance are separate checks; base package inspection alone does not establish an all-severity clean application image."
+}
