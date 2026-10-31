@@ -2,6 +2,10 @@
 
 Last reviewed: **31 October 2026**.
 
+Public address: [SplitNest](https://splitnest-expenses.onrender.com/).
+Create an account to start your own workspace. There is no shared demo password.
+Allow several minutes for a cold start, and use synthetic records and files.
+
 SplitNest can be published as a small, public résumé demonstration using free
 hosting plans. This adds a public target alongside the existing local setup;
 it does not replace the [Compose](docker.md) or [Kubernetes](kubernetes.md) lab.

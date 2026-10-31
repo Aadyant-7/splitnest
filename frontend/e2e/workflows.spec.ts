@@ -305,8 +305,10 @@ test('real login rate limiting announces Retry-After accessibly', async ({ page,
   await page.getByLabel('Email address').fill(account.email);
   await page.locator('input[name="password"]').fill('WrongSyntheticPassword!');
   // Leave time for slower free-host password checks before the fixed minute rolls over.
-  const seconds = new Date().getUTCSeconds();
-  if (seconds >= 40) await page.waitForTimeout((61 - seconds) * 1_000);
+  const publicHost = test.info().config.metadata.publicHost === true;
+  const serverDate = publicHost ? (await request.head('/readyz')).headers().date : undefined;
+  const seconds = serverDate ? new Date(serverDate).getUTCSeconds() : new Date().getUTCSeconds();
+  if (seconds >= (publicHost ? 5 : 40)) await page.waitForTimeout((61 - seconds) * 1_000);
   for (let attempt = 0; attempt < 6; attempt++) {
     const response = page.waitForResponse((candidate) => candidate.url().endsWith('/api/v1/browser-auth/login') && candidate.request().method() === 'POST');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();

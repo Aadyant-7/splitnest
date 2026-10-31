@@ -9,6 +9,10 @@ Spring Boot handle authentication, permissions and financial records.
 [Architecture](docs/architecture.md) · [Documentation](docs/README.md) ·
 [CI](https://github.com/Aadyant-7/splitnest/actions/workflows/ci.yml)
 
+[Open SplitNest](https://splitnest-expenses.onrender.com/) — free public demo.
+Use synthetic data. Free hosting sleeps when idle, so the first visit can take
+several minutes; records are stored in PostgreSQL separately from the app container.
+
 ![SplitNest workspace home](docs/evidence/navigation-home.png)
 
 ## Features

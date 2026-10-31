@@ -81,7 +81,7 @@ cancellation, locking, stale-session races and exact monetary display. Browser
 journeys use real synthetic accounts for sessions, exact money/history,
 permissions, imports/budgets, concurrent tabs, mobile layout, rate limiting,
 keyboard navigation and every workspace section at phone/tablet/desktop widths.
-They create records in the selected local database. A separate browser case
+They create records in the selected deployment's database. A separate browser case
 injects a large-decimal balance response to verify presentation without inserting
 a huge ledger; this fixture is not a database-capacity claim. Traces/video are
 disabled.
@@ -93,6 +93,21 @@ $env:SPLITNEST_WEB_URL = 'http://127.0.0.1:8080'
 npm run test:e2e
 Remove-Item Env:SPLITNEST_WEB_URL
 ```
+
+For the free public HTTPS host, warm `/readyz` until it returns JSON with
+`status: UP`, then use the explicit latency budget:
+
+```powershell
+$env:SPLITNEST_WEB_URL = 'https://splitnest-expenses.onrender.com'
+npm run test:e2e -- --config=playwright.public.config.ts
+Remove-Item Env:SPLITNEST_WEB_URL
+```
+
+The public configuration keeps one worker, zero retries, TLS validation and all
+assertions. It allows 180 seconds per scenario and 30 seconds per expectation;
+the local/CI defaults remain 60 and 10 seconds. The rate-limit case starts near
+the server's minute boundary to fit the same fixed window on slower compute.
+These are functional checks, not a public-host load test.
 
 On fresh Linux machines, use `npx playwright install --with-deps chromium` for
 browser system dependencies. CI does this on its disposable runner.
@@ -135,7 +150,8 @@ or a session that signed out while a request was in flight.
 Java owns a host-only HttpOnly, SameSite=Strict refresh cookie and requires CSRF
 for browser login/refresh/logout. Public auth omits an expired bearer; logout
 also sends a valid access token. Secure cookies default on; local launchers
-explicitly allow HTTP. Coordination requires a current browser on localhost.
+explicitly allow HTTP. Coordination requires a current browser on HTTPS, or
+localhost for local HTTP development.
 
 The backend owns permissions, exact money, stored shares and job results. The UI
 sends decimal strings and preserves numeric monetary response tokens through

@@ -1,0 +1,134 @@
+{
+  "observedAt": "2026-10-31T06:38:59.109Z",
+  "url": "https://splitnest-expenses.onrender.com",
+  "applicationSource": "895a1dceb7791049a6fbc34c73540edb7a84d45f",
+  "image": "ghcr.io/aadyant-7/splitnest@sha256:3d5146162cc1c0b53575ae01912ca659b16812dd48cad15807409e8baf84250d",
+  "sourceCi": {
+    "runId": 41175134566,
+    "url": "https://github.com/Aadyant-7/splitnest/actions/runs/41175134566",
+    "conclusion": "success",
+    "javaTests": 107,
+    "javaFailures": 0,
+    "javaErrors": 0,
+    "javaSkipped": 0,
+    "frontendTests": 141,
+    "frontendTestFiles": 16,
+    "packagedBrowserScenarios": 13,
+    "criticalOsAndLibraryImageGate": "PASS; ignore-unfixed=false",
+    "allSeverityCleanClaim": false
+  },
+  "deployment": {
+    "id": "dep-dbiolkk9v7es7386hhf0",
+    "serviceId": "srv-dbiolk49v7es7386hgeg",
+    "gitAdapterCommit": "895a1dceb7791049a6fbc34c73540edb7a84d45f",
+    "status": "live",
+    "createdAt": "2026-10-31T06:29:38.784983Z",
+    "finishedAt": "2026-10-31T06:33:33.970674Z",
+    "healthPath": "/readyz",
+    "autoDeploy": "no",
+    "region": "singapore",
+    "plan": "free",
+    "runtime": "Docker; opt-in public-demo Spring profile",
+    "management": "loopback port9090",
+    "nodeRuntime": false,
+    "cloudKubernetes": false
+  },
+  "dataServices": {
+    "postgres": "Neon Free PostgreSQL18, Singapore, direct verified-TLS JDBC",
+    "cache": "Render Free private Valkey8.1.10; noeviction; persistence off; external access blocked",
+    "copiedPersonalLocalData": false
+  },
+  "publicBrowser": {
+    "result": "PASS",
+    "scenarios": 13,
+    "reportedDuration": "2.9m",
+    "realApiDatabaseJourneys": 11,
+    "publicIntroductionLayoutScenario": 1,
+    "deterministicLargeDecimalFixture": 1,
+    "multiTabAccessExpiry": "One 401 per tab simulated; refresh/cookies/business operations remain real",
+    "scenarioTimeoutSeconds": 180,
+    "expectationTimeoutSeconds": 30,
+    "workers": 1,
+    "retries": 0,
+    "tlsVerification": true,
+    "trace": "off",
+    "video": "off",
+    "initialAttempt": "Stopped after a sign-in expectation exceeded the local 10-second budget while the request remained pending; rerun used explicit public-host timing budgets without weakening assertions."
+  },
+  "xlsxAndBoundary": {
+    "result": "PASS",
+    "fixture": "src/test/resources/statements/sample.xlsx",
+    "totalRows": 2,
+    "importedRows": 2,
+    "oneMemberNetBalance": 0,
+    "readiness": {
+      "status": "UP"
+    },
+    "headStatus": 200,
+    "authenticatedManagement": {
+      "/actuator/health": 404,
+      "/actuator/prometheus": 404
+    },
+    "tlsVerification": true
+  },
+  "sampledMemory": {
+    "unit": "bytes",
+    "resolutionSeconds": 60,
+    "samples": [
+      {
+        "timestamp": "2026-10-31T06:30:38.785Z",
+        "value": 86114300
+      },
+      {
+        "timestamp": "2026-10-31T06:31:38.785Z",
+        "value": 173047800
+      },
+      {
+        "timestamp": "2026-10-31T06:32:38.785Z",
+        "value": 282517500
+      },
+      {
+        "timestamp": "2026-10-31T06:33:38.785Z",
+        "value": 342835200
+      },
+      {
+        "timestamp": "2026-10-31T06:34:38.785Z",
+        "value": 389632000
+      },
+      {
+        "timestamp": "2026-10-31T06:35:38.785Z",
+        "value": 397221900
+      },
+      {
+        "timestamp": "2026-10-31T06:36:38.785Z",
+        "value": 406372350
+      },
+      {
+        "timestamp": "2026-10-31T06:37:38.785Z",
+        "value": 411373570
+      },
+      {
+        "timestamp": "2026-10-31T06:38:38.785Z",
+        "value": 412983300
+      }
+    ],
+    "maximumObserved": 412983300,
+    "limitBytes": 536870912,
+    "boundary": "Coarse startup/browser-run samples, not a peak-memory or capacity guarantee; local 512MiB rehearsal is recorded separately."
+  },
+  "operations": {
+    "workspace": "Render Hobby, no payment card verified during setup",
+    "databasePlan": "Neon Free",
+    "extraPaidServices": false,
+    "supersededEndpoints": "Two temporary naming endpoints are suspended; no data services were deleted",
+    "startupOrOomFailureEventsObserved": 0,
+    "backgroundJobs": "Only while Java is awake; no keep-alive pinger or paid scheduler"
+  },
+  "limits": [
+    "Cold starts and free quotas can interrupt availability",
+    "No public-host load, high-availability, backup or HPA claim",
+    "This check does not demonstrate an actual daily scheduled alert firing",
+    "Local Kubernetes/GitOps/monitoring evidence remains separate"
+  ],
+  "screenshot": "public-demo-landing.png"
+}

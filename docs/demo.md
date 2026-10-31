@@ -4,7 +4,9 @@ Navigation: [documentation index](README.md) · [user guide](user-guide.md).
 
 This guide demonstrates the browser interface and Swagger/HTTP workflows using
 synthetic data. The [verification record](evidence/verification.md) identifies
-observed test and deployment results. The application runs locally.
+observed test and deployment results. Use the local application or the
+[public demo](https://splitnest-expenses.onrender.com/). The public target uses
+free hosting, so allow time for a cold start and use only synthetic data.
 
 Use disposable local accounts and data. Start Docker Desktop, then follow
 [setup.md](setup.md) and [docker.md](docker.md) to run either the JVM app with

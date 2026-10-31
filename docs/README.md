@@ -41,6 +41,7 @@ hosting, paid API or managed database is required for the local lab. An optional
 5. [ShedLock coordination](decisions/0005-shedlock.md)
 6. [Generated GitOps deployment branch](decisions/0006-gitops-deployment-branch.md)
 7. [Browser frontend in Spring Boot](decisions/0007-browser-frontend.md)
+8. [Free public résumé demonstration](decisions/0008-free-public-demo.md)
 
 ## Verification evidence
 

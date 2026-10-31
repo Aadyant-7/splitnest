@@ -344,3 +344,40 @@ profile. These are local configuration/rehearsal results, not a live URL claim.
 The [public runbook](../public-demo.md) describes the remaining live HTTPS,
 cookie, isolation, rate-limit and deployment checks. Only a successful live
 check establishes the public deployment's result.
+
+## Public HTTPS deployment — 31 October 2026
+
+[SplitNest is live](https://splitnest-expenses.onrender.com/) on Render Free,
+with Neon Free PostgreSQL and a private Render Free Valkey cache. The
+[live record](public-demo-live.json) identifies the deployed source, immutable
+image, deploy ID, checks and boundaries; the [capture](public-demo-landing.png)
+shows the public introduction. Earlier naming endpoints are suspended.
+
+- Source `895a1dc` passed [CI41175134566](https://github.com/Aadyant-7/splitnest/actions/runs/41175134566):
+  **107 Java tests**, **141 frontend tests**, build, **13 packaged browser
+  scenarios**, and the unchanged critical OS/library image gate.
+- The initial CI image was blocked by a critical Brotli finding. The
+  [runtime-refresh record](public-image-security.json) identifies the patched
+  pinned base. No scanner exception or policy relaxation was introduced.
+- **13 Chromium scenarios pass against the final public HTTPS address** in
+  **2.9 minutes**: eleven real API/database journeys, one introduction/layout
+  case and one deterministic large-decimal fixture. They cover registration,
+  saved financial records, exact splits, isolation/roles, CSV imports, budgets,
+  Secure/HttpOnly cookies, CSRF rejection, multi-tab rotation/logout, responsive
+  layouts, keyboard use and real Retry-After behavior.
+- The initial public attempt hit the local **10-second** sign-in expectation
+  while the request remained pending. The explicit public test configuration
+  permits **30-second expectations/180-second scenarios**, keeps TLS validation,
+  one worker, zero retries and the original assertions, and aligns the rate
+  test with the server's minute. Local/CI budgets remain unchanged.
+- The repository's synthetic **XLSX fixture imported two rows**. Public readiness
+  returned only `{"status":"UP"}`; HEAD returned200. Authenticated public
+  `/actuator/health` and `/actuator/prometheus` returned404.
+- Render's one-minute memory samples reached **412,983,300 bytes** during the
+  startup/browser observation, below the **512 MiB** instance limit. These are
+  coarse samples, not a peak-memory, capacity or load result.
+
+No real local financial records were migrated. Free hosting can sleep or hit
+quotas, and scheduled work requires the app to be awake. This public container
+deployment does not establish cloud Kubernetes, HPA, high availability, backups
+or an actual daily alert firing. The local lab's dated evidence remains separate.

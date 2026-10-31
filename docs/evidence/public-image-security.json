@@ -40,5 +40,14 @@
     "containerHealth": "healthy",
     "boundary": "Small synthetic rehearsal; local CPU allocation exceeds Render Free and does not establish peak memory or public-host performance."
   },
-  "verificationBoundary": "This record identifies the failed gate and inspected replacement base. A final-image scan and runtime acceptance are separate checks; base package inspection alone does not establish an all-severity clean application image."
+  "finalImageGate": {
+    "source": "895a1dceb7791049a6fbc34c73540edb7a84d45f",
+    "ciRun": 41175134566,
+    "image": "ghcr.io/aadyant-7/splitnest@sha256:3d5146162cc1c0b53575ae01912ca659b16812dd48cad15807409e8baf84250d",
+    "criticalOsAndLibraryGate": "PASS",
+    "ignoreUnfixed": false,
+    "policyUnchanged": true,
+    "liveAcceptanceRecord": "public-demo-live.json"
+  },
+  "verificationBoundary": "Final-image critical scanning and live functional acceptance are recorded separately from base package inspection. None of these establish an all-severity clean image or permanent security guarantee."
 }

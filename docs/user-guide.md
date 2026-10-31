@@ -6,7 +6,9 @@ it does not transfer money or connect to your bank account.
 
 ## 1. Open the app and create an account
 
-1. Open [SplitNest](http://127.0.0.1:8080/) while the local application is running.
+1. Open the [public demo](https://splitnest-expenses.onrender.com/), or
+   [your local app](http://127.0.0.1:8080/) while it is running. Free hosting may
+   take several minutes to wake up. Use synthetic expenses and sample files.
 2. The introduction explains what the app does. Choose **Create your account**.
 3. Enter your name, email address and a password with at least eight characters.
 4. Choose **Create account**. The app signs you in after registration.
@@ -204,9 +206,10 @@ The screen does not show a live spending-progress total.
 Choose **Sign out** in the top bar. Other open tabs in the same browser profile
 also sign out. Signing out does not delete your account or expenses.
 
-Your groups and records are saved in the local database. They survive normal
-app/container restarts as long as its database volume is kept. This copy of the
-app runs on your computer; the local services must be running to use it.
+Your groups and records are saved in PostgreSQL, separately from this browser.
+The public demo uses a hosted database; you do not need Docker to use its website.
+The local version uses your computer's database volume, which must be kept to
+preserve its data. Public and local accounts/data are separate.
 
 ## 10. Common problems
 
@@ -219,8 +222,9 @@ app runs on your computer; the local services must be running to use it.
 | No Delete button on an expense | Only its creator or a group admin can delete it |
 | Too many login attempts | Wait for the displayed retry period; login allows five attempts per email/IP in a minute window |
 | Upload failed or rows were skipped | Check the file format, required columns, dates, amounts and result message |
-| No budget alert after saving a limit | Alerts require the daily check and spending above the limit |
-| App cannot connect or load records | Check that Docker and the local application are running, then retry |
+| No budget alert after saving a limit | Alerts require the daily check, the app to be awake, and spending above the limit |
+| Public demo is loading | Allow several minutes for the free service to wake up; quota exhaustion can also suspend it |
+| Local app cannot connect or load records | Check that Docker and the local application are running, then retry |
 
 Group renaming/deletion, member-role changes, payments, unequal splits, password
 reset and bank synchronization are not available in this version.

@@ -190,6 +190,11 @@ substitutes for image, Compose/kind or remote CI evidence.
 
 ## Related references
 
+[playwright.public.config.ts](../frontend/playwright.public.config.ts) selects
+explicit free-host timing budgets for the same browser assertions. It requires
+an HTTPS target, retains TLS validation/one worker/zero retries, and does not
+change local or CI timeouts. See [frontend testing](../frontend/README.md).
+
 The [operations runbook](operations.md) connects startup, health checks, secrets,
 Flyway, job recovery and backup limitations. [Architecture decisions](README.md#architecture-decisions)
 record the main tradeoffs. Use the [demo](demo.md) for a reproducible end-to-end
